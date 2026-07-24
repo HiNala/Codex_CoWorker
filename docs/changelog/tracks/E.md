@@ -60,3 +60,16 @@
   - Contract: `packages/capability-fixtures/checkout-error-log-analyzer/CONTRACT-for-cael-verifier.md`
   - Exports: `loadCheckoutErrorLogCases`, `naiveAnalyzeCheckoutErrors`, `referenceAnalyzeCheckoutErrors`, `DEMO_SEED_EXPECTED`, `ATTEMPT_1_FAILURE_MESSAGE`
   - **Gate 2 blocker** — Cael must wire before T+70; do not slip to T+69
+
+### [2026-07-23T17:58Z] E · GATE 1 FREEZE · no new features
+
+- Commit mutex: `powershell -ExecutionPolicy Bypass -File scripts/agent-commit.ps1` only (no `pwsh`, no raw git).
+- Working tree for RIGEL exclusive paths: **clean** after `3a938b2` (fixtures) — nothing further to stage for freeze.
+- Track tests at freeze: `pnpm exec vitest run packages/artifacts packages/capability-fixtures packages/capability-sdk capabilities` → **22 files / 292 tests PASS**
+- Gate 1 evidence (Rigel-owned):
+  - ArtifactService + 7 tools, lifecycle, SHA-256, renderers, evidence/provenance, Outputs Library routes — present
+  - Four pre-shipped capabilities + live-build fixture `checkout-error-log-analyzer` (4→9 dual-rule) — present, hand-verified
+  - Artifact production from seeded run / SSE cockpit: **depends on A/D wiring** — Rigel packages are unit-green; end-to-end golden path is collective
+- **TRACK E GREEN** · most residual risk: Cael must integrate fixture into verifier before Gate 2 (not a Gate 1 unit-test fail)
+- **TRACK C GREEN** · same residual: live-build path is fixture-ready; foundry loop is Cael
+- Mutex not held. Ready for IT RUNS 18:02.
