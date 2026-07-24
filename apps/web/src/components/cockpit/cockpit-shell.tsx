@@ -70,7 +70,9 @@ export function CockpitShell({
     />
   );
   const defaultMission = <MissionControl state={state} />;
-  const defaultFoundry = <FoundryPanel state={state} />;
+  const defaultFoundry = (
+    <FoundryPanel state={state} onApprove={onApprove} onDeny={onDeny} />
+  );
 
   const conversationNode = resolveSlot(conversation, state, defaultConversation);
   const missionNode = resolveSlot(missionControl, state, defaultMission);

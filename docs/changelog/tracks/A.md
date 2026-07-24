@@ -333,3 +333,18 @@ pnpm exec dotenv -e .env.local -- tsx packages/agent-runtime/src/golden-path/ver
 **Deployed worker still 404 on SSE/golden-path** until Wisp redeploys image with stream routes. In-process path verified green.
 
 **Post–Wisp final reset:** only `--opening-only` recheck; no prove-it-runs / no second seed from Cael.
+
+### 2026-07-23T19:15Z — FINAL WAR ROOM: Start proxy + approval persist
+
+**ITEM 1 — blank demo fix:** `POST /api/demo/start` → worker `POST /v1/golden-path/run` (fixed …005/…006).  
+Contract in INTERFACES.md "Start assignment". Aria wires Start button; SSE paints live.
+
+**ITEM 2 — approval persist:** `POST /api/approvals/:id/decide` → worker (already); `useRunStream.decide` fetches proxy; FoundryPanel gets onApprove/onDeny. Idempotent.
+
+**Aria Start contract (immediate):**
+```
+POST /api/demo/start  body {}  → 200 { ok, assignmentId, runId, lastSeq, streamPath, … }
+then SSE GET /api/runs/0198206f-5f53-7000-8000-000000000006/stream?after=0
+```
+
+**Freeze commit** via mutex. No pnpm web build.

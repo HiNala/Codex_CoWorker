@@ -401,3 +401,120 @@ Idempotent: second identical decide → `200` + `"alreadyDecided": true`.
 
 **Production:** worker HTTP routes still 404 until Wisp deploys current worker image; then run seed → golden-path/run → smoke stream with non-zero frames.
 
+
+---
+
+## Track A → Aria — Start assignment + approval (FINAL WAR ROOM)
+
+**Published for Start button + Hold-to-approve.** Cael owns worker + web proxies. Aria owns button loading/error UI only.
+
+### Fixed IDs (always)
+
+| Field | UUID |
+|-------|------|
+| assignmentId | `0198206f-5f53-7000-8000-000000000005` |
+| runId | `0198206f-5f53-7000-8000-000000000006` |
+| orgId | `0198206f-5f53-7000-8000-000000000001` |
+| approvalId | `0198206f-5f53-7000-8000-0000000000e1` |
+| cockpit | `https://dextwork.com/a/0198206f-5f53-7000-8000-000000000005` |
+
+---
+
+### 1. Start assignment (fixes blank demo)
+
+**Browser (Aria Start button):**
+
+```
+POST /api/demo/start
+Content-Type: application/json
+Credentials: same-origin
+# Demo access: same gate as /api/demo/reset (header/cookie/query DEMO_ACCESS_CODE as other demo mutations)
+
+Body: {} 
+```
+
+**Upstream worker:** `POST {WORKER_URL}/v1/golden-path/run` with same body.
+
+**Success `200`:**
+```json
+{
+  "ok": true,
+  "assignmentId": "0198206f-5f53-7000-8000-000000000005",
+  "runId": "0198206f-5f53-7000-8000-000000000006",
+  "lastSeq": 26,
+  "eventCountInDb": 26,
+  "streamPath": "/api/runs/0198206f-5f53-7000-8000-000000000006/stream?after=0",
+  "distinctCount": 9,
+  "attempt1FailureMessage": "expected 9, received 4",
+  "artifactTitle": "Affected customers — annual checkout",
+  "runFinished": "completed",
+  "mode": "postgres",
+  "worker": { }
+}
+```
+
+**Failure:**
+| HTTP | code | When |
+|------|------|------|
+| 401/403 | demo gate | Missing/invalid DEMO_ACCESS_CODE |
+| 503 | `not_configured` / `worker.route_missing` | Worker down or old image (404) |
+| 500 | `worker.golden_path_failed` | Worker error body in `worker` |
+
+**After Start — SSE (cockpit already open on assignment URL):**  
+Events appear on existing EventSource `GET /api/runs/0198206f-5f53-7000-8000-000000000006/stream?after=0` (or reconnect with `after=0` after Start). Expect ordered `run.event` frames including `capability.gate_failed` (`expected 9, received 4`), repair, `approval.requested`, `approval.granted` (auto in fake path), `artifact.ready` (`table.typed`), `run.completed`.
+
+**Aria Start UX:** loading while fetch in flight; on 200 leave SSE paint; on error show `message`/`code`; do not invent events client-side except optional optimistic "Starting…".
+
+---
+
+### 2. Approve / deny (must persist via worker)
+
+**Browser:**
+
+```
+POST /api/approvals/:approvalId/decide
+Content-Type: application/json
+Idempotency-Key: <unique per hold gesture>
+
+{
+  "decision": "approved",
+  "runId": "0198206f-5f53-7000-8000-000000000006",
+  "assignmentId": "0198206f-5f53-7000-8000-000000000005",
+  "orgId": "0198206f-5f53-7000-8000-000000000001",
+  "reason": "optional"
+}
+```
+
+Deny: `"decision": "denied"`.
+
+**Upstream:** `POST {WORKER_URL}/approvals/:approvalId/decide` — **persists** decision + emits SSE events (not React-only).
+
+**Success `200`:**
+```json
+{
+  "ok": true,
+  "approvalId": "…",
+  "decision": "approved",
+  "alreadyDecided": false,
+  "runId": "…",
+  "events": [ { "type": "approval.granted", "seq": N, "refs": { "approvalId": "…" } } ]
+}
+```
+
+**Idempotent:** second same decision → `200` + `alreadyDecided: true` (hold-to-approve safe).
+
+**Errors:** 400 invalid_decision · 404 not_found · 409 already_decided/expired · 503 worker unreachable (`code: not_configured`).
+
+**SSE after approve:** `approval.granted` then resume (`capability.installed` / steps / artifact if not already complete). Apply `events[]` from HTTP response **and/or** SSE; de-dupe by `seq`.
+
+`useRunStream` controls.approve/deny now call this proxy (persist). FoundryPanel receives onApprove/onDeny from cockpit shell.
+
+---
+
+### 3. Env (web service)
+
+| Var | Purpose |
+|-----|---------|
+| `WORKER_URL` or `WORKER_PUBLIC_URL` | Worker origin, default `http://127.0.0.1:3001` |
+| `DEMO_ACCESS_CODE` | Required for `/api/demo/start` (same as reset/seed) |
+
