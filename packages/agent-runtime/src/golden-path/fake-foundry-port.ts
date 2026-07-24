@@ -164,20 +164,38 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
     });
 
     current = await ctx.steps.transition(current, "awaiting_approval");
+    const approvalId = GOLDEN.approvalId;
+    const installSummary =
+      "Given checkout error logs and plan metadata, finds annual-plan checkout failures and lists distinct affected customers (top-level + nested ids).";
     await emit(ctx.tx, {
       runId: ctx.runId,
       assignmentId: ctx.assignmentId,
       orgId: ctx.orgId,
       type: "capability.approval_requested",
-      summary: "Install checkout error log analyzer — ready for approval (auto-approved in fake path).",
-      refs: capRefs,
+      summary: "Install checkout error log analyzer — awaiting approval.",
+      refs: { ...capRefs, approvalId },
       detail: {
         name: CAP_NAME,
         slug: gap.slug,
         version: "1.0.0",
         title: "Install checkout error log analyzer",
-        summary:
-          "Given checkout error logs and plan metadata, finds annual-plan checkout failures and lists distinct affected customers (top-level + nested ids).",
+        summary: installSummary,
+      },
+    });
+    // Cockpit install card keys off approval.requested + risk capability_install
+    await emit(ctx.tx, {
+      runId: ctx.runId,
+      assignmentId: ctx.assignmentId,
+      orgId: ctx.orgId,
+      type: "approval.requested",
+      summary: "Approve install of checkout error log analyzer",
+      refs: { stepId: step.id, capabilityId: GOLDEN.capabilityId, approvalId },
+      detail: {
+        title: "Install checkout error log analyzer",
+        summary: installSummary,
+        risk: "capability_install",
+        payloadPreview:
+          "permissions: no network · no filesystem · no credentials\nfiles: src/index.ts +180, tests/unit.test.ts +90\nverification: trusted_tests fail expected 9, received 4 then pass on repair · 1 repair",
       },
     });
 
@@ -190,6 +208,17 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
     this.#installed.set(CHECKOUT_ANALYZER_SLUG, ref);
     this.installs.push({ ref, mode: "repaired" });
 
+    // Smoke / fake path auto-grants so prove-it-runs completes; live UI may also POST decide (idempotent).
+    await emit(ctx.tx, {
+      runId: ctx.runId,
+      assignmentId: ctx.assignmentId,
+      orgId: ctx.orgId,
+      type: "approval.granted",
+      summary: "Approval granted: Install checkout error log analyzer",
+      refs: { approvalId, capabilityId: GOLDEN.capabilityId, stepId: step.id },
+      detail: { decision: "approved", title: "Install checkout error log analyzer" },
+    });
+
     await emit(ctx.tx, {
       runId: ctx.runId,
       assignmentId: ctx.assignmentId,
@@ -200,6 +229,7 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
         stepId: step.id,
         capabilityId: ref.capabilityId,
         capabilityVersionId: ref.versionId,
+        approvalId,
       },
       detail: { name: CAP_NAME, slug: ref.slug, version: ref.version },
     });

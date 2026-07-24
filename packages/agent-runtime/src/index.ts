@@ -3,6 +3,7 @@
 // the SQL level. Wire that in apps/worker / packages/db when the Postgres
 // adapter lands — MemoryStepStore is the deterministic stand-in only.
 
+export * from "./approvals/decide";
 export * from "./budget";
 export * from "./fakes/fake-agent-model";
 export * from "./golden-path/checkout-analyzer-fake";

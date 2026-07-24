@@ -10,6 +10,8 @@ export const GOLDEN = {
   /** Rigel GOLDEN-ARTIFACT.json ids — Aria dock consumes these. */
   artifactId: "0198206f-5f53-7000-8000-000000000101",
   artifactVersionId: "0198206f-5f53-7000-8000-000000000102",
+  /** Capability install approval id (cockpit Hold-to-approve). */
+  approvalId: "0198206f-5f53-7000-8000-0000000000e1",
 } as const;
 
 export const CHECKOUT_ANALYZER_SLUG = "checkout-error-log-analyzer";

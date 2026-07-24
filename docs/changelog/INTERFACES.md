@@ -178,3 +178,129 @@ A successful `200` SSE must never fall back to the fixture.
 ---
 
 *Published by Cael for Aria (Track D). Cael will not edit `apps/web`. Coordinate changes to this contract via Node.*
+---
+
+## Track A → Track D — Approval decide contract (Cael → Aria)
+
+**Authority:** Cael (runtime + worker). **Aria owns** cockpit buttons/hooks only — wire `fetch` to this contract; do not invent paths.
+
+Frozen API surface (02-CONTRACTS §13): `POST /api/approvals/:id/decide`.  
+Worker implements the same shape at `POST /approvals/:id/decide` (proxy from web recommended).
+
+### 1. Approve
+
+| Item | Value |
+|------|--------|
+| Method | **`POST`** |
+| Public path (browser) | **`/api/approvals/:approvalId/decide`** |
+| Worker path (upstream) | **`/approvals/:approvalId/decide`** |
+| Local worker example | `POST http://127.0.0.1:3001/approvals/0198206f-5f53-7000-8000-0000000000e1/decide` |
+| Content-Type | `application/json` |
+| Optional header | `Idempotency-Key: <string>` (recommended for hold-to-approve) |
+
+### 2. Deny
+
+Same method and path as approve. Only the **body.decision** value changes.
+
+### 3. Request body
+
+```json
+{
+  "decision": "approved" | "denied",
+  "reason": "string (optional)",
+  "runId": "uuid (optional if approval row exists in DB)",
+  "assignmentId": "uuid (optional if approval row exists)",
+  "orgId": "uuid (optional if approval row exists)"
+}
+```
+
+| Field | Required | Notes |
+|-------|----------|--------|
+| `decision` | **yes** | Exactly `"approved"` or `"denied"` (not boolean) |
+| `reason` | no | Free text; stored in event detail |
+| `runId` | **yes for demo synthetic approvals** without a DB row | Broken Checkout smoke id: `0198206f-5f53-7000-8000-000000000006` |
+| `assignmentId` | same as runId | `0198206f-5f53-7000-8000-000000000005` |
+| `orgId` | same | `0198206f-5f53-7000-8000-000000000001` |
+
+**approvalId** is **only** in the path (`:id`), not the body.
+
+**Demo capability-install approvalId (golden path):** `0198206f-5f53-7000-8000-0000000000e1`
+
+### 4. Success response — `200 application/json`
+
+```json
+{
+  "ok": true,
+  "approvalId": "<uuid>",
+  "decision": "approved" | "denied",
+  "alreadyDecided": false,
+  "runId": "<uuid>",
+  "events": [ /* RunEvent objects just emitted, usually one */ ]
+}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `alreadyDecided` | `true` if this decision was already stored (idempotent re-POST of the **same** decision) |
+| `events` | Events written in the decide transaction (client may apply immediately; SSE will also deliver) |
+
+### 5. Failure responses — problem-details style
+
+| HTTP | `code` | When |
+|------|--------|------|
+| **400** | `approval.invalid_decision` | `decision` missing or not approved/denied |
+| **404** | `approval.not_found` | Unknown id and insufficient synthetic context |
+| **409** | `approval.already_decided` | Row already approved/denied with a **different** decision |
+| **409** | `approval.expired` | Past `expiresAt` / decision expired |
+| **500** | `approval.decide_failed` | Unexpected server error |
+| **503** | `not_configured` | `DATABASE_URL` unset (same spirit as stream) |
+
+Body shape:
+
+```json
+{
+  "type": "about:blank",
+  "title": "string",
+  "status": 409,
+  "code": "approval.already_decided",
+  "detail": "human-readable"
+}
+```
+
+### 6. Idempotency
+
+- **Same decision twice → 200**, `alreadyDecided: true` (hold-to-approve may fire twice — safe).
+- **Opposite decision after decide → 409** `approval.already_decided`.
+- Prefer sending `Idempotency-Key` header unique per hold gesture; server treats logical decide as above even without it.
+
+### 7. SSE events after successful approve (client must react to stream)
+
+Do **not** optimistically invent capability install. After `decision: "approved"` expect `run.event` frames (same envelope as SSE contract) including:
+
+| Order (typical) | `type` | Notes |
+|-----------------|--------|--------|
+| 1 | **`approval.granted`** | `refs.approvalId` matches; clears pending card |
+| 2+ | **`capability.installed`** (if install was gated) | `refs.capabilityId`, detail.name/slug/version |
+| … | **`step.started` / `step.completed` / `artifact.ready`** | Run resumes |
+| last | **`run.completed`** | When finished |
+
+After deny:
+
+| `type` | Notes |
+|--------|--------|
+| **`approval.denied`** | `refs.approvalId` matches; card → denied; run stays blocked/awaiting_approval as appropriate |
+
+Client cursor: advance with SSE `id` / `data.seq` as in the SSE contract. Apply `events[]` from the HTTP response **or** wait for SSE (de-dupe by `seq`).
+
+### 8. Broken Checkout seed ids (demo correctness)
+
+| Field | UUID |
+|-------|------|
+| **assignmentId** | `0198206f-5f53-7000-8000-000000000005` |
+| **runId** | `0198206f-5f53-7000-8000-000000000006` |
+| **orgId** | `0198206f-5f53-7000-8000-000000000001` |
+| **approvalId** (install) | `0198206f-5f53-7000-8000-0000000000e1` |
+| Live capability | `checkout-error-log-analyzer` only |
+
+**Production:** must run **`pnpm db:seed`** (or deploy seed) against the deployed DB so assignment/contract/milestones overwrite any stale API-change copy (`onConflictDoUpdate` now forces Broken Checkout). **Wisp owns running seed on Railway.**
+

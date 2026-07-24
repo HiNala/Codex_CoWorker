@@ -291,3 +291,17 @@ pnpm exec dotenv -e .env.local -- tsx packages/agent-runtime/src/golden-path/pro
 **Wisp / prod:** re-run `pnpm db:seed` (or deploy seed job) against production DATABASE_URL so Railway DB overwrites stale assignment text. Relay: production must reseed.
 
 **SSE after reseed+prove:** `GET /runs/0198206f-5f53-7000-8000-000000000006/stream?after=0`
+
+### 2026-07-23T18:50Z — Approval contract + seed IDs (demo blockers)
+
+1. **Approval decide** documented in `docs/changelog/INTERFACES.md` § Track A → Track D — Approval decide.
+   - `POST /api/approvals/:id/decide` (public) / worker `POST /approvals/:id/decide`
+   - Body `{ decision: "approved"|"denied", reason?, runId?, assignmentId?, orgId? }`
+   - Success 200 + `alreadyDecided` idempotent; 409 already_decided/expired; SSE: `approval.granted` then resume events
+   - Worker implements decide; Aria wires Hold button to this fetch (not void).
+
+2. **Broken Checkout ids (Aria/Wisp):**
+   - assignmentId=`0198206f-5f53-7000-8000-000000000005`
+   - runId=`0198206f-5f53-7000-8000-000000000006`
+   - approvalId=`0198206f-5f53-7000-8000-0000000000e1`
+   - **Production needs reseed** (`pnpm db:seed` on deployed DB) — Wisp.

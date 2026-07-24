@@ -1,6 +1,7 @@
 import { createServer, type Server } from "node:http";
 import { hostname } from "node:os";
 import { getFlags, log, parseWorkerEnv } from "@forge/config";
+import { decideApproval } from "@forge/agent-runtime";
 import { PostgresJobQueue } from "@forge/jobs";
 import { S3ObjectStore } from "@forge/object-store";
 import { dispatchJob, runExecuteRun } from "./handlers";
@@ -84,6 +85,70 @@ function startHealthServer(): Server {
           streamMatch.runId,
           streamMatch.after,
         );
+        return;
+      }
+
+      // POST /approvals/:id/decide  body: { decision, reason?, runId?, assignmentId?, orgId? }
+      const decideMatch = /^\/approvals\/([0-9a-f-]{36})\/decide\/?$/i.exec(
+        url.split("?")[0] ?? "",
+      );
+      if (request.method === "POST" && decideMatch) {
+        try {
+          const chunks: Buffer[] = [];
+          for await (const chunk of request) chunks.push(Buffer.from(chunk));
+          const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as {
+            decision?: string;
+            reason?: string;
+            runId?: string;
+            assignmentId?: string;
+            orgId?: string;
+          };
+          const decision = body.decision;
+          if (decision !== "approved" && decision !== "denied") {
+            json(response, 400, {
+              type: "about:blank",
+              title: "Invalid decision",
+              status: 400,
+              code: "approval.invalid_decision",
+              detail: 'Body.decision must be "approved" or "denied".',
+            });
+            return;
+          }
+          const result = await decideApproval(environment.DATABASE_URL, {
+            approvalId: decideMatch[1]!,
+            decision,
+            reason: body.reason,
+            runId: body.runId,
+            assignmentId: body.assignmentId,
+            orgId: body.orgId,
+          });
+          if (!result.ok) {
+            json(response, result.status, {
+              type: "about:blank",
+              title: result.title,
+              status: result.status,
+              code: result.code,
+              detail: result.detail,
+            });
+            return;
+          }
+          json(response, 200, {
+            ok: true,
+            approvalId: result.approvalId,
+            decision: result.decision,
+            alreadyDecided: result.alreadyDecided,
+            runId: result.runId,
+            events: result.events,
+          });
+        } catch (error) {
+          json(response, 500, {
+            type: "about:blank",
+            title: "Decide failed",
+            status: 500,
+            code: "approval.decide_failed",
+            detail: error instanceof Error ? error.message : "unknown",
+          });
+        }
         return;
       }
 
