@@ -9,6 +9,19 @@
 
 export const BROKEN_CHECKOUT_ASSIGNMENT_TITLE = "Annual checkout failing for Team plan";
 
+/** Only executable capability on the live golden path (CUT #4). */
+export const LIVE_EXECUTABLE_CAPABILITY = "checkout-error-log-analyzer" as const;
+
+/** Log fixture path for the live analyzer (demo/acme-store). */
+export const LIVE_CHECKOUT_ERROR_LOG = "demo/acme-store/logs/checkout-errors.ndjson" as const;
+
+/**
+ * Locked demo assignment deep link used by marketing CTA / cockpit seed.
+ * Must open Broken Checkout — never webhook field-rename.
+ */
+export const BROKEN_CHECKOUT_ASSIGNMENT_HREF =
+  "/a/0198206f-5f53-7000-8000-000000000005" as const;
+
 export const BROKEN_CHECKOUT_TICKET = {
   id: "ZD-4471",
   subject: "Can't upgrade to Team — annual billing errors out",
@@ -70,11 +83,8 @@ export function assertBrokenCheckoutCopy(text: string): void {
       );
     }
   }
-  // Positive anchors — must be about checkout/billing interval.
-  if (
-    !/checkout|billing|yearly|annual|price|stripe|priya|4471/i.test(text) &&
-    text.trim().length > 0
-  ) {
-    // Allow short technical titles that still pass forbidden check when empty-ish.
+  // Long-form copy must positively name the checkout story.
+  if (text.trim().length >= 40 && !/checkout|billing|yearly|annual|price|stripe|priya|4471/i.test(text)) {
+    throw new Error("Demo copy must reference Broken Checkout (checkout/yearly/annual/Priya/4471)");
   }
 }

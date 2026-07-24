@@ -307,3 +307,12 @@ Tide audited exclusive scope and **repointed / locked** demo-facing copy to Brok
 
 - `pnpm --filter @forge/integrations run smoke:golden` → **8 files / 74 tests PASS** (PR + email e2e on checkout story)
 
+
+### [2026-07-23] 13-min final audit — Broken Checkout only
+
+- Audited `packages/integrations`, `packages/research`, `demo/` for live webhook/api-change **payload** copy.
+- Live positive copy is Broken Checkout only; forbidden markers remain only in deny-lists / "not live" docs.
+- Added: `LIVE_EXECUTABLE_CAPABILITY=checkout-error-log-analyzer`, log path, assignment href; tighter `assertBrokenCheckoutCopy`.
+- Runbook: approval boundary checklist in `demo/BROKEN-CHECKOUT-REHEARSAL.md`.
+- **Smoke:** `pnpm --filter @forge/integrations run smoke:golden` → **8 files / 74 tests PASS** (approval mutate refuse + PR/email e2e).
+

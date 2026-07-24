@@ -14,6 +14,11 @@ pnpm --filter @forge/integrations run smoke:golden
 
 Expected: all green. **No live external writes.** Missing keys → `not_configured` + deterministic fakes.
 
+**Live only:** Broken Checkout + `checkout-error-log-analyzer`.  
+**Forbidden live copy:** Webhook field rename · api-change-impact-analyzer · Analyse API change…
+
+Canonical strings: `src/demo/broken-checkout-scenario.ts`
+
 ---
 
 ## Boundary (rehearsable without live credentials)

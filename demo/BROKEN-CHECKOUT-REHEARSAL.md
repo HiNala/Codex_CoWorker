@@ -1,72 +1,56 @@
 # Broken Checkout — rehearsal steps (demo + F/L)
 
-**Live assignment title (canonical):** `Annual checkout failing for Team plan`  
-**Not live:** `Webhook field rename incident` / `api-change-impact-analyzer` (prebuilt inventory only — CUT #4).
+**Live assignment title:** `Annual checkout failing for Team plan`  
+**Live deep link:** `/a/0198206f-5f53-7000-8000-000000000005`  
+**Only executable capability:** `checkout-error-log-analyzer`  
+**Log fixture:** `demo/acme-store/logs/checkout-errors.ndjson` (naive 4 → correct 9)
 
-Demo storefront: `demo/acme-store`.  
-Canonical copy: `packages/integrations/src/demo/broken-checkout-scenario.ts`.  
-Integrations smoke + contract: `packages/integrations/GOLDEN-PATH.md` and `packages/integrations/src/cael-contract.md`.
+**Not live (inventory only):** `Webhook field rename incident` · `api-change-impact-analyzer`
 
-## One smoke command (monorepo root)
+Canonical copy: `packages/integrations/src/demo/broken-checkout-scenario.ts`  
+Contract for Cael: `packages/integrations/src/cael-contract.md`
+
+## One smoke command
 
 ```powershell
 pnpm --filter @forge/integrations run smoke:golden
 ```
 
-Expect: all green. Uses **deterministic fakes only** — no live Zendesk / Octen / Gmail / GitHub writes.
+Expect: all green (fakes only — no live external writes).
 
-Optional demo-local checks:
+Optional:
 
 ```powershell
-cd demo/acme-store
-pnpm exec vitest run
-node scripts/verify-customer-counts.mjs
+cd demo/acme-store ; pnpm exec vitest run ; node scripts/verify-customer-counts.mjs
 ```
 
-Expect: 13 unit tests PASS; log trap naive=4 / correct=9 / 40 failed attempts.
+## Sequence
 
----
+1. Ticket ZD-4471 Priya (ImportTicketGateway when `ZENDESK_*` unset)  
+2. Research fakes (yearly vs annual PRICE_IDS — not API rename)  
+3. Gap → **only** build/repair `checkout-error-log-analyzer` (4→9)  
+4. Host applies `annual-checkout-fix.patch` (`git apply --3way`, fail loud)  
+5. PR body from records (9 customers, #4471) — Fake if `GITHUB_*` absent  
+6. **Email approval boundary** (must pass before stage):  
+   - freeze `ExternalActionProposal` with exact `to` / `subject` / `body`  
+   - `payloadSha256(proposal)` stored on approval  
+   - `execute(proposal, approvalId)` with **same** bytes only  
+   - mutate body → `approval.payload_mismatch`  
+   - retry same key → idempotent, one send  
+7. Status: honest `not_configured` when keys missing  
 
-## Concise rehearsal sequence
+## Approval boundary checklist
 
-1. **Ticket (fake Zendesk)**  
-   Unset `ZENDESK_*` → `ImportTicketGateway` / demo tickets. Webhook HMAC uses local fixture secret (no live account).
-
-2. **Research (fake Octen)**  
-   Missing key → `FakeResearchGateway`. Evidence carries `contentSha256`. Discard path for `page_structure.primary === 'No Main Content'` is live-only but tested in octen unit suite.
-
-3. **Bug on main**  
-   `PlanToggle` emits `yearly`; `PRICE_IDS` keys `annual` → `resolvePriceId('team','yearly')` is `undefined` → generic 500.
-
-4. **Host patch (not sandbox credentials)**  
-   Hand-written fixture:  
-   `packages/integrations/src/github/fixtures/annual-checkout-fix.patch`  
-   Host: clean clone → `git apply --3way` → fail loud if dirty. Sandbox emits patch string only.
-
-5. **Post-apply proof**  
-   `resolvePriceId(*,'yearly')` resolves; monthly still works; legacy `annual` does not.
-
-6. **PR payload (approval-gated)**  
-   `assemblePrBody` from records (9 customers, ticket #4471).  
-   `PullRequestPort.openPullRequest` — Fake if `GITHUB_*` ABSENT; never put PAT in sandbox or events.
-
-7. **Email (exact approved payload)**  
-   `ExternalActionProposal` → freeze + `payloadSha256` → execute **exact** args.  
-   Mutated body → `approval.payload_mismatch`. No send without approval.
-
-8. **Status honesty**  
-   `integrationStatus` → `not_configured` when keys missing. No secrets in detail.
-
----
-
-## Hand off
-
-| Who | Read |
+| Check | Pass criteria |
 | --- | --- |
-| **Cael (A)** | `packages/integrations/src/cael-contract.md` — `action.proposed` / approval / `execute` / events |
-| **Wisp (I)** | Same file § sandbox: **zero** provider keys in sandbox image |
-| **Tide** | Owns fakes, host PR port, patch fixture, smoke command |
+| Hash bind | `payloadSha256` matches freeze |
+| Exact args | Backend does not re-plan |
+| Mutate refuse | Different body same id → refuse |
+| Idempotent | Second execute returns first result |
+| No secrets | Events/status never include tokens |
 
-## Hard rule
+## Hard rules
 
-**No real external PR or email write** without the exact approved payload.
+- No second executable capability fixtures  
+- No real PR/email without exact approved payload  
+- Sandbox holds zero credentials (patch only)

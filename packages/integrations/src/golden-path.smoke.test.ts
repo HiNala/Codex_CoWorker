@@ -36,8 +36,11 @@ import {
   BROKEN_CHECKOUT_EMAIL,
   BROKEN_CHECKOUT_PR_CHANGES,
   BROKEN_CHECKOUT_PR_TITLE,
+  BROKEN_CHECKOUT_ASSIGNMENT_HREF,
   BROKEN_CHECKOUT_TICKET,
   FORBIDDEN_LIVE_SCENARIO_MARKERS,
+  LIVE_CHECKOUT_ERROR_LOG,
+  LIVE_EXECUTABLE_CAPABILITY,
 } from "./demo/broken-checkout-scenario";
 
 const execFileAsync = promisify(execFile);
@@ -95,6 +98,9 @@ describe("F/L golden path rehearsal (fakes + host patch, no live credentials)", 
 
   it("uses Broken Checkout ticket/assignment copy — never API-rename inventory story", async () => {
     expect(BROKEN_CHECKOUT_ASSIGNMENT_TITLE).toMatch(/checkout/i);
+    expect(LIVE_EXECUTABLE_CAPABILITY).toBe("checkout-error-log-analyzer");
+    expect(LIVE_CHECKOUT_ERROR_LOG).toContain("checkout-errors.ndjson");
+    expect(BROKEN_CHECKOUT_ASSIGNMENT_HREF).toMatch(/^\/a\//);
     expect(BROKEN_CHECKOUT_TICKET.subject).toMatch(/annual|Team/i);
     assertBrokenCheckoutCopy(BROKEN_CHECKOUT_ASSIGNMENT_TITLE);
     assertBrokenCheckoutCopy(BROKEN_CHECKOUT_TICKET.body);
@@ -102,6 +108,8 @@ describe("F/L golden path rehearsal (fakes + host patch, no live credentials)", 
     assertBrokenCheckoutCopy(BROKEN_CHECKOUT_EMAIL.body);
     for (const marker of FORBIDDEN_LIVE_SCENARIO_MARKERS) {
       expect(BROKEN_CHECKOUT_ASSIGNMENT_TITLE.toLowerCase()).not.toContain(marker.toLowerCase());
+      expect(BROKEN_CHECKOUT_EMAIL.body.toLowerCase()).not.toContain(marker.toLowerCase());
+      expect(BROKEN_CHECKOUT_PR_TITLE.toLowerCase()).not.toContain(marker.toLowerCase());
     }
     const tickets = createTicketGateway({});
     const list = await tickets.gateway.listRecent({ limit: 5 });
