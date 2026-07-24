@@ -28,6 +28,16 @@ Node enforcement received. Serial panel work stopped. Five-way exclusive split:
 - Fakes only; event-driven motion; tile states = icon + label.
 - Foundation (#1) ships first; 2–5 run in parallel after.
 
+## [T+conv] D · conversation panel · production timeline
+
+Sub-agent 2 exclusive scope `apps/web/src/components/conversation/**`:
+
+- `ConversationPanel` — continuous timeline, density control (`forge.trace-density`), pin-scroll with "N new" pill, reconnect banner, composer with ⌘↵ / Esc / approval-disabled reason.
+- `TraceGroup` — live expanded; settled collapses via CSS `grid-template-rows` (240ms, respects `prefers-reduced-motion`); click toggles; summary line shows steps · duration · cost.
+- `DensityControl` — narrative | detailed | everything.
+- Evidence via `@forge/ui` `EvidenceChip`; gap markers; notice levels; local `conversation-approval-stub` until approvals track lands.
+- No `Math.random()`, no timer-driven status.
+
 ## [T+dock] D · dock-approvals · ArtifactDock + ApprovalCard
 
 - `apps/web/src/components/dock/**`: collapsible rail (56px / ~200px), `ArtifactCard` for `ArtifactCardVM` (declared placeholder, drafting, ready), horizontal snap + arrow keys, `EmptyState` when empty.
@@ -87,3 +97,11 @@ If push is non-fast-forward: **STOP**, report Node, hold. No force.
 | `docs/changelog/tracks/D.md` | present |
 
 `git stash list` empty. Nothing missing to report.
+
+## [T+wire] D · shipped · cockpit shell wires real panels
+
+- Sub-agent 5 (dock + approvals) complete and pushed.
+- Sub-agents 1–4 still running; their files already present on disk.
+- `cockpit-shell.tsx` now defaults to ConversationPanel, MissionControl, FoundryPanel, ArtifactDock (demo fixture hydrate).
+- Slot overrides remain for Track J/presenter injection.
+- Git sequence: add own paths → commit → push only (no pull).
