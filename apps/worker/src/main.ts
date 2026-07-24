@@ -68,6 +68,15 @@ function startHealthServer(): Server {
       // Runtime SSE integration — GET /runs/:runId/stream?after=
       const streamMatch = matchRunStream(url);
       if (request.method === "GET" && streamMatch) {
+        // Unambiguous for Aria: only fall back to demo fixture on this shape.
+        if (!environment.DATABASE_URL) {
+          json(response, 503, {
+            status: "not_configured",
+            reason: "DATABASE_URL unset — run event stream unavailable",
+            stream: false,
+          });
+          return;
+        }
         openSse(
           request,
           response,

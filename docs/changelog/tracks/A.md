@@ -247,3 +247,10 @@ pnpm exec dotenv -e .env.local -- tsx packages/events/src/prove-sse.ts  # EXIT 0
 Terminal counts per run: `run.completed=1`, `artifact.ready=1`, `capability.gate_failed=1`, `capability.installed=1`.
 
 **TRACK A GREEN** for Broken Checkout spine (worker/run-loop/Postgres/SSE/table.typed). Standing by for Node integration failures.
+
+### 2026-07-23T18:30Z — ARIA SSE CONTRACT PUBLISHED (Birch arbitration)
+
+- **Deliverable:** exact worker SSE contract written to **`docs/changelog/INTERFACES.md`** (section “Track A → Track D — Run event SSE contract”).
+- Aria implements against that text only; **no apps/web edits by Cael**.
+- Contract covers: `GET /runs/:runId/stream`, exclusive `after` / `Last-Event-ID`, `run.event` + `heartbeat`, RunEvent JSON fields, no backfill-complete frame, 15s heartbeat, no auto-close on run.completed, **503 `{ status: "not_configured", stream: false }`** for fixture fallback.
+- Worker stream route now returns that 503 when `DATABASE_URL` is unset (unambiguous Aria signal).
