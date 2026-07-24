@@ -21,6 +21,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
   --color-status-idle: var(--status-idle);
   --color-status-active: var(--status-active);
   --color-status-building: var(--status-building);
@@ -29,6 +30,14 @@
   --color-status-success: var(--status-success);
   --color-status-warning: var(--status-warning);
   --color-status-danger: var(--status-danger);
+
+  --color-capability-connection: var(--capability-connection);
+  --color-capability-skill: var(--capability-skill);
+  --color-capability-workflow: var(--capability-workflow);
+
+  --color-evidence-official: var(--evidence-official);
+  --color-evidence-secondary: var(--evidence-secondary);
+  --color-evidence-untrusted: var(--evidence-untrusted);
 
   --radius-sm: 0.625rem;
   --radius-md: 0.875rem;
@@ -58,6 +67,7 @@
   --border: oklch(0.89 0.006 270);
   --input: var(--border);
   --ring: oklch(0.52 0.16 255);
+
   --status-idle: oklch(0.5 0.01 270);
   --status-active: oklch(0.52 0.16 255);
   --status-building: oklch(0.54 0.18 285);
@@ -66,6 +76,24 @@
   --status-success: oklch(0.5 0.14 150);
   --status-warning: oklch(0.58 0.14 85);
   --status-danger: oklch(0.58 0.19 25);
+
+  --capability-connection: oklch(0.52 0.13 220);
+  --capability-skill: oklch(0.5 0.16 285);
+  --capability-workflow: oklch(0.48 0.13 160);
+
+  --evidence-official: oklch(0.48 0.14 150);
+  --evidence-secondary: oklch(0.48 0.08 250);
+  --evidence-untrusted: oklch(0.52 0.13 60);
+
+  /* Motion — 19-PACK */
+  --dur-instant: 90ms;
+  --dur-quick: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 400ms;
+  --dur-story: 900ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-soft: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .dark {
@@ -87,6 +115,7 @@
   --border: oklch(0.24 0.008 270);
   --input: oklch(0.21 0.008 270);
   --ring: oklch(0.72 0.15 255);
+
   --status-idle: oklch(0.62 0.01 270);
   --status-active: oklch(0.72 0.15 255);
   --status-building: oklch(0.76 0.15 285);
@@ -95,4 +124,22 @@
   --status-success: oklch(0.76 0.16 150);
   --status-warning: oklch(0.8 0.15 85);
   --status-danger: oklch(0.68 0.19 25);
+
+  --capability-connection: oklch(0.72 0.13 220);
+  --capability-skill: oklch(0.74 0.15 285);
+  --capability-workflow: oklch(0.76 0.14 160);
+
+  --evidence-official: oklch(0.76 0.15 150);
+  --evidence-secondary: oklch(0.72 0.08 250);
+  --evidence-untrusted: oklch(0.76 0.14 60);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 0ms;
+    --dur-quick: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+    --dur-story: 0ms;
+  }
 }
