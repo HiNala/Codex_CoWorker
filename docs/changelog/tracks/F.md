@@ -37,6 +37,18 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - Operator OAuth: set worker `COMPOSIO_API_KEY` + immutable `COMPOSIO_USER_ID` → `createComposioConnectLink` → open `redirectUrl` → store `COMPOSIO_GMAIL_ACCOUNT_ID`. Escalate if browser OAuth still needed (does not block build).
 - Tests: `email/notifier.test.ts`, `composio/client.test.ts`.
 
+### GitHub PR sub-agent
+
+- **Track L step 3 before 4:** host `PullRequestPort` opens PRs from a **hand-written** patch; does not depend on Codex output.
+- Port: `openPullRequest({ repo, baseBranch, headBranch, title, body, patch, assignmentId }) → { number, url, sha }`.
+- Live `GitHubPullRequestAdapter`: clone `--depth 1` → `checkout -b` → `git apply --3way` (fail loud, no fuzzy retry) → commit with `Co-authored-by` + `X-Forge-Assignment` trailers → push with PAT → REST `pulls.create`. Idempotent on `assignmentId + headBranch`. Empty patch refused before clone.
+- Secrets: token never logged; `sanitizeSecretText` strips `x-access-token:…@`, Bearer, `ghp_`, `github_pat_`. Patch file written **outside** the clone so it is not committed.
+- Fake: `FakeGitHubPullRequestAdapter` (default via `createPullRequestPort` when `GITHUB_TOKEN`/`GITHUB_PAT` unset) — same result shape, fixed latency, empty-patch refuse, same idempotency key.
+- Helpers: `assemblePrBody` (omits missing records), `patchSha256`.
+- Fixture: `packages/integrations/src/github/fixtures/annual-checkout-fix.patch` — yearly vs annual `PRICE_IDS` fix + typed `resolvePrice`; applies cleanly to `demo/acme-store` checkout sources.
+- Tests: `pnpm exec vitest run packages/integrations/src/github` — Fake, fixture load, local bare-remote e2e apply/push/PR create, apply-fail loud, sanitize, factory. **14 green.**
+- `GITHUB_TOKEN` may remain unset; live path is ready when host configures fine-grained PAT.
+
 ### Demo repo sub-agent
 
 - Completed `demo/acme-store` Broken Checkout storefront (Track L demo scope only).
@@ -112,4 +124,12 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
   - Zendesk: 21 tests pass (local HMAC fixture)
   - Octen: 9 tests pass
   - Composio Gmail: 28 tests pass (link() not initiate; host Node 22.12.0 &lt; 22.22.3 → live Gmail not_configured)
+- Parent verify under hold (no git):
+  - `packages/integrations` + `packages/research`: **78** tests pass
+  - github/email/composio/approval slice: **46** tests pass
+  - `demo/acme-store`: **13** tests pass (prices/session/format)
+  - log fixture: naive=**4**, correct=**9**, failedAttempts=**40**, first 2026-07-16 → last 2026-07-23
+  - Bug shape confirmed: `PlanToggle` emits `yearly`; `PRICE_IDS` keyed `annual`
+  - Uncommitted work held in tree for mutex: composio polish, github fixtures, acme-store UI/logs, F.md holds
+- **Demo sub-agent DONE:** pricing UI, checkout route, 13 tests, log trap 4/9/40, README/CONTRIBUTING. PR sub-agent still in flight under hold.
 

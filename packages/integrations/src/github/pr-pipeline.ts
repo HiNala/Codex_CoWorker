@@ -1,11 +1,21 @@
 import { createHash } from "node:crypto";
-import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile, readFile, mkdir, copyFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const execFileAsync = promisify(execFile);
+
+/**
+ * Committed hand-written unified diff for Track L step 3 (Broken Checkout).
+ * Renames PRICE_IDS `annual` → `yearly` and adds typed resolvePrice.
+ * Applies cleanly to demo/acme-store once that tree is the PR target.
+ */
+export const ANNUAL_CHECKOUT_FIX_PATCH_PATH = fileURLToPath(
+  new URL("./fixtures/annual-checkout-fix.patch", import.meta.url),
+);
 
 /**
  * Host-side PR port. The sandbox holds ZERO credentials and only emits a patch.
@@ -21,7 +31,7 @@ export interface OpenPullRequestInput {
   headBranch: string;
   title: string;
   body: string;
-  /** Unified diff from the sandbox. */
+  /** Unified diff from the sandbox (or a hand-written fixture for step 3). */
   patch: string;
   assignmentId: string;
   coAuthor?: string;
@@ -44,6 +54,11 @@ export interface GitHubPrConfig {
   fetchFn?: typeof fetch;
   /** Working directory root for temp clones. */
   workRoot?: string;
+  /**
+   * Override remote URL construction (tests use local bare repos).
+   * Default: `https://x-access-token:{token}@github.com/{repo}.git`
+   */
+  remoteUrl?: (repo: string) => string;
 }
 
 export class GitHubPullRequestAdapter implements PullRequestPort {
@@ -52,6 +67,7 @@ export class GitHubPullRequestAdapter implements PullRequestPort {
   readonly #git: string;
   readonly #fetchFn: typeof fetch;
   readonly #workRoot: string;
+  readonly #remoteUrl: (repo: string) => string;
   readonly #idempotency = new Map<string, OpenPullRequestResult>();
 
   constructor(config: GitHubPrConfig) {
@@ -60,6 +76,9 @@ export class GitHubPullRequestAdapter implements PullRequestPort {
     this.#git = config.gitBinary ?? "git";
     this.#fetchFn = config.fetchFn ?? fetch;
     this.#workRoot = config.workRoot ?? tmpdir();
+    this.#remoteUrl =
+      config.remoteUrl ??
+      ((repo) => `https://x-access-token:${this.#token}@github.com/${repo}.git`);
   }
 
   async openPullRequest(input: OpenPullRequestInput): Promise<OpenPullRequestResult> {
@@ -67,23 +86,38 @@ export class GitHubPullRequestAdapter implements PullRequestPort {
     const existing = this.#idempotency.get(idemKey);
     if (existing) return existing;
 
+    if (!input.patch.trim()) {
+      throw new PrPipelineError("patch.empty", "Refusing to open PR with empty patch");
+    }
+
     const dir = await mkdtemp(join(this.#workRoot, "forge-pr-"));
     try {
-      const remote = `https://x-access-token:${this.#token}@github.com/${input.repo}.git`;
-      await this.#gitCmd(dir, ["clone", "--depth", "1", "--branch", input.baseBranch, remote, "."]);
+      const remote = this.#remoteUrl(input.repo);
+      await this.#gitCmd(dir, [
+        "clone",
+        "--depth",
+        "1",
+        "--branch",
+        input.baseBranch,
+        remote,
+        ".",
+      ]);
       await this.#gitCmd(dir, ["checkout", "-b", input.headBranch]);
 
-      const patchPath = join(dir, ".forge-apply.patch");
+      // Write outside the clone so `git add -A` cannot commit the raw patch file.
+      const patchPath = `${dir}.forge-apply.patch`;
       await writeFile(patchPath, input.patch, "utf8");
 
       try {
+        // Fail loudly — never fuzzy-retry a half-applied patch into a PR.
         await this.#gitCmd(dir, ["apply", "--3way", patchPath]);
       } catch (err) {
-        // Fail loudly — never fuzzy-retry a half-applied patch into a PR.
         throw new PrPipelineError(
           "patch.apply_failed",
-          `git apply --3way failed; refusing to open PR. ${errorMessage(err)}`,
+          `git apply --3way failed; refusing to open PR. ${sanitizeSecretText(errorMessage(err))}`,
         );
+      } finally {
+        await rm(patchPath, { force: true }).catch(() => undefined);
       }
 
       await this.#gitCmd(dir, ["add", "-A"]);
@@ -94,7 +128,15 @@ export class GitHubPullRequestAdapter implements PullRequestPort {
         `Co-authored-by: ${coAuthor}`,
         `X-Forge-Assignment: ${input.assignmentId}`,
       ].join("\n");
-      await this.#gitCmd(dir, ["-c", "user.email=forge@local", "-c", "user.name=FORGE", "commit", "-m", message]);
+      await this.#gitCmd(dir, [
+        "-c",
+        "user.email=forge@local",
+        "-c",
+        "user.name=FORGE",
+        "commit",
+        "-m",
+        message,
+      ]);
 
       const { stdout: shaOut } = await this.#gitCmd(dir, ["rev-parse", "HEAD"]);
       const sha = shaOut.trim();
@@ -141,7 +183,7 @@ export class GitHubPullRequestAdapter implements PullRequestPort {
       const text = await res.text().catch(() => "");
       throw new PrPipelineError(
         "pr.create_failed",
-        `GitHub pulls.create failed: ${res.status} ${text.slice(0, 200)}`,
+        `GitHub pulls.create failed: ${res.status} ${sanitizeSecretText(text).slice(0, 200)}`,
       );
     }
     return (await res.json()) as { number: number; html_url: string };
@@ -149,16 +191,21 @@ export class GitHubPullRequestAdapter implements PullRequestPort {
 
   async #gitCmd(cwd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
     // Never put the token in logs — strip https credentials from any error text at call sites.
-    return execFileAsync(this.#git, args, {
-      cwd,
-      env: {
-        ...process.env,
-        GIT_TERMINAL_PROMPT: "0",
-        // Ensure credential helper cannot leak interactive prompts.
-        GIT_ASKPASS: "echo",
-      },
-      maxBuffer: 10 * 1024 * 1024,
-    });
+    try {
+      return await execFileAsync(this.#git, args, {
+        cwd,
+        env: {
+          ...process.env,
+          GIT_TERMINAL_PROMPT: "0",
+          // Ensure credential helper cannot leak interactive prompts.
+          GIT_ASKPASS: "echo",
+        },
+        maxBuffer: 10 * 1024 * 1024,
+      });
+    } catch (err) {
+      // Re-throw with sanitized message so callers never observe a PAT.
+      throw new Error(sanitizeSecretText(errorMessage(err)));
+    }
   }
 }
 
@@ -250,7 +297,9 @@ export function assemblePrBody(parts: {
     const bits = [
       parts.testsPassing,
       parts.gatesPassing,
-      parts.repairCycles != null ? `${parts.repairCycles} repair cycle${parts.repairCycles === 1 ? "" : "s"}` : undefined,
+      parts.repairCycles != null
+        ? `${parts.repairCycles} repair cycle${parts.repairCycles === 1 ? "" : "s"}`
+        : undefined,
     ].filter(Boolean);
     lines.push(bits.join(" · "), "");
   }
@@ -288,15 +337,76 @@ export function patchSha256(patch: string): string {
   return createHash("sha256").update(patch, "utf8").digest("hex");
 }
 
-function errorMessage(err: unknown): string {
-  if (err instanceof Error) {
-    // Strip any accidental token material from git remote URLs in error output.
-    return err.message.replace(/x-access-token:[^@\s]+@/g, "x-access-token:***@");
-  }
-  return String(err);
+/** Strip PAT / bearer material from any string that might reach logs or events. */
+export function sanitizeSecretText(text: string): string {
+  return text
+    .replace(/x-access-token:[^@\s]+@/gi, "x-access-token:***@")
+    .replace(/Bearer\s+[A-Za-z0-9._\-]+/gi, "Bearer ***")
+    .replace(/ghp_[A-Za-z0-9]+/g, "ghp_***")
+    .replace(/github_pat_[A-Za-z0-9_]+/g, "github_pat_***");
 }
 
-// Re-export readFile for future patch inspection helpers without dead-code noise.
+function errorMessage(err: unknown): string {
+  if (!(err instanceof Error)) return String(err);
+  const parts = [err.message];
+  const withIo = err as Error & { stderr?: string | Buffer; stdout?: string | Buffer };
+  if (withIo.stderr) {
+    parts.push(typeof withIo.stderr === "string" ? withIo.stderr : withIo.stderr.toString("utf8"));
+  }
+  if (withIo.stdout) {
+    parts.push(typeof withIo.stdout === "string" ? withIo.stdout : withIo.stdout.toString("utf8"));
+  }
+  return sanitizeSecretText(parts.filter(Boolean).join("\n"));
+}
+
+/** Load a patch fixture from disk (hand-written Track L step 3 path). */
 export async function readPatchFile(path: string): Promise<string> {
   return readFile(path, "utf8");
 }
+
+/**
+ * Test helper: stage demo checkout sources under a local git repo and return
+ * a bare remote path suitable for `remoteUrl` injection.
+ * Not used in production.
+ */
+export async function stageLocalDemoRemote(options: {
+  workRoot?: string;
+  baseBranch?: string;
+  sourceCheckoutDir: string;
+}): Promise<{ bareRemote: string; workRoot: string }> {
+  const workRoot = options.workRoot ?? (await mkdtemp(join(tmpdir(), "forge-pr-remote-")));
+  const seed = join(workRoot, "seed");
+  const bare = join(workRoot, "remote.git");
+  const branch = options.baseBranch ?? "main";
+
+  await mkdir(join(seed, "src/checkout"), { recursive: true });
+  await copyFile(
+    join(options.sourceCheckoutDir, "prices.ts"),
+    join(seed, "src/checkout/prices.ts"),
+  );
+  await copyFile(
+    join(options.sourceCheckoutDir, "prices.test.ts"),
+    join(seed, "src/checkout/prices.test.ts"),
+  );
+
+  const git = async (cwd: string, args: string[]) => {
+    await execFileAsync("git", args, { cwd });
+  };
+
+  await git(seed, ["init", "-b", branch]);
+  await git(seed, ["config", "core.autocrlf", "false"]);
+  await git(seed, ["config", "user.email", "forge@local"]);
+  await git(seed, ["config", "user.name", "FORGE"]);
+  // Normalize LF so the committed hand-written patch applies on Windows hosts.
+  for (const rel of ["src/checkout/prices.ts", "src/checkout/prices.test.ts"]) {
+    const p = join(seed, rel);
+    const text = (await readFile(p, "utf8")).replace(/\r\n/g, "\n");
+    await writeFile(p, text.endsWith("\n") ? text : `${text}\n`, "utf8");
+  }
+  await git(seed, ["add", "src/checkout/prices.ts", "src/checkout/prices.test.ts"]);
+  await git(seed, ["commit", "-m", "seed acme-store checkout"]);
+  await execFileAsync("git", ["clone", "--bare", seed, bare]);
+  // Prefer file:// so shallow clones and push behave consistently on Windows.
+  return { bareRemote: pathToFileURL(bare).href, workRoot };
+}
+
