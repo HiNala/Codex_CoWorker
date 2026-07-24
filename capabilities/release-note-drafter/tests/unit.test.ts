@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  CapabilityInputError,
-  createRestrictedContext,
-} from "@forge/capability-sdk";
+import { CapabilityInputError, createRestrictedContext } from "@forge/capability-sdk";
 import capability from "../src/index";
 import type { ReleaseNoteInput } from "../src/lib/types";
 
@@ -103,8 +100,8 @@ describe("release-note-drafter", () => {
   });
 
   it("rejects bad audience", async () => {
-    await expect(
-      run({ ...sample(), audience: "public" }),
-    ).rejects.toBeInstanceOf(CapabilityInputError);
+    await expect(run({ ...sample(), audience: "public" })).rejects.toBeInstanceOf(
+      CapabilityInputError,
+    );
   });
 });

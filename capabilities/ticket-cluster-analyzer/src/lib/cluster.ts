@@ -50,13 +50,8 @@ export function jaccard(a: Set<string>, b: Set<string>): number {
 }
 
 /** Deterministic union-find agglomeration on sorted ticket ids. */
-export function agglomerate(
-  signatures: TicketSignature[],
-  threshold: number,
-): string[][] {
-  const ordered = [...signatures].sort((a, b) =>
-    a.ticket.id.localeCompare(b.ticket.id),
-  );
+export function agglomerate(signatures: TicketSignature[], threshold: number): string[][] {
+  const ordered = [...signatures].sort((a, b) => a.ticket.id.localeCompare(b.ticket.id));
   const ids = ordered.map((s) => s.ticket.id);
   const parent = ids.map((_, i) => i);
 
@@ -105,9 +100,7 @@ export function clusterIdFor(memberIds: string[]): string {
   return `cl_${fnv1aHex(sorted.join("|"))}`;
 }
 
-function sharedPhraseScores(
-  members: TicketSignature[],
-): Map<string, number> {
+function sharedPhraseScores(members: TicketSignature[]): Map<string, number> {
   const df = new Map<string, number>();
   const scoreSum = new Map<string, number>();
   for (const m of members) {
@@ -161,9 +154,7 @@ function averagePairwiseJaccard(members: TicketSignature[]): number {
 }
 
 function quotesFor(members: TicketSignature[]): RepresentativeQuote[] {
-  const sorted = [...members].sort((a, b) =>
-    a.ticket.id.localeCompare(b.ticket.id),
-  );
+  const sorted = [...members].sort((a, b) => a.ticket.id.localeCompare(b.ticket.id));
   return sorted.slice(0, 3).map((m) => ({
     ticketId: m.ticket.id,
     quote: excerptQuote(m.ticket.body || m.ticket.subject),

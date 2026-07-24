@@ -1,15 +1,7 @@
 import type { Capability, RestrictedCapabilityContext } from "@forge/capability-sdk";
 import { deepFreeze } from "@forge/capability-sdk";
-import {
-  agglomerate,
-  buildCluster,
-  buildSignature,
-  JACCARD_THRESHOLD,
-} from "./lib/cluster";
-import type {
-  ClusterAnalyzerInput,
-  ClusterAnalyzerOutput,
-} from "./lib/types";
+import { agglomerate, buildCluster, buildSignature, JACCARD_THRESHOLD } from "./lib/cluster";
+import type { ClusterAnalyzerInput, ClusterAnalyzerOutput } from "./lib/types";
 import { validateInput } from "./lib/validate";
 
 export type {
@@ -101,10 +93,7 @@ async function execute(
 
   const clusteredTickets = clusters.reduce((n, c) => n + c.ticketIds.length, 0);
 
-  ctx.log(
-    "info",
-    `produced ${clusters.length} clusters, ${unclustered.length} unclustered`,
-  );
+  ctx.log("info", `produced ${clusters.length} clusters, ${unclustered.length} unclustered`);
 
   return {
     clusters,

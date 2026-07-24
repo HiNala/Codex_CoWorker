@@ -14,9 +14,7 @@ export function parseCommit(commit: CommitInput): ParsedCommit {
   const match = CONVENTIONAL.exec(firstLine);
   if (match?.groups) {
     const type = match.groups.type!.toLowerCase();
-    const scope = match.groups.scope
-      ? match.groups.scope.slice(1, -1)
-      : null;
+    const scope = match.groups.scope ? match.groups.scope.slice(1, -1) : null;
     const breaking = match.groups.bang === "!" || hasBreakingFooter;
     const subject = match.groups.subject!.trim();
     return {

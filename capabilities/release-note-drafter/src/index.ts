@@ -18,8 +18,7 @@ export const manifest = deepFreeze({
   name: "Release Note Drafter",
   version: "1.0.0",
   kind: "skill" as const,
-  description:
-    "Drafts release notes from conventional commits for internal or customer audiences.",
+  description: "Drafts release notes from conventional commits for internal or customer audiences.",
   runtime: "node22" as const,
   entrypoint: "dist/index.js" as const,
   inputSchema: {

@@ -141,3 +141,10 @@
 - `rehearsal-audit.test.ts` narrowed to analyzer 4→9 + GOLDEN-ARTIFACT table.typed pins + Cael markdown incompatibility flag
 - Canonical contract unchanged: `GOLDEN-ARTIFACT.json` + `CAEL-MISMATCH.md` (Cael must emit table.typed JSON, not document.markdown)
 - Scoped tests: checkout-error-log-analyzer + golden-path — **25 PASS**
+
+### [2026-07-23T18:25Z] E · CUT #4 BINDING (Node 18:20) · Rigel ack
+
+- **ONLY executable capability:** `checkout-error-log-analyzer` (prebuilt; 4→9 repair beat + trusted fixture)
+- **Four pre-shipped modules:** inventory/display only — no further polish, no second runnable path
+- All remaining Rigel effort: golden-path proof + Cael verifier handoff (`GOLDEN-ARTIFACT.json`, `CAEL-MISMATCH.md`, attempt1 `expected 9, received 4` → attempt2 pass)
+- No work on second executable capability

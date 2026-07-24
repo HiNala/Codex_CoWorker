@@ -1,13 +1,5 @@
-import {
-  customerSentence,
-  formatInternalLine,
-  parseCommit,
-} from "./parse";
-import type {
-  GroupKey,
-  ReleaseNoteInput,
-  ReleaseNoteOutput,
-} from "./types";
+import { customerSentence, formatInternalLine, parseCommit } from "./parse";
+import type { GroupKey, ReleaseNoteInput, ReleaseNoteOutput } from "./types";
 
 const GROUP_ORDER: GroupKey[] = ["breaking", "features", "fixes", "internal"];
 
@@ -42,10 +34,7 @@ export function draftReleaseNotes(input: ReleaseNoteInput): ReleaseNoteOutput {
     if (input.audience === "customer" && p.group === "internal") {
       continue; // strip internal for customer audience
     }
-    const line =
-      input.audience === "customer"
-        ? customerSentence(p)
-        : formatInternalLine(p);
+    const line = input.audience === "customer" ? customerSentence(p) : formatInternalLine(p);
     grouped[p.group].push(line);
   }
 
@@ -82,7 +71,11 @@ export function draftReleaseNotes(input: ReleaseNoteInput): ReleaseNoteOutput {
     lines.push("_No user-facing changes in this release._", "");
   }
 
-  const markdown = lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
+  const markdown =
+    lines
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trimEnd() + "\n";
 
   return {
     markdown,

@@ -4,18 +4,12 @@ import {
   assertInteger,
   assertObject,
 } from "@forge/capability-sdk";
-import type {
-  Account,
-  ClusterRef,
-  ImpactMapperInput,
-} from "./types";
+import type { Account, ClusterRef, ImpactMapperInput } from "./types";
 
 function parseCluster(raw: unknown, index: number): ClusterRef {
   assertObject(raw, `clusters[${index}] must be an object`);
   if (typeof raw.clusterId !== "string" || raw.clusterId.length === 0) {
-    throw new CapabilityInputError(
-      `clusters[${index}].clusterId must be a non-empty string`,
-    );
+    throw new CapabilityInputError(`clusters[${index}].clusterId must be a non-empty string`);
   }
   assertArray(raw.ticketIds, `clusters[${index}].ticketIds must be an array`);
   const ticketIds: string[] = [];
@@ -52,9 +46,7 @@ function parseAccount(raw: unknown, index: number): Account {
       );
     }
     if (typeof c.email !== "string") {
-      throw new CapabilityInputError(
-        `accounts[${index}].contacts[${ci}].email must be a string`,
-      );
+      throw new CapabilityInputError(`accounts[${index}].contacts[${ci}].email must be a string`);
     }
     return { id: c.id, email: c.email };
   });
@@ -71,17 +63,12 @@ export function validateInput(input: unknown): ImpactMapperInput {
   assertObject(input, "input must be an object");
   assertArray(input.clusters, "clusters must be an array");
   assertArray(input.accounts, "accounts must be an array");
-  assertObject(
-    input.ticketRequesterIndex,
-    "ticketRequesterIndex must be an object",
-  );
+  assertObject(input.ticketRequesterIndex, "ticketRequesterIndex must be an object");
 
   const ticketRequesterIndex: Record<string, string> = {};
   for (const [k, v] of Object.entries(input.ticketRequesterIndex)) {
     if (typeof v !== "string") {
-      throw new CapabilityInputError(
-        `ticketRequesterIndex[${k}] must be a string`,
-      );
+      throw new CapabilityInputError(`ticketRequesterIndex[${k}] must be a string`);
     }
     ticketRequesterIndex[k] = v;
   }

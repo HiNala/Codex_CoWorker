@@ -28,8 +28,7 @@ function ticket(
 function demoTwelve(): TicketInput[] {
   const webhookBody =
     "webhook customer_ref field missing since the july release payment_intent metadata error";
-  const timeoutBody =
-    "intermittent timeouts on the reconciliation endpoint gateway timeout 504";
+  const timeoutBody = "intermittent timeouts on the reconciliation endpoint gateway timeout 504";
   const billingBody = "question about invoice line items and sales tax only";
 
   return [
@@ -150,25 +149,17 @@ describe("ticket-cluster-analyzer", () => {
 
   it("rejects malformed input", async () => {
     await expect(run({})).rejects.toBeInstanceOf(CapabilityInputError);
-    await expect(run({ tickets: [{ id: "x" }] })).rejects.toBeInstanceOf(
-      CapabilityInputError,
-    );
+    await expect(run({ tickets: [{ id: "x" }] })).rejects.toBeInstanceOf(CapabilityInputError);
     await expect(
       run({
-        tickets: [
-          ticket("dup", "a", "b"),
-          ticket("dup", "a", "b"),
-        ],
+        tickets: [ticket("dup", "a", "b"), ticket("dup", "a", "b")],
       }),
     ).rejects.toThrow(/duplicate/);
   });
 
   it("clusterId is hash of sorted member ids", async () => {
     const body = "alpha beta gamma shared failure mode phrase";
-    const tickets = [
-      ticket("b", "alpha beta gamma", body),
-      ticket("a", "alpha beta gamma", body),
-    ];
+    const tickets = [ticket("b", "alpha beta gamma", body), ticket("a", "alpha beta gamma", body)];
     const out = await run({ tickets });
     expect(out.clusters).toHaveLength(1);
     const c = out.clusters[0]!;

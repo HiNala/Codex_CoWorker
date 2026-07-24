@@ -1,8 +1,4 @@
-import {
-  CapabilityInputError,
-  assertArray,
-  assertObject,
-} from "@forge/capability-sdk";
+import { CapabilityInputError, assertArray, assertObject } from "@forge/capability-sdk";
 import type { ClusterAnalyzerInput, TicketInput } from "./types";
 
 function parseTicket(raw: unknown, index: number): TicketInput {

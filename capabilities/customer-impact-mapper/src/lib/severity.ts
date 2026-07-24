@@ -1,7 +1,4 @@
-import {
-  HIGH_MRR_THRESHOLD_MICRODOLLARS,
-  type Severity,
-} from "./types";
+import { HIGH_MRR_THRESHOLD_MICRODOLLARS, type Severity } from "./types";
 
 /**
  * Documented severity rules (see README):

@@ -1,11 +1,6 @@
 import { fnv1aHex } from "@forge/capability-sdk";
 import { computeSeverity } from "./severity";
-import type {
-  Account,
-  ImpactMapperInput,
-  ImpactMapperOutput,
-  ImpactRow,
-} from "./types";
+import type { Account, ImpactMapperInput, ImpactMapperOutput, ImpactRow } from "./types";
 
 interface Accu {
   account: Account;
@@ -65,20 +60,12 @@ export function mapImpact(
 
   const rows: ImpactRow[] = [];
   for (const accu of byAccount.values()) {
-    const affectedClusterIds = [...accu.clusterIds].sort((a, b) =>
-      a.localeCompare(b),
-    );
+    const affectedClusterIds = [...accu.clusterIds].sort((a, b) => a.localeCompare(b));
     const evidenceRefs = [...accu.ticketIds].sort((a, b) => a.localeCompare(b));
     const ticketCount = evidenceRefs.length;
     const mrrAtRiskMicrodollars = accu.account.mrrMicrodollars;
-    const severity = computeSeverity(
-      accu.account.plan,
-      ticketCount,
-      mrrAtRiskMicrodollars,
-    );
-    const rowId = `row_${fnv1aHex(
-      `${accu.account.id}|${affectedClusterIds.join(",")}`,
-    )}`;
+    const severity = computeSeverity(accu.account.plan, ticketCount, mrrAtRiskMicrodollars);
+    const rowId = `row_${fnv1aHex(`${accu.account.id}|${affectedClusterIds.join(",")}`)}`;
     rows.push({
       rowId,
       accountId: accu.account.id,

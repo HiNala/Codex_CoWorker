@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  CapabilityInputError,
-  createRestrictedContext,
-} from "@forge/capability-sdk";
-import capability, {
-  computeSeverity,
-  HIGH_MRR_THRESHOLD_MICRODOLLARS,
-} from "../src/index";
+import { CapabilityInputError, createRestrictedContext } from "@forge/capability-sdk";
+import capability, { computeSeverity, HIGH_MRR_THRESHOLD_MICRODOLLARS } from "../src/index";
 import type { ImpactMapperInput } from "../src/lib/types";
 
 function baseInput(overrides?: Partial<ImpactMapperInput>): ImpactMapperInput {
@@ -110,15 +104,9 @@ describe("customer-impact-mapper", () => {
     // enterprise + 2 tickets, zero MRR → medium (not critical)
     expect(computeSeverity("enterprise", 2, 0)).toBe("medium");
     // enterprise + 2 tickets, high MRR → high (critical requires ≥3 tickets)
-    expect(
-      computeSeverity("enterprise", 2, HIGH_MRR_THRESHOLD_MICRODOLLARS),
-    ).toBe("high");
-    expect(computeSeverity("pro", 1, HIGH_MRR_THRESHOLD_MICRODOLLARS)).toBe(
-      "high",
-    );
-    expect(computeSeverity("pro", 1, HIGH_MRR_THRESHOLD_MICRODOLLARS - 1)).toBe(
-      "low",
-    );
+    expect(computeSeverity("enterprise", 2, HIGH_MRR_THRESHOLD_MICRODOLLARS)).toBe("high");
+    expect(computeSeverity("pro", 1, HIGH_MRR_THRESHOLD_MICRODOLLARS)).toBe("high");
+    expect(computeSeverity("pro", 1, HIGH_MRR_THRESHOLD_MICRODOLLARS - 1)).toBe("low");
     expect(computeSeverity("pro", 2, 0)).toBe("medium");
     expect(computeSeverity("free", 1, 0)).toBe("low");
   });
@@ -140,9 +128,7 @@ describe("customer-impact-mapper", () => {
     const out = await run(baseInput());
     for (const row of out.rows) {
       expect(row.evidenceRefs.length).toBeGreaterThan(0);
-      expect(row.evidenceRefs).toEqual(
-        [...row.evidenceRefs].sort((a, b) => a.localeCompare(b)),
-      );
+      expect(row.evidenceRefs).toEqual([...row.evidenceRefs].sort((a, b) => a.localeCompare(b)));
     }
   });
 

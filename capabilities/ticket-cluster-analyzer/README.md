@@ -57,4 +57,4 @@ Groups support tickets by root cause using deterministic lexical clustering. No 
 - Pure function over JSON; same input → byte-identical `JSON.stringify` output.
 - Time only via `ctx.now()` (unused here).
 - Zero runtime dependencies.
-}
+  }

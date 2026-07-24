@@ -1,8 +1,4 @@
-import {
-  CapabilityInputError,
-  assertArray,
-  assertObject,
-} from "@forge/capability-sdk";
+import { CapabilityInputError, assertArray, assertObject } from "@forge/capability-sdk";
 import type { Audience, CommitInput, ReleaseNoteInput } from "./types";
 
 function parseCommit(raw: unknown, i: number): CommitInput {

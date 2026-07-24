@@ -8,12 +8,12 @@ Joins ticket clusters to customer accounts and produces the typed impact table u
 
 Severity is a documented rule, not a model score. First match wins:
 
-| Severity   | Condition                                                                 |
-| ---------- | ------------------------------------------------------------------------- |
-| `critical` | `plan` is `enterprise` (case-insensitive) **and** `ticketCount ≥ 3`       |
-| `high`     | `mrrAtRiskMicrodollars ≥ 1_000_000_000` ($1,000)                          |
-| `medium`   | `ticketCount ≥ 2`                                                         |
-| `low`      | otherwise                                                                 |
+| Severity   | Condition                                                           |
+| ---------- | ------------------------------------------------------------------- |
+| `critical` | `plan` is `enterprise` (case-insensitive) **and** `ticketCount ≥ 3` |
+| `high`     | `mrrAtRiskMicrodollars ≥ 1_000_000_000` ($1,000)                    |
+| `medium`   | `ticketCount ≥ 2`                                                   |
+| `low`      | otherwise                                                           |
 
 Money is always integer **microdollars** (1 USD = 1_000_000 µ$).
 
@@ -50,7 +50,11 @@ Requester IDs are matched to `accounts[].contacts[].id`.
     severity: "low" | "medium" | "high" | "critical";
     evidenceRefs: string[]; // ticket ids for this row, sorted
   }>;
-  totals: { accounts: number; tickets: number; mrrAtRiskMicrodollars: number };
+  totals: {
+    accounts: number;
+    tickets: number;
+    mrrAtRiskMicrodollars: number;
+  }
 }
 ```
 
@@ -60,4 +64,4 @@ Requester IDs are matched to `accounts[].contacts[].id`.
 
 - Full account MRR is treated as at-risk when any ticket matches.
 - Does not invent accounts for unmatched requesters.
-}
+  }
