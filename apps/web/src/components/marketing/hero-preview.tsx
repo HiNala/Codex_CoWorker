@@ -179,7 +179,7 @@ const FRAMES: PreviewFrame[] = [
     contractTitle: "Fix annual checkout · Zendesk #4821",
     capabilities: withCap(
       "log-analysis",
-      { state: "installed", version: "0.1.0", progress: undefined },
+      { state: "installed", version: "0.1.0" },
       activateExisting(BASE_CAPS),
     ),
     artifact: {
