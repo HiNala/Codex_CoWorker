@@ -132,6 +132,37 @@ export async function decideApproval(
         };
       }
 
+      // Synthetic demo approvals (no DB row): treat prior SSE/events as source of truth.
+      if (!rows[0] && runId) {
+        const existing = await listRunEventsAfter(tx as unknown as Sql, runId, 0);
+        const priorGrant = existing.find(
+          (e) => e.type === "approval.granted" && e.refs?.approvalId === input.approvalId,
+        );
+        const priorDeny = existing.find(
+          (e) => e.type === "approval.denied" && e.refs?.approvalId === input.approvalId,
+        );
+        if (priorGrant || priorDeny) {
+          const prior = priorGrant ? "approved" : "denied";
+          if (prior === input.decision) {
+            return {
+              ok: true,
+              approvalId: input.approvalId,
+              decision: input.decision,
+              alreadyDecided: true,
+              runId,
+              events: [priorGrant ?? priorDeny!],
+            };
+          }
+          return {
+            ok: false,
+            status: 409,
+            code: "approval.already_decided",
+            title: "Approval already decided",
+            detail: `Synthetic approval already ${prior}; cannot change to ${input.decision}.`,
+          };
+        }
+      }
+
       // pending (or synthetic missing row): write decision + emit event in same tx
       if (rows[0]) {
         await tx`

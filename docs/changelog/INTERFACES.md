@@ -304,3 +304,100 @@ Client cursor: advance with SSE `id` / `data.seq` as in the SSE contract. Apply 
 
 **Production:** must run **`pnpm db:seed`** (or deploy seed) against the deployed DB so assignment/contract/milestones overwrite any stale API-change copy (`onConflictDoUpdate` now forces Broken Checkout). **Wisp owns running seed on Railway.**
 
+
+---
+
+## Track A → Aria — Worker control plane (final contracts)
+
+**Worker base (local):** `http://127.0.0.1:3001`  
+**Worker base (prod):** `WORKER_PUBLIC_URL` (browser should use same-origin web proxy if CORS not enabled)  
+**Fixed demo IDs (never invent new ones):**
+
+| Field | UUID |
+|-------|------|
+| assignmentId | `0198206f-5f53-7000-8000-000000000005` |
+| runId | `0198206f-5f53-7000-8000-000000000006` |
+| orgId | `0198206f-5f53-7000-8000-000000000001` |
+| approvalId (install) | `0198206f-5f53-7000-8000-0000000000e1` |
+| cockpit | `https://dextwork.com/a/0198206f-5f53-7000-8000-000000000005` |
+
+### A. Start / populate demo run
+
+```
+POST /v1/golden-path/run
+Content-Type: application/json
+Body: {}   (empty object fine; no body required)
+```
+
+**Always uses fixed assignment/run above** (Broken Checkout). Does not create new UUIDs.
+
+**Success `200`:**
+```json
+{
+  "ok": true,
+  "mode": "postgres",
+  "runId": "0198206f-5f53-7000-8000-000000000006",
+  "assignmentId": "0198206f-5f53-7000-8000-000000000005",
+  "eventCountInDb": 26,
+  "lastSeq": 26,
+  "eventTypes": ["plan.drafted", "…", "run.completed"],
+  "stepStatus": "completed",
+  "artifactId": "0198206f-5f53-7000-8000-000000000101",
+  "artifactTitle": "Affected customers — annual checkout",
+  "distinctCount": 9,
+  "attempt1FailureMessage": "expected 9, received 4",
+  "runFinished": "completed",
+  "streamPath": "/runs/0198206f-5f53-7000-8000-000000000006/stream?after=0"
+}
+```
+
+**Failure `500`:** `{ "ok": false, "error": "string" }`  
+**Not deployed `404`:** worker image too old — Wisp must redeploy.
+
+**Demo sequence:** (1) `POST /api/demo/reset` or `pnpm db:seed` → empty opening · (2) `POST /v1/golden-path/run` → populated · (3) open cockpit URL · (4) SSE `GET /runs/:runId/stream?after=0`.
+
+### B. Approve / deny (Hold-to-approve)
+
+```
+POST /approvals/:approvalId/decide
+Content-Type: application/json
+
+{
+  "decision": "approved",
+  "reason": "optional",
+  "runId": "0198206f-5f53-7000-8000-000000000006",
+  "assignmentId": "0198206f-5f53-7000-8000-000000000005",
+  "orgId": "0198206f-5f53-7000-8000-000000000001"
+}
+```
+
+Deny: same with `"decision": "denied"`.
+
+**Browser public path (Aria):** `POST /api/approvals/:approvalId/decide` — proxy to worker path above.
+
+**Success `200`:**
+```json
+{
+  "ok": true,
+  "approvalId": "0198206f-5f53-7000-8000-0000000000e1",
+  "decision": "approved",
+  "alreadyDecided": false,
+  "runId": "0198206f-5f53-7000-8000-000000000006",
+  "events": [ { "type": "approval.granted", "seq": N, "refs": { "approvalId": "…" }, "...": "…" } ]
+}
+```
+
+Idempotent: second identical decide → `200` + `"alreadyDecided": true`.
+
+**Errors:** `400` `approval.invalid_decision` · `404` `approval.not_found` · `409` `approval.already_decided` | `approval.expired` · `500` `approval.decide_failed`.
+
+**SSE after approve:** `approval.granted` (then capability/step/artifact events if not already completed). React to stream; de-dupe by `seq`.
+
+### C. Verified locally (control-smoke.ts EXIT 0)
+
+- golden-path fixed ids ✓ · 26 events · 4→9 · table.typed ✓  
+- decide first alreadyDecided after auto-grant ✓ · second idempotent ✓  
+- final seed opening: run `queued`, event_seq 0, eventCount 0 ✓  
+
+**Production:** worker HTTP routes still 404 until Wisp deploys current worker image; then run seed → golden-path/run → smoke stream with non-zero frames.
+
