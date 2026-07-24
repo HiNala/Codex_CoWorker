@@ -99,6 +99,7 @@ export function useRunStream(
       try {
         const res = await fetch(`/api/approvals/${approvalId}/decide`, {
           method: "POST",
+          credentials: "same-origin",
           headers: {
             "content-type": "application/json",
             "Idempotency-Key": idempotency,

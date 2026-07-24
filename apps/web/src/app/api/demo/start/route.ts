@@ -1,40 +1,43 @@
 /**
  * POST /api/demo/start
- * Browser proxy → worker POST /v1/golden-path/run
- * Starts the fixed Broken Checkout assignment/run (…005 / …006) live.
- * Aria owns the Start button; this route is the control plane.
+ * Fixed DEMO_MODE same-origin action → worker POST /v1/golden-path/run with body {}.
+ * No DEMO_ACCESS_CODE (assignment cockpit Start has none). Reset/panic stay gated.
+ * Does not expose secrets. Ignores caller body.
  */
-import { authorizeDemoRequest, deny, jsonError, jsonOk } from "../_shared";
+import { resolveWorkerBase } from "../../_lib/worker-base";
+import { isSameOriginRequest, rejectCrossOrigin } from "../../_lib/same-origin";
+import { gateDemoStart } from "../../_lib/demo-start-gate";
+import { jsonError, jsonOk } from "../_shared";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-function workerBase(): string {
-  return (
-    process.env.WORKER_INTERNAL_URL?.replace(/\/$/, "") ||
-    process.env.WORKER_PUBLIC_URL?.replace(/\/$/, "") ||
-    process.env.WORKER_URL?.replace(/\/$/, "") ||
-    "http://127.0.0.1:3001"
-  );
-}
+/** Fixed golden-path IDs (Cael INTERFACES.md). */
+const FIXED_ASSIGNMENT_ID = "0198206f-5f53-7000-8000-000000000005";
+const FIXED_RUN_ID = "0198206f-5f53-7000-8000-000000000006";
 
 export async function POST(request: Request) {
-  const auth = authorizeDemoRequest(request);
-  if (!auth.ok) return deny(auth);
-
-  let body: unknown = {};
-  try {
-    body = await request.json();
-  } catch {
-    body = {};
+  if (!isSameOriginRequest(request)) {
+    return rejectCrossOrigin();
   }
 
-  const base = workerBase();
+  const gate = gateDemoStart(process.env);
+  if (!gate.ok) {
+    return Response.json(
+      { ok: false, code: gate.code, message: gate.message },
+      { status: gate.status },
+    );
+  }
+
+  // Ignore caller body entirely — always exact empty object upstream.
+  const base = resolveWorkerBase(process.env);
+  const upstreamUrl = `${base}/v1/golden-path/run`;
+
   try {
-    const upstream = await fetch(`${base}/v1/golden-path/run`, {
+    const upstream = await fetch(upstreamUrl, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(body ?? {}),
+      body: "{}",
     });
 
     const text = await upstream.text();
@@ -42,7 +45,7 @@ export async function POST(request: Request) {
     try {
       parsed = JSON.parse(text) as Record<string, unknown>;
     } catch {
-      parsed = { raw: text };
+      parsed = { raw: text.slice(0, 500) };
     }
 
     if (!upstream.ok) {
@@ -53,32 +56,29 @@ export async function POST(request: Request) {
           message:
             typeof parsed.error === "string"
               ? parsed.error
-              : `Worker golden-path returned HTTP ${upstream.status}`,
+              : typeof parsed.message === "string"
+                ? parsed.message
+                : `Worker golden-path returned HTTP ${upstream.status}`,
           status: upstream.status,
-          worker: parsed,
         },
-        { status: upstream.status === 404 ? 503 : upstream.status },
+        { status: upstream.status === 404 ? 503 : upstream.status >= 500 ? 503 : upstream.status },
       );
     }
 
-    // Normalize for Aria Start button (fixed ids always).
     return jsonOk({
       ok: true,
-      assignmentId:
-        (parsed.assignmentId as string) ?? "0198206f-5f53-7000-8000-000000000005",
-      runId: (parsed.runId as string) ?? "0198206f-5f53-7000-8000-000000000006",
+      assignmentId: (parsed.assignmentId as string) ?? FIXED_ASSIGNMENT_ID,
+      runId: (parsed.runId as string) ?? FIXED_RUN_ID,
       lastSeq: parsed.lastSeq ?? null,
       eventCountInDb: parsed.eventCountInDb ?? null,
       streamPath:
-        (parsed.streamPath as string) ??
-        "/api/runs/0198206f-5f53-7000-8000-000000000006/stream?after=0",
+        (parsed.streamPath as string) ?? `/api/runs/${FIXED_RUN_ID}/stream?after=0`,
       workerStreamPath: parsed.streamPath ?? null,
       distinctCount: parsed.distinctCount ?? null,
       attempt1FailureMessage: parsed.attempt1FailureMessage ?? null,
       artifactTitle: parsed.artifactTitle ?? null,
       runFinished: parsed.runFinished ?? null,
       mode: parsed.mode ?? "postgres",
-      worker: parsed,
     });
   } catch (error) {
     return jsonError(

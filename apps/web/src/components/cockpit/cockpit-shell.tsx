@@ -67,8 +67,10 @@ export function CockpitShell({
     try {
       const res = await fetch("/api/demo/start", {
         method: "POST",
+        credentials: "same-origin",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ assignmentId }),
+        // Server ignores body and always forwards {} to worker.
+        body: "{}",
       });
       const json = (await res.json().catch(() => ({}))) as {
         ok?: boolean;
