@@ -158,18 +158,17 @@ export function DemoControlPanel() {
         fetch("/api/health/ready"),
         fetch("/api/health/status"),
       ]);
-      const ready = readyRes.ok
-        ? ((await readyRes.json()) as {
-            checks?: { database?: { status: string }; storage?: { status: string } };
-            queueDepth?: number | null;
-          })
-        : null;
-      const providers = statusRes.ok
-        ? ((await statusRes.json()) as { providers?: Record<string, string> })
-        : null;
+      const ready = (await readyRes.json().catch(() => null)) as {
+        checks?: { database?: { status: string }; storage?: { status: string } };
+        queueDepth?: number | null;
+      } | null;
+      const providers = (await statusRes.json().catch(() => null)) as {
+        providers?: Record<string, string>;
+      } | null;
       setHealth({
-        db: ready?.checks?.database?.status === "up" ? "up" : ready ? "down" : "unknown",
-        storage: ready?.checks?.storage?.status === "up" ? "up" : ready ? "down" : "unknown",
+        db: ready?.checks?.database?.status === "up" ? "up" : ready?.checks ? "down" : "unknown",
+        storage:
+          ready?.checks?.storage?.status === "up" ? "up" : ready?.checks ? "down" : "unknown",
         queue: ready?.queueDepth ?? null,
         providers: providers?.providers ?? {},
       });

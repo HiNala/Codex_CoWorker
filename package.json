@@ -51,7 +51,14 @@
     "verify:H": "pnpm --filter @forge/web test -- marketing",
     "verify:I": "pnpm build",
     "verify:J": "pnpm --filter @forge/demo test",
-    "verify:K": "pnpm --filter @forge/auth --filter @forge/billing test"
+    "verify:K": "pnpm --filter @forge/auth --filter @forge/billing test",
+    "deploy": "bash scripts/deploy.sh",
+    "deploy:ps": "pwsh -File scripts/deploy.ps1",
+    "deploy:skip-verify": "bash scripts/deploy.sh --skip-verify",
+    "smoke": "node scripts/smoke.mjs",
+    "smoke:local": "node scripts/smoke.mjs http://127.0.0.1:3100",
+    "wait:healthy": "node scripts/wait-healthy.mjs",
+    "demo:reset": "curl -sS -X POST -H \"content-type: application/json\" -H \"x-demo-access-code: ${DEMO_ACCESS_CODE:-forge-local}\" -d \"{\\\"accessCode\\\":\\\"${DEMO_ACCESS_CODE:-forge-local}\\\"}\" http://127.0.0.1:3100/api/demo/reset"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1",

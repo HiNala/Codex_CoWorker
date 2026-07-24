@@ -3,7 +3,7 @@
  * Validates access is the caller's job; this module only loads and parses.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -26,18 +26,28 @@ export type LoadedTranscript = {
 
 export const GOLDEN_PATH_TRANSCRIPT_ID = "golden-path";
 
-export function defaultTranscriptPath(
-  metaUrl: string = import.meta.url,
-): string {
+/**
+ * Resolve golden-path.jsonl across package tests, monorepo root, and Next cwd (apps/web).
+ */
+export function defaultTranscriptPath(metaUrl: string = import.meta.url): string {
   const here = dirname(fileURLToPath(metaUrl));
-  // src/replay.ts → ../transcripts/golden-path.jsonl
-  return join(here, "..", "transcripts", "golden-path.jsonl");
+  const candidates = [
+    join(here, "..", "transcripts", "golden-path.jsonl"),
+    join(process.cwd(), "transcripts", "golden-path.jsonl"),
+    join(process.cwd(), "packages", "demo", "transcripts", "golden-path.jsonl"),
+    join(process.cwd(), "..", "..", "packages", "demo", "transcripts", "golden-path.jsonl"),
+  ];
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate;
+  }
+  const fallback = candidates[0];
+  if (!fallback) {
+    throw new Error("Unable to resolve golden-path transcript path");
+  }
+  return fallback;
 }
 
-export function parseTranscriptLine(
-  line: string,
-  lineNumber: number,
-): TranscriptEvent {
+export function parseTranscriptLine(line: string, lineNumber: number): TranscriptEvent {
   const trimmed = line.trim();
   if (!trimmed) {
     throw new Error(`Empty transcript line at ${lineNumber}`);
@@ -75,11 +85,7 @@ export function parseTranscriptLine(
     summary: record["summary"],
     ts: record["ts"],
   };
-  if (
-    record["level"] === "info" ||
-    record["level"] === "warn" ||
-    record["level"] === "error"
-  ) {
+  if (record["level"] === "info" || record["level"] === "warn" || record["level"] === "error") {
     event.level = record["level"];
   }
   if ("detail" in record) {
