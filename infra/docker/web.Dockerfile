@@ -1,21 +1,19 @@
 # forge/web — Next.js standalone runtime.
+# Build context: monorepo root (Railway RAILWAY_DOCKERFILE_PATH=infra/docker/web.Dockerfile).
 # Health: GET /api/health/live (liveness), /api/health/ready (deps).
-# Secrets: injected at runtime only (DATABASE_URL, S3_*, SESSION_SECRET, …).
-# Never bake credentials into layers.
+# Secrets: injected at runtime only. Never bake credentials into layers.
 
 FROM node@sha256:e58326d0d441090181ac150dc2078d3e2cf6a0d42e809aebba3ef5880935ffdd AS build
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 ENV NEXT_TELEMETRY_DISABLED=1
-# Railway's Metal builder rejects BuildKit cache mounts without a platform
-# cacheKey prefix — use plain RUN so local Docker and Railway share one file.
+# Railway Metal builder rejects BuildKit cache mounts without a cacheKey prefix.
 RUN corepack enable && corepack prepare pnpm@10.14.0 --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-COPY packages ./packages
-COPY apps ./apps
 RUN pnpm fetch --frozen-lockfile
-# public/ may be empty in git; ensure COPY path exists for the runtime stage.
+# Full monorepo tree required for workspace tsconfigs, packages, and apps.
+COPY . .
 RUN mkdir -p apps/web/public
 RUN pnpm install --offline --frozen-lockfile
 # apps/web/next.config.ts sets output: "standalone" + outputFileTracingRoot monorepo root.
