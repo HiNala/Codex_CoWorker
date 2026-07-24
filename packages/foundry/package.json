@@ -9,9 +9,11 @@
   "scripts": {
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run src --passWithNoTests"
+    "test": "vitest run src"
   },
   "dependencies": {
-    "@forge/contracts": "workspace:*"
+    "@forge/contracts": "workspace:*",
+    "@forge/verifier": "workspace:*",
+    "zod": "4.4.3"
   }
 }

@@ -9,3 +9,7 @@ export function trustedFixtureWasModified(
 ): boolean {
   return changedFiles.some((file) => file.replaceAll("\\", "/").startsWith(fixtureRoot));
 }
+
+export * from "./gates";
+export * from "./run-gates";
+export * from "./workspace";
