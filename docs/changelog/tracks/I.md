@@ -40,6 +40,26 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] 30-MIN WAR ROOM — FREEZE
+
+Marketing/motion **CUT**. Deployment only.
+
+| Step | Result |
+|------|--------|
+| Migrate | **exit 0** migrations current (`DATABASE_PUBLIC_URL=CONFIGURED`) |
+| Deploy web | **SUCCESS** `e0b15478-9b06-461b-b88b-455ce01e6cd1` |
+| Domain | `https://web-production-7d71d.up.railway.app` ACTIVE port 3000 |
+| `GET /api/health/live` | **200** |
+| `GET /api/health/ready` | **200** post-deploy |
+| Broken Checkout once | reset/seed/replay **200**, eventCount=**22** |
+| Prod smoke | **pass=6 fail=0** |
+| Rehearsal 1 | reset+seed+panic+replay **200** |
+| Rehearsal 2 | reset+seed+panic+replay **200** (ids deterministic) |
+| Freeze | **WAR_ROOM_FREEZE=true** · **ALL_PASS=true** |
+
+Custom domain: when operator has hostname → `railway domain <host> --service web --port 3000` (CNAME from CLI).  
+Failures this window: **none**.
+
 ### [2026-07-23] Rehearsal gate — golden-path x2, deterministic reset, PANIC fallback
 
 Base: `https://web-production-7d71d.up.railway.app` · `DEMO_ACCESS_CODE=CONFIGURED` (value never printed)
