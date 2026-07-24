@@ -260,3 +260,12 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - **After:** `pnpm --filter @forge/integrations typecheck` → **PASS** EXIT 0
 - Composio/email unit tests: **28 PASS**
 
+
+### [2026-07-23 18:20] ACK CUT #4 — one executable capability only
+
+- Binding: **only** `checkout-error-log-analyzer` is executable on stage.
+- All other capability cards = **prebuilt inventory / display-only**. Tide will **not** add fixtures, demo data, or live paths for a second executable capability.
+- Tide scope unchanged: F/L integrations + research + `demo/acme-store` Broken Checkout boundary (fakes, host PR patch, approval-gated email, honest `not_configured`).
+- Existing `demo/acme-store/logs/checkout-errors.ndjson` (4→9 trap) remains the **single** log fixture for the golden-path analyzer handoff to Cael/Rigel — no parallel capability fixtures.
+- Continue: F/L rehearsal smoke + golden-path hardening only.
+
