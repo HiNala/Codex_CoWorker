@@ -11,19 +11,23 @@ declare module "@composio/core" {
       link(
         userId: string,
         toolkit: string,
-        opts?: { callbackUrl?: string },
-      ): Promise<{ redirectUrl?: string; redirect_url?: string; id?: string }>;
+        opts?: { callbackUrl?: string | undefined },
+      ): Promise<{
+        redirectUrl?: string | undefined;
+        redirect_url?: string | undefined;
+        id?: string | undefined;
+      }>;
     };
     tools: {
       execute(
         slug: string,
         opts: {
           userId: string;
-          connectedAccountId?: string;
+          connectedAccountId?: string | undefined;
           arguments: Record<string, unknown>;
-          dangerouslySkipVersionCheck?: boolean;
+          dangerouslySkipVersionCheck?: boolean | undefined;
         },
-      ): Promise<{ data?: { id?: string }; id?: string }>;
+      ): Promise<{ data?: { id?: string | undefined }; id?: string | undefined }>;
     };
   }
 }

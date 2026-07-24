@@ -85,12 +85,12 @@ describe("ResendNotifier", () => {
   it("sends with Idempotency-Key and memoizes", async () => {
     const fetchFn = vi.fn(
       async () => new Response(JSON.stringify({ id: "re_123" }), { status: 200 }),
-    ) as unknown as typeof fetch;
+    );
 
     const n = new ResendNotifier({
       apiKey: "re_test_not_real",
       from: "nala@acme.test",
-      fetchFn,
+      fetchFn: fetchFn as unknown as typeof fetch,
     });
 
     const input = {
@@ -104,20 +104,18 @@ describe("ResendNotifier", () => {
     expect(a.providerId).toBe("re_123");
     expect(b.providerId).toBe("re_123");
     expect(fetchFn).toHaveBeenCalledTimes(1);
-    const init = (fetchFn.mock.calls[0] as unknown as [string, RequestInit])[1];
-    expect(init.headers).toMatchObject({
+    const firstCall = fetchFn.mock.calls[0] as unknown as [string, RequestInit] | undefined;
+    expect(firstCall?.[1]?.headers).toMatchObject({
       "Idempotency-Key": "asg_9:email",
     });
   });
 
   it("maps non-OK responses to NotifierError", async () => {
-    const fetchFn = vi.fn(
-      async () => new Response("nope", { status: 429 }),
-    ) as unknown as typeof fetch;
+    const fetchFn = vi.fn(async () => new Response("nope", { status: 429 }));
     const n = new ResendNotifier({
       apiKey: "re_test",
       from: "a@b.test",
-      fetchFn,
+      fetchFn: fetchFn as unknown as typeof fetch,
     });
     await expect(
       n.send({

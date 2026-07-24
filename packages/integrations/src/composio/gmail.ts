@@ -17,33 +17,34 @@ export interface GmailSendParams {
   subject: string;
   body: string;
   userId: string;
-  connectedAccountId?: string;
+  connectedAccountId?: string | undefined;
   executeTool: ComposioToolExecutor;
 }
 
 export interface GmailReadParams {
   userId: string;
-  connectedAccountId?: string;
+  connectedAccountId?: string | undefined;
   /** Max messages to return (Composio argument; clamped 1–20). */
-  maxResults?: number;
-  query?: string;
+  maxResults?: number | undefined;
+  query?: string | undefined;
   executeTool: ComposioToolExecutor;
 }
 
 export interface GmailMessageSummary {
   id: string;
-  subject?: string;
-  from?: string;
-  snippet?: string;
-  threadId?: string;
+  /** Upstream fields may be missing — explicit undefined is real data. */
+  subject?: string | undefined;
+  from?: string | undefined;
+  snippet?: string | undefined;
+  threadId?: string | undefined;
 }
 
 export interface GmailReplyParams {
   threadId: string;
   body: string;
   userId: string;
-  connectedAccountId?: string;
-  recipientEmail?: string;
+  connectedAccountId?: string | undefined;
+  recipientEmail?: string | undefined;
   executeTool: ComposioToolExecutor;
 }
 

@@ -14,15 +14,17 @@ export type ComposioToolkit = "gmail" | "slack";
 
 export interface ComposioConnectLinkResult {
   redirectUrl: string;
-  connectionRequestId?: string;
+  /** Present when the SDK returns a request id; may be explicit undefined. */
+  connectionRequestId?: string | undefined;
 }
 
 export interface ComposioToolExecuteArgs {
   toolSlug: string;
   userId: string;
-  connectedAccountId?: string;
+  /** Optional Composio connected-account id — may be explicit undefined from config. */
+  connectedAccountId?: string | undefined;
   arguments: Record<string, unknown>;
-  dangerouslySkipVersionCheck?: boolean;
+  dangerouslySkipVersionCheck?: boolean | undefined;
 }
 
 export type ComposioToolExecutor = (
@@ -34,19 +36,23 @@ export interface LoadedComposioClient {
     link(
       userId: string,
       toolkit: string,
-      opts?: { callbackUrl?: string },
-    ): Promise<{ redirectUrl?: string; redirect_url?: string; id?: string }>;
+      opts?: { callbackUrl?: string | undefined },
+    ): Promise<{
+      redirectUrl?: string | undefined;
+      redirect_url?: string | undefined;
+      id?: string | undefined;
+    }>;
   };
   tools: {
     execute(
       slug: string,
       opts: {
         userId: string;
-        connectedAccountId?: string;
+        connectedAccountId?: string | undefined;
         arguments: Record<string, unknown>;
-        dangerouslySkipVersionCheck?: boolean;
+        dangerouslySkipVersionCheck?: boolean | undefined;
       },
-    ): Promise<{ data?: { id?: string }; id?: string }>;
+    ): Promise<{ data?: { id?: string | undefined }; id?: string | undefined }>;
   };
 }
 
@@ -145,11 +151,11 @@ export async function loadComposioSdk(apiKey: string): Promise<LoadedComposioCli
 export async function createComposioConnectLink(input: {
   apiKey: string;
   userId: string;
-  toolkit?: ComposioToolkit;
-  callbackUrl?: string;
+  toolkit?: ComposioToolkit | undefined;
+  callbackUrl?: string | undefined;
   /** Injected for tests — skips dynamic SDK import. */
-  client?: LoadedComposioClient;
-  nodeVersion?: string;
+  client?: LoadedComposioClient | undefined;
+  nodeVersion?: string | undefined;
 }): Promise<ComposioConnectLinkResult> {
   const nodeVersion = input.nodeVersion ?? process.versions.node;
   if (!meetsComposioNodeFloor(nodeVersion)) {

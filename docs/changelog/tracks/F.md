@@ -252,3 +252,11 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - **Cael + Wisp event/payload + sandbox zero-creds:** `packages/integrations/src/cael-contract.md`
 - No live external write without exact approved payload. Stay on rehearsal failures only.
 
+
+### [2026-07-23] fix(integrations): exactOptionalPropertyTypes on Composio + fetch mock
+
+- **Before:** `pnpm --filter @forge/integrations typecheck` → **FAIL** (8 errors: client.ts / gmail.ts / notifier.ts / notifier.test.ts)
+- **Fix:** widen optional Composio fields to `prop?: string | undefined` (connectedAccountId, callbackUrl, message summary fields, link result id). Fetch mock keeps `vi.fn()` binding for `.mock.calls`.
+- **After:** `pnpm --filter @forge/integrations typecheck` → **PASS** EXIT 0
+- Composio/email unit tests: **28 PASS**
+

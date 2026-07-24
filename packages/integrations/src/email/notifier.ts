@@ -187,11 +187,11 @@ export interface ComposioGmailConfig {
   /** Immutable internal user id — never an email address. */
   userId: string;
   /** Connected account id held by Composio after OAuth link(). Required for live send. */
-  connectedAccountId?: string;
+  connectedAccountId?: string | undefined;
   /**
    * Injected tool executor for tests. Live path uses Composio tools.execute.
    */
-  executeTool?: ComposioToolExecutor;
+  executeTool?: ComposioToolExecutor | undefined;
 }
 
 export class ComposioGmailNotifier implements Notifier {
@@ -210,9 +210,9 @@ export class ComposioGmailNotifier implements Notifier {
   static async createConnectLink(input: {
     apiKey: string;
     userId: string;
-    callbackUrl?: string;
-    nodeVersion?: string;
-  }): Promise<{ redirectUrl: string; connectionRequestId?: string }> {
+    callbackUrl?: string | undefined;
+    nodeVersion?: string | undefined;
+  }): Promise<{ redirectUrl: string; connectionRequestId?: string | undefined }> {
     try {
       return await createComposioConnectLink({
         apiKey: input.apiKey,
