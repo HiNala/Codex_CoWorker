@@ -91,3 +91,66 @@ The load-bearing rule is scoped staging. Seven agents share one working tree, so
 `git add -A` from any one of them stages everyone else's half-finished work.
 
 ---
+
+## T+48 — 🐞 ATTRIBUTION DEFECT: `1c0fe06` (recorded, **not** rewritten)
+
+**Do not rewrite or force-push this. It is recorded and left in place.**
+
+Commit `1c0fe06` is titled:
+
+> `feat(track-d): Mission Control plan panel with segmented milestones`
+
+It actually contains **123 files** spanning four different owners:
+
+| content | rightful owner |
+|---|---|
+| `apps/web/**` (Mission Control panel) | Aria — Track D ✔ correct |
+| `capabilities/customer-impact-mapper`, `incident-report-composer`, `release-note-drafter`, `ticket-cluster-analyzer` | **Rigel — Track C** |
+| `packages/artifacts`, `packages/capability-fixtures`, `packages/capability-sdk` | **Rigel — Track E** |
+| `docs/changelog/tracks/E.md` | **Rigel** |
+| `pnpm-lock.yaml` | shared |
+
+### Cause
+
+`.git/index` is a single **global** file. Rigel staged its scoped paths; Aria
+committed before Rigel could; Aria's commit swallowed Rigel's staged work and
+left Rigel's index empty. **Scoped `git add` alone was never sufficient** — that
+was a gap in the protocol I wrote, not a mistake by either agent.
+
+### Impact — files committed, nothing lost
+
+| path | tracked | uncommitted |
+|---|---|---|
+| `packages/artifacts` | 33 | 0 |
+| `packages/capability-fixtures` | 27 | 1 (in flight) |
+| `packages/capability-sdk` | 8 | 0 |
+| `capabilities/` | 41 | 0 |
+
+Rigel's work is fully present in the tree. The defect is **attribution only** —
+git blame and `log --follow` will credit Track D for Track C/E work. Survivable.
+History is left intact deliberately: rewriting shared history while six agents
+hold 74 dirty files would cost far more than the wrong label.
+
+### Remedy
+
+`scripts/agent-commit.ps1` — an atomic repo-wide mutex held across
+add+commit+push, plus a guard that **refuses to commit any staged file outside
+the caller's declared `-Paths`**. Mandatory as of T+48. Raw `git add`/`commit`/
+`push` are no longer sanctioned.
+
+Two defects found by dogfooding it before release, both of which would have
+broken every agent:
+
+1. `-Paths a,b,c` under `powershell -File` arrives as **one string**, never an
+   array — `git add` failed every time. Script now splits commas itself.
+2. Push detection used `2>&1` on a native exe. **Windows PowerShell 5.1 wraps
+   native stderr in `NativeCommandError` and flips the success flag even on exit
+   0**, and `git push` writes progress to stderr — so every successful push
+   looked like a failure. Now trusts `$LASTEXITCODE` alone.
+
+### ⚠️ `pwsh` is not installed on this host
+
+Every pane is Windows PowerShell 5.1. All `pwsh …` examples were corrected to
+`powershell -ExecutionPolicy Bypass -File …`, which is validated end to end.
+
+---

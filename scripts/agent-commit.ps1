@@ -22,13 +22,16 @@
 
   NEVER pull, rebase, stash, or reset. See docs/agent-briefs/_GIT-PROTOCOL.md.
 
+  NOTE: `pwsh` is NOT installed on this host. Every pane is Windows PowerShell
+  5.1. Invoke with `powershell`, or call the script in-process with `&`.
+
 .EXAMPLE
-  pwsh scripts/agent-commit.ps1 -Agent Rigel `
+  powershell -ExecutionPolicy Bypass -File scripts/agent-commit.ps1 -Agent Rigel `
     -Paths packages/artifacts,packages/capability-fixtures,docs/changelog/tracks/E.md `
     -MessageFile .git/msg-rigel.txt
 
 .EXAMPLE
-  pwsh scripts/agent-commit.ps1 -Agent Cael -Paths packages/agent-runtime -Message "feat(track-a): ..."
+  & .\scripts\agent-commit.ps1 -Agent Cael -Paths @('packages/agent-runtime') -Message "feat(track-a): ..."
 #>
 param(
   [Parameter(Mandatory = $true)][string[]]$Paths,

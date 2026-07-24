@@ -65,9 +65,25 @@ commit. Nothing was lost that time. Next time it will be.
 **Do not run raw `git add` / `git commit` / `git push` any more.** Use:
 
 ```powershell
-pwsh scripts/agent-commit.ps1 -Agent <YourName> `
-  -Paths <comma,separated,owned,paths> `
+powershell -ExecutionPolicy Bypass -File scripts/agent-commit.ps1 `
+  -Agent <YourName> `
+  -Paths <comma,separated,no,spaces> `
   -MessageFile <path-to-message-file>
+```
+
+> ### ⚠️ `pwsh` IS NOT INSTALLED ON THIS HOST
+>
+> Every pane is **Windows PowerShell 5.1**. Any example beginning with `pwsh`
+> will fail with a command-not-found. Use `powershell` as above — this exact
+> form has been validated end to end.
+
+Comma-separated paths are correct; the script splits them itself. In-process
+callers may pass a real array instead:
+
+```powershell
+& .\scripts\agent-commit.ps1 -Agent Rigel `
+  -Paths @('packages/artifacts','docs/changelog/tracks/E.md') `
+  -MessageFile .git/msg-rigel.txt
 ```
 
 It acquires one atomic repo-wide mutex before `git add`, holds it across

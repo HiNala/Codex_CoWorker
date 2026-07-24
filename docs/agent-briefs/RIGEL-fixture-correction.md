@@ -110,8 +110,11 @@ hand-verified the naive failure, and the timestamp of the Cael handoff.
 
 Use the mutex — `.git/index` is global and scoped `git add` alone is not safe:
 
+**`pwsh` is not installed on this host — use `powershell`:**
+
 ```powershell
-pwsh scripts/agent-commit.ps1 -Agent Rigel `
-  -Paths packages/artifacts,packages/capability-fixtures,packages/capability-sdk,apps/web/app/outputs,docs/changelog/tracks/E.md `
+powershell -ExecutionPolicy Bypass -File scripts/agent-commit.ps1 `
+  -Agent Rigel `
+  -Paths packages/artifacts,packages/capability-fixtures,packages/capability-sdk,docs/changelog/tracks/E.md `
   -MessageFile .git/msg-rigel.txt
 ```
