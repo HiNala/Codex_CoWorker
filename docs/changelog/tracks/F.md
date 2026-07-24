@@ -242,3 +242,13 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - **After:** `pnpm --filter @forge/research typecheck` → **PASS** EXIT 0
 - **Tests:** `pnpm exec vitest run packages/research` → **2 files / 10 tests PASS**
 
+
+### [2026-07-23] War room resume — smoke run + demo rehearsal handoff
+
+- **Smoke command:** `pnpm --filter @forge/integrations run smoke:golden`
+- **Just ran:** **8 files / 73 tests PASS** (EXIT 0) — fake Zendesk/Octen/Gmail, host patch apply, approval gate, status honesty.
+- **Demo rehearsal steps:** `demo/BROKEN-CHECKOUT-REHEARSAL.md`
+- **Integrations runbook:** `packages/integrations/GOLDEN-PATH.md`
+- **Cael + Wisp event/payload + sandbox zero-creds:** `packages/integrations/src/cael-contract.md`
+- No live external write without exact approved payload. Stay on rehearsal failures only.
+
