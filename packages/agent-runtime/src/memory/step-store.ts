@@ -2,6 +2,13 @@ import type { PlanStep, PlanStepStatus } from "@forge/contracts";
 import { assertTransition } from "../plan/transitions";
 import type { StepStore } from "../types";
 
+/**
+ * In-memory plan step store for unit tests and deterministic fakes.
+ *
+ * claimNextReady reclaims both `ready` and `retrying` steps (FOR UPDATE
+ * SKIP LOCKED analogue: first matching candidate wins). Every claim enters
+ * `running` and increments `attempt` so failures are bounded by maxAttempts.
+ */
 export class MemoryStepStore implements StepStore {
   constructor(private readonly steps: PlanStep[]) {}
 
@@ -10,23 +17,28 @@ export class MemoryStepStore implements StepStore {
   }
 
   async claimNextReady(runId: string): Promise<PlanStep | null> {
-    // "retrying" is reclaimable after a failed attempt (attempt already bumped).
     const candidates = (await this.list(runId)).filter(
       (step) => step.status === "ready" || step.status === "retrying",
     );
     const step = candidates[0];
     if (!step) return null;
-    const fromRetry = step.status === "retrying";
+
+    // Always bump attempt on claim so retrying steps progress toward maxAttempts.
     return this.transition(step, "running", {
-      startedAt: new Date().toISOString(),
-      attempt: fromRetry ? step.attempt : step.attempt + 1,
+      startedAt: step.startedAt ?? new Date().toISOString(),
+      attempt: step.attempt + 1,
+      // Clear prior terminal markers when reclaiming a retry.
+      endedAt: null,
+      blockedReason: null,
     });
   }
 
   async transition(
     step: PlanStep,
     to: PlanStepStatus,
-    patch: Partial<Pick<PlanStep, "blockedReason" | "attempt" | "startedAt" | "endedAt">> = {},
+    patch: Partial<
+      Pick<PlanStep, "blockedReason" | "attempt" | "startedAt" | "endedAt">
+    > = {},
   ): Promise<PlanStep> {
     assertTransition(step.status, to);
     const index = this.steps.findIndex((candidate) => candidate.id === step.id);

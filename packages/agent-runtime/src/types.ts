@@ -59,6 +59,11 @@ export interface BudgetPort {
 
 export interface StepStore {
   list(runId: string): Promise<PlanStep[]>;
+  /**
+   * Atomically claim the next `ready` or `retrying` step for this run
+   * (production: FOR UPDATE SKIP LOCKED). Transitions to `running` and
+   * increments `attempt`. Returns null when nothing is claimable.
+   */
   claimNextReady(runId: string): Promise<PlanStep | null>;
   transition(
     step: PlanStep,

@@ -1,3 +1,8 @@
+// REQUEST (none outstanding for Cael #1): production StepStore should share the
+// same DB transaction as EventStoreTx so claim/transition + emit are atomic at
+// the SQL level. Wire that in apps/worker / packages/db when the Postgres
+// adapter lands — MemoryStepStore is the deterministic stand-in only.
+
 export * from "./budget";
 export * from "./fakes/fake-agent-model";
 export * from "./memory/step-store";

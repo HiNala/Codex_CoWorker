@@ -1,24 +1,34 @@
-import type { GateId, GateResult, VerificationReport } from "@forge/contracts";
+import { GateId, type GateResult, type VerificationReport } from "@forge/contracts";
 import { detectFixtureTampering, gates } from "./gates";
 import type { VerifierWorkspace } from "./workspace";
 import { sha256Hex } from "./workspace";
 
 const VERIFIER_VERSION = "1.0.0";
 
+/** Canonical gate order — independent runners, executed in this sequence. */
+export const GATE_ORDER: readonly GateId[] = GateId.options;
+
 export interface RunGatesOptions {
   workspace: VerifierWorkspace;
   attempt?: number;
-  onGate?: (event: { phase: "started" | "passed" | "failed"; result: GateResult }) => void | Promise<void>;
+  onGate?: (event: {
+    phase: "started" | "passed" | "failed";
+    result: GateResult;
+  }) => void | Promise<void>;
 }
 
 /**
- * Flat list of independent gates. Gate 8 is preceded by fixture-hash tamper detection.
+ * Run all twelve gates independently.
+ * Fixture-hash tamper detection runs before gate 8 (`trusted_tests`) and aborts
+ * the whole run on mismatch — message always contains `trusted_fixture_tampering`.
+ * No repair path is offered for this failure (foundry respects that).
  */
 export async function runAllGates(options: RunGatesOptions): Promise<VerificationReport> {
   const attempt = options.attempt ?? 1;
   const results: GateResult[] = [];
-  const order = Object.keys(gates) as GateId[];
 
+  // Prove fixtures match assemble-time hashes before any gate treats them as
+  // authoritative (and strictly before gate 8). Hard fail — no further gates.
   const tamper = await detectFixtureTampering(options.workspace);
   if (tamper) {
     results.push(tamper);
@@ -26,7 +36,7 @@ export async function runAllGates(options: RunGatesOptions): Promise<Verificatio
     return report(options.workspace, attempt, results);
   }
 
-  for (const gateId of order) {
+  for (const gateId of GATE_ORDER) {
     const started: GateResult = {
       gate: gateId,
       status: "passed",

@@ -89,14 +89,36 @@ describe("verifier invariants", () => {
   });
 
   it("fails determinism when execute uses randomness", async () => {
+    // trusted_tests + schema_conformance consume early calls with a fixed value;
+    // later identical inputs diverge so gate 10 fails.
+    let phase = 0;
     const workspace = baseWorkspace({
-      execute: async () => ({ n: Math.random() }),
-      trustedTests: [{ name: "rand", input: {}, expected: { n: 0 } }],
+      trustedTests: [{ name: "identity", input: { a: 1 }, expected: { n: 1 } }],
+      execute: async () => {
+        phase += 1;
+        if (phase <= 2) return { n: 1 };
+        return { n: Math.random() };
+      },
     });
     workspace.fixtureHashes = await hashFixtures(workspace.files);
     const report = await runAllGates({ workspace });
-    const det = report.gates.find((g) => g.gate === "determinism");
-    // trusted_tests fails first on expected mismatch; force determinism-only by matching expected loosely
-    expect(det || report.overall === "failed").toBeTruthy();
+    expect(report.overall).toBe("failed");
+    expect(report.gates.find((g) => g.gate === "determinism")?.status).toBe("failed");
+  });
+
+  it("emits started/passed/failed gate callbacks in order", async () => {
+    const phases: string[] = [];
+    const workspace = baseWorkspace();
+    workspace.fixtureHashes = await hashFixtures(workspace.files);
+    await runAllGates({
+      workspace,
+      onGate: ({ phase, result }) => {
+        phases.push(`${phase}:${result.gate}`);
+      },
+    });
+    expect(phases.filter((p) => p.startsWith("started:"))).toHaveLength(12);
+    expect(phases.filter((p) => p.startsWith("passed:"))).toHaveLength(12);
+    expect(phases[0]).toBe("started:manifest");
+    expect(phases[1]).toBe("passed:manifest");
   });
 });

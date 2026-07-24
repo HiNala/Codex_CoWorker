@@ -72,6 +72,9 @@ const MAX_REPAIRS_DEFAULT = 2;
 export async function runBuildPipeline(input: BuildPipelineInput): Promise<BuildPipelineResult> {
   const maxRepairs = input.maxRepairs ?? MAX_REPAIRS_DEFAULT;
   const workspaceFiles = assembleWorkspace(input.spec);
+  // Hash fixtures at assemble time — never re-hash post-build contents.
+  const fixtureHashes = await hashFixtures(workspaceFiles, "fixtures/");
+
   await input.onEvent?.({
     type: "capability.build_started",
     summary: `Building capability ${input.spec.slug} in an isolated sandbox.`,
@@ -99,7 +102,7 @@ export async function runBuildPipeline(input: BuildPipelineInput): Promise<Build
   sessionId = build.sessionId;
 
   let repairAttempts = 0;
-  let report = await verify(input, builtFiles, repairAttempts + 1);
+  let report = await verify(input, builtFiles, fixtureHashes, repairAttempts + 1);
 
   while (report.overall === "failed" && repairAttempts < maxRepairs) {
     const failed = report.gates.find((gate) => gate.status === "failed");
@@ -127,7 +130,7 @@ export async function runBuildPipeline(input: BuildPipelineInput): Promise<Build
       },
     );
     builtFiles = { ...builtFiles, ...prefixWorkspace(repaired.files) };
-    report = await verify(input, builtFiles, repairAttempts + 1);
+    report = await verify(input, builtFiles, fixtureHashes, repairAttempts + 1);
 
     if (report.overall === "passed") {
       await input.onEvent?.({
@@ -184,16 +187,12 @@ export async function runBuildPipeline(input: BuildPipelineInput): Promise<Build
 async function verify(
   input: BuildPipelineInput,
   files: Record<string, string>,
+  fixtureHashes: Record<string, string>,
   attempt: number,
 ): Promise<VerificationReport> {
-  // Fixture hashes from the original assemble (only fixtures/* keys).
-  const fixtureOnly = Object.fromEntries(
-    Object.entries(files).filter(([path]) => path.startsWith("fixtures/")),
-  );
-  const fixtureHashes = await hashFixtures(fixtureOnly, "fixtures/");
-
   const workspace: VerifierWorkspace = {
     files,
+    // Original assemble-time hashes — tamper detection compares against these.
     fixtureHashes,
     slug: input.spec.slug,
     version: "1.0.0",

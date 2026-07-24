@@ -31,18 +31,26 @@ export type GapProposal = z.infer<typeof GapProposal>;
 
 /**
  * Prefer composition over manufacturing a new module when an existing
- * capability already covers the descriptor purpose.
+ * capability already covers the descriptor. Shape alone is not enough —
+ * many pure transformers are object→object without being interchangeable.
  */
 export function preferComposition(
   gap: CapabilityDescriptor,
   installed: readonly CapabilityDescriptor[],
 ): { build: false; useSlug: string; reason: string } | { build: true; reason: string } {
-  const match = installed.find(
-    (cap) =>
-      cap.slug === gap.slug ||
-      cap.purpose.toLowerCase() === gap.purpose.toLowerCase() ||
-      (cap.inputShape === gap.inputShape && cap.outputShape === gap.outputShape),
-  );
+  const purpose = gap.purpose.toLowerCase().trim();
+  const match = installed.find((cap) => {
+    if (cap.slug === gap.slug) return true;
+    if (cap.purpose.toLowerCase().trim() === purpose) return true;
+    // Same IO shapes only count as a match when the purpose tokens overlap strongly.
+    if (cap.inputShape === gap.inputShape && cap.outputShape === gap.outputShape) {
+      const installedTokens = new Set(cap.purpose.toLowerCase().split(/\W+/).filter(Boolean));
+      const gapTokens = purpose.split(/\W+/).filter((token) => token.length > 2);
+      const hits = gapTokens.filter((token) => installedTokens.has(token)).length;
+      return gapTokens.length > 0 && hits / gapTokens.length >= 0.6;
+    }
+    return false;
+  });
   if (match) {
     return {
       build: false,

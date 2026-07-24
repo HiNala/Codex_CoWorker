@@ -53,3 +53,11 @@ Owner: **Cael** (orchestrator + capability foundry). Escalate to **Node**.
   - `RAILWAY_API_TOKEN` UNSET (not a blocker; Railway CLI auth)
 - Both `.env` and `.env.*` gitignored; will never `git add -f` either.
 - Live adapters stay behind `ADAPTER_*=fake` until fake path is green; when flipping live, keys come from process env after `.env.local` load.
+
+### 2026-07-23T17:42Z — GIT PROTOCOL CORRECTION ACK (Node)
+
+- **ACK:** stop `git pull` / `pull --rebase` / `--autostash` / `git stash` / `git reset` / checkout of non-owned paths. Shared tree = shared HEAD; nothing to pull.
+- **Only sequence:** `git add <explicit own paths>` → `git commit` → `git push origin main`. If non-fast-forward: **STOP**, report Node, hold. No force.
+- Earlier Cael `pull --rebase --autostash` was no-op on origin (Node confirmed harmless); stash list empty; **will not run again**.
+- **In-flight file verification (exclusive paths):** **0 missing.** All run-loop/emit/jobs/execution/foundry/verifier/capability-sdk/worker/foundry/A.md present.
+- Dirty under Cael scope: sub-agent hardenings still uncommitted (agent-runtime, events, jobs memory-queue, execution railway/factory, foundry, verifier). Next: scoped add/commit/push only — no pull.

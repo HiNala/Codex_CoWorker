@@ -13,9 +13,37 @@ export const BUILD_AGENTS_MD = `# Build rules
 - Keep src/index.ts under 300 lines. Split into src/lib/*.ts if needed.
 `;
 
+const SDK_REFERENCE_TYPES = `// Types-only capability SDK reference for Codex (no implementation).
+export interface RestrictedCapabilityContext {
+  readonly evidence: readonly unknown[];
+  log(level: "debug" | "info" | "warn", message: string): void;
+  readonly signal: AbortSignal;
+  now(): number;
+}
+
+export class CapabilityInputError extends Error {
+  readonly code = "capability.invalid_input" as const;
+  constructor(message: string) {
+    super(message);
+    this.name = "CapabilityInputError";
+  }
+}
+
+export interface Capability<Input, Output> {
+  execute(input: Input, context: RestrictedCapabilityContext): Promise<Output>;
+}
+`;
+
+const EXAMPLE_ECHO = `// Style exemplar — pure identity capability.
+export async function execute(input: unknown): Promise<unknown> {
+  return input;
+}
+`;
+
 /**
  * Assemble the sandbox workspace layout Codex (or the fake) sees.
- * Fixtures are written once; callers should hash them before the build.
+ * Fixtures are written once; callers must hash them before the build and
+ * never re-hash post-build contents for tamper detection.
  */
 export function assembleWorkspace(spec: CapabilitySpec): Record<string, string> {
   const fixtures: Record<string, string> = {};
@@ -45,6 +73,8 @@ export function assembleWorkspace(spec: CapabilitySpec): Record<string, string> 
       null,
       2,
     ),
+    "reference/capability-sdk/index.d.ts": SDK_REFERENCE_TYPES,
+    "reference/examples/echo.ts": EXAMPLE_ECHO,
     "workspace/package.json": JSON.stringify(
       { name: spec.slug, private: true, type: "module", version: "1.0.0" },
       null,

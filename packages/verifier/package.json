@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run src"
+    "test": "vitest run --root ../.. packages/verifier"
   },
   "dependencies": {
     "@forge/contracts": "workspace:*"

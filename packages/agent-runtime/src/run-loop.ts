@@ -6,7 +6,8 @@ import type { RunContext, StepWorkResult } from "./types";
  * Flat run loop. Keep this file under 300 lines.
  *
  * Invariant: every status mutation that has a corresponding RunEvent is
- * performed in the same transactional unit as that emit (ctx.tx).
+ * performed in the same transactional unit as that emit (ctx.tx) via
+ * `transitionWithEvent` — never emit after a separate commit.
  */
 export async function executeRun(ctx: RunContext): Promise<void> {
   await emitAndMaybePublish(ctx, {
@@ -33,8 +34,13 @@ export async function executeRun(ctx: RunContext): Promise<void> {
   }
 }
 
+/**
+ * Flat switch-style step executor. Capability gap → foundry; budget check
+ * before work; then approval / fail-retry / complete paths.
+ */
 export async function executeStep(ctx: RunContext, step: PlanStep): Promise<void> {
-  // claimNextReady already moved ready -> running; emit the start.
+  // claimNextReady already moved ready|retrying -> running inside the step store.
+  // Emit start on the same ctx.tx as subsequent status mutations.
   await emitAndMaybePublish(ctx, {
     type: "step.started",
     summary: `Started step: ${step.title}`,
@@ -54,7 +60,6 @@ export async function executeStep(ctx: RunContext, step: PlanStep): Promise<void
     outputShape: "unknown",
   }));
 
-  // Prefer explicit descriptors when the step carries none yet (intake path).
   const needed = await ctx.capabilities.resolve(ctx.orgId, descriptors);
   if (needed.missing.length > 0) {
     const gap = needed.missing[0]!;
@@ -69,6 +74,8 @@ export async function executeStep(ctx: RunContext, step: PlanStep): Promise<void
 
   const budget = await ctx.budget.check(ctx, step);
   if (!budget.ok) {
+    // cost.ceiling_stop is emitted by BudgetPort.check before this path;
+    // step.blocked is the paired status mutation + plan event.
     await transitionWithEvent(ctx, step, "blocked", {
       type: "step.blocked",
       summary: `Step blocked: ${budget.reason}`,
@@ -92,31 +99,55 @@ async function handleStepResult(
   step: PlanStep,
   result: StepWorkResult,
 ): Promise<void> {
-  if (result.kind === "needs_capability" && result.missing) {
-    await transitionWithEvent(ctx, step, "needs_capability", {
-      type: "capability.gap_detected",
-      summary: `Capability gap detected mid-step: ${result.missing.slug}.`,
-      detail: result.missing,
-    });
-    await ctx.foundry.requestBuild(ctx, step, result.missing);
-    return;
+  switch (result.kind) {
+    case "needs_capability": {
+      if (!result.missing) {
+        await handleFailure(ctx, step, "Capability gap reported without a descriptor.");
+        return;
+      }
+      await transitionWithEvent(ctx, step, "needs_capability", {
+        type: "capability.gap_detected",
+        summary: `Capability gap detected mid-step: ${result.missing.slug}.`,
+        detail: result.missing,
+      });
+      await ctx.foundry.requestBuild(ctx, step, result.missing);
+      return;
+    }
+    case "needs_approval": {
+      await transitionWithEvent(ctx, step, "awaiting_approval", {
+        type: "approval.requested",
+        summary: `Approval required before continuing "${step.title}".`,
+        detail: result.proposal,
+      });
+      return;
+    }
+    case "failed": {
+      await handleFailure(ctx, step, result.error ?? "Step failed without a message.");
+      return;
+    }
+    case "ok": {
+      await writeArtifacts(ctx, step, result.artifacts ?? []);
+      await transitionWithEvent(ctx, step, "completed", {
+        type: "step.completed",
+        summary: result.summary ?? `Completed: ${step.title}`,
+        endedAt: new Date().toISOString(),
+      });
+      return;
+    }
+    default: {
+      const _exhaustive: never = result.kind;
+      void _exhaustive;
+      await handleFailure(ctx, step, "Unknown step result kind.");
+    }
   }
+}
 
-  if (result.kind === "needs_approval") {
-    await transitionWithEvent(ctx, step, "awaiting_approval", {
-      type: "approval.requested",
-      summary: `Approval required before continuing "${step.title}".`,
-      detail: result.proposal,
-    });
-    return;
-  }
-
-  if (result.kind === "failed") {
-    await handleFailure(ctx, step, result.error ?? "Step failed without a message.");
-    return;
-  }
-
-  for (const artifact of result.artifacts ?? []) {
+async function writeArtifacts(
+  ctx: RunContext,
+  step: PlanStep,
+  artifacts: Array<{ title: string; content: string }>,
+): Promise<void> {
+  for (const artifact of artifacts) {
     const declared = await ctx.artifacts.declare(ctx.runId, {
       type: "document.markdown",
       title: artifact.title,
@@ -132,20 +163,18 @@ async function handleStepResult(
       refs: { stepId: step.id, artifactId: declared.id },
     });
   }
-
-  await transitionWithEvent(ctx, step, "completed", {
-    type: "step.completed",
-    summary: result.summary ?? `Completed: ${step.title}`,
-    endedAt: new Date().toISOString(),
-  });
 }
 
+/**
+ * Failures go through `retrying` so claimNextReady can reclaim them.
+ * Past maxAttempts → permanent `failed` and dependents become `blocked`.
+ */
 async function handleFailure(ctx: RunContext, step: PlanStep, error: string): Promise<void> {
+  // attempt was incremented on claim; remaining tries while attempt < maxAttempts.
   if (step.attempt < step.maxAttempts) {
-    // Leave the step in `retrying` so the next claimNextReady can reclaim it.
     await transitionWithEvent(ctx, step, "retrying", {
       type: "step.retrying",
-      summary: `Retrying "${step.title}" after failure: ${error}`,
+      summary: `Retrying "${step.title}" after failure (attempt ${step.attempt}/${step.maxAttempts}): ${error}`,
       level: "warn",
     });
     return;
@@ -158,27 +187,58 @@ async function handleFailure(ctx: RunContext, step: PlanStep, error: string): Pr
     blockedReason: error,
     endedAt: new Date().toISOString(),
   });
+
+  await blockDependents(ctx, step, error);
+}
+
+/** Dependent pending/ready steps become blocked so the plan stays coherent. */
+async function blockDependents(ctx: RunContext, failed: PlanStep, error: string): Promise<void> {
+  const all = await ctx.steps.list(ctx.runId);
+  const reason = `Blocked by failed dependency "${failed.title}": ${error}`;
+
+  for (const candidate of all) {
+    if (!candidate.dependsOn.includes(failed.id)) continue;
+    if (candidate.status !== "pending" && candidate.status !== "ready") continue;
+
+    await transitionWithEvent(ctx, candidate, "blocked", {
+      type: "step.blocked",
+      summary: `Step blocked: ${reason}`,
+      blockedReason: reason,
+    });
+  }
 }
 
 async function finishRun(ctx: RunContext): Promise<void> {
   const steps = await ctx.steps.list(ctx.runId);
   const failed = steps.some((step) => step.status === "failed");
-  const blocked = steps.some(
+  // External waits: human, foundry, or a retrying step not yet reclaimed.
+  const waitingExternal = steps.some(
     (step) =>
-      step.status === "blocked" ||
       step.status === "awaiting_approval" ||
       step.status === "needs_capability" ||
-      step.status === "building_capability",
+      step.status === "building_capability" ||
+      step.status === "retrying",
   );
 
-  if (blocked) {
+  if (waitingExternal) {
     await emitAndMaybePublish(ctx, {
       type: "run.paused",
-      summary: "Run paused: one or more steps are waiting on capability, approval, or budget.",
+      summary: "Run paused: one or more steps are waiting on capability, approval, or retry.",
     });
     return;
   }
 
+  // Budget / dependency blocks without a permanent step failure → cooperative pause.
+  const blockedOnly = steps.some((step) => step.status === "blocked");
+  if (blockedOnly && !failed) {
+    await emitAndMaybePublish(ctx, {
+      type: "run.paused",
+      summary: "Run paused: one or more steps are blocked (budget or dependency).",
+    });
+    return;
+  }
+
+  // Permanent failures (dependents may be blocked) → honest partial completion.
   if (failed) {
     await emitAndMaybePublish(ctx, {
       type: "run.failed",
@@ -205,24 +265,31 @@ interface TransitionEvent {
   endedAt?: string | null;
 }
 
+/**
+ * Single place that mutates step status when a RunEvent must accompany it.
+ * Status write then emit on ctx.tx — same transactional unit (no interleaving commit).
+ */
 async function transitionWithEvent(
   ctx: RunContext,
   step: PlanStep,
   to: PlanStepStatus,
   event: TransitionEvent,
 ): Promise<PlanStep> {
-  // Same transactional unit: state mutation then emit on ctx.tx.
-  const next = await ctx.steps.transition(step, to, {
-    blockedReason: event.blockedReason ?? step.blockedReason,
-    endedAt: event.endedAt ?? step.endedAt,
-  });
-  await emitAndMaybePublish(ctx, {
+  const patch: Partial<Pick<PlanStep, "blockedReason" | "endedAt">> = {};
+  if (event.blockedReason !== undefined) patch.blockedReason = event.blockedReason;
+  if (event.endedAt !== undefined) patch.endedAt = event.endedAt;
+
+  const next = await ctx.steps.transition(step, to, patch);
+
+  const emitInput: Omit<Parameters<typeof emit>[1], "runId" | "assignmentId" | "orgId"> = {
     type: event.type,
     summary: event.summary,
-    detail: event.detail,
-    level: event.level,
     refs: { stepId: step.id, milestoneId: step.milestoneId },
-  });
+  };
+  if (event.detail !== undefined) emitInput.detail = event.detail;
+  if (event.level !== undefined) emitInput.level = event.level;
+
+  await emitAndMaybePublish(ctx, emitInput);
   return next;
 }
 
