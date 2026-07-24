@@ -16,8 +16,7 @@ import type {
   MatchKind,
 } from "../src/types";
 
-const CONST_ALIAS_RE =
-  /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*([^;=\n]+)/g;
+const CONST_ALIAS_RE = /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*([^;=\n]+)/g;
 const PROP_ACCESS_RE = /\b([A-Za-z_$][\w$]*)\.([A-Za-z_$][\w$]*)\b/g;
 
 function lastSegment(path: string): string {
@@ -60,7 +59,10 @@ function pathSuffixMatch(resolved: string, target: string): boolean {
   // Require at least parent.field (2 segments) for a nested hit
   const n = Math.min(r.length, t.length);
   if (n < 2) return false;
-  return r.slice(-n).join(".") === t.slice(-n).join(".") || r.slice(-2).join(".") === t.slice(-2).join(".");
+  return (
+    r.slice(-n).join(".") === t.slice(-n).join(".") ||
+    r.slice(-2).join(".") === t.slice(-2).join(".")
+  );
 }
 
 function hasLiteralPath(snippet: string, path: string): boolean {
@@ -205,9 +207,7 @@ export function referenceAnalyze(input: ApiChangeImpactInput): ApiChangeImpactOu
         continue;
       }
 
-      matches.push(
-        ...collectMatchesForSample(sample, apiChange.path, apiChange.kind),
-      );
+      matches.push(...collectMatchesForSample(sample, apiChange.path, apiChange.kind));
     }
 
     matches.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line);
@@ -223,12 +223,7 @@ export function referenceAnalyze(input: ApiChangeImpactInput): ApiChangeImpactOu
       consumerName: consumer.name,
       matches,
       breakingLikelihood: "certain",
-      suggestedFix: suggestedFix(
-        apiChange.kind,
-        apiChange.path,
-        apiChange.newPath,
-        primaryKind,
-      ),
+      suggestedFix: suggestedFix(apiChange.kind, apiChange.path, apiChange.newPath, primaryKind),
     });
   }
 

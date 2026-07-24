@@ -16,11 +16,7 @@ export interface TrustedFixture<Input = unknown, Output = unknown> {
 // api-change-impact-analyzer I/O (pinned by Track C mission pack §6)
 // ---------------------------------------------------------------------------
 
-export type ApiChangeKind =
-  | "field_rename"
-  | "field_removal"
-  | "type_change"
-  | "endpoint_removal";
+export type ApiChangeKind = "field_rename" | "field_removal" | "type_change" | "endpoint_removal";
 
 export interface ApiChange {
   kind: ApiChangeKind;
@@ -76,7 +72,4 @@ export interface ApiChangeImpactOutput {
   };
 }
 
-export type ApiChangeImpactCase = TrustedFixtureCase<
-  ApiChangeImpactInput,
-  ApiChangeImpactOutput
->;
+export type ApiChangeImpactCase = TrustedFixtureCase<ApiChangeImpactInput, ApiChangeImpactOutput>;

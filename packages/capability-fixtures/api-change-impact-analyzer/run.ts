@@ -69,6 +69,9 @@ export async function main(): Promise<void> {
 }
 
 const entry = process.argv[1]?.replaceAll("\\", "/");
-if (entry?.endsWith("/api-change-impact-analyzer/run.ts") || entry?.endsWith("/api-change-impact-analyzer/run.js")) {
+if (
+  entry?.endsWith("/api-change-impact-analyzer/run.ts") ||
+  entry?.endsWith("/api-change-impact-analyzer/run.js")
+) {
   void main();
 }

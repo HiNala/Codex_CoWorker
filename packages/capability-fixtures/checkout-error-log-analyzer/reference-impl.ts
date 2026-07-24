@@ -7,12 +7,7 @@
  *   Rule 2 — customer_id (top-level) OR context.customer.id (nested)
  */
 import type { CheckoutErrorLogInput, CheckoutErrorLogOutput } from "./types";
-import {
-  inWindow,
-  isCheckoutFailedError,
-  parseLine,
-  resolveCustomerIdBothShapes,
-} from "./rules";
+import { inWindow, isCheckoutFailedError, parseLine, resolveCustomerIdBothShapes } from "./rules";
 
 export { resolveCustomerIdBothShapes as resolveCustomerId };
 

@@ -58,9 +58,7 @@ describe("naive-impl — deliberate gaps", () => {
     for (const { name, fixture } of cases) {
       if (name === "003-nested-rename") continue;
       const actual = naiveAnalyze(fixture.input);
-      expect(deepEqual(actual, fixture.expectedOutput), `naive should pass ${name}`).toBe(
-        true,
-      );
+      expect(deepEqual(actual, fixture.expectedOutput), `naive should pass ${name}`).toBe(true);
     }
   });
 });

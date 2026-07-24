@@ -5,9 +5,7 @@ describe("loadApiChangeImpactCases (optional/prebuilt)", () => {
   it("loads all five trusted fixtures including nested rename", () => {
     const cases = loadApiChangeImpactCases();
     expect(cases).toHaveLength(5);
-    const nested = cases.find((c) =>
-      c.description.includes("Nested field rename"),
-    );
+    const nested = cases.find((c) => c.description.includes("Nested field rename"));
     expect(nested).toBeDefined();
     expect(nested!.input).toMatchObject({
       apiChange: {

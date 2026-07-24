@@ -12,6 +12,7 @@
     "test": "vitest run --root ../.. packages/artifacts"
   },
   "dependencies": {
-    "@forge/contracts": "workspace:*"
+    "@forge/contracts": "workspace:*",
+    "@forge/capability-fixtures": "workspace:*"
   }
 }

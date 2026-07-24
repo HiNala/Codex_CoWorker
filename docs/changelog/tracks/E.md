@@ -89,3 +89,20 @@
 - **handlers.ts:** parse type/status against enum unions; assign only when present (never `undefined` into optional).
 - No `any`, did not disable `exactOptionalPropertyTypes`.
 - Verify: `tsc -p packages/artifacts --types node` clean; evidence/provenance/tools/service tests pass.
+
+### [2026-07-23T18:12Z] E · golden-path half proven · Cael JSON contract · rehearsal audit
+
+- **Integration:** `packages/artifacts/src/golden-path/broken-checkout.integration.test.ts`
+  1. naive → **distinctCount 4** (exact message `expected 9, received 4`)
+  2. trusted/reference → **9** equals `DEMO_SEED_EXPECTED` + `cael-contract.json`
+  3. ArtifactService: declare `table.typed` → version SHA-256 → attach 9 evidence anchors → ready_for_review
+  4. `resolveRowEvidence` all supported; `buildProvenanceGraph` includes source_run + capability_version + 9 evidence
+  5. `resolveRenderer("table.typed")` + `exportCsv` includes all 9 customers
+- **Cael exact JSON contract:** `packages/capability-fixtures/checkout-error-log-analyzer/cael-contract.json` (handoff for verifier Gate 2)
+- **Rehearsal audit:** `packages/capability-fixtures/rehearsal-audit.test.ts` — four prebuilt modules deterministic + live fixture 4→9
+- Scoped verify (18:12):
+  - `tsc -p packages/artifacts --types node` → **PASS**
+  - eslint golden-path + fixtures (max-warnings 0) → **PASS**
+  - vitest artifacts + capability-fixtures + capability-sdk + capabilities → **24 files / 300 tests PASS**
+- Barrel restored: `@forge/artifacts` re-exports service/renderers/evidence/provenance
+- Residual red (not Rigel unit): Cael must load `cael-contract.json` into foundry trusted gate before T+70

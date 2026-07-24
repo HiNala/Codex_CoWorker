@@ -15,12 +15,7 @@
  * Do not "fix" the nested path here — the foundry repair is the stage beat.
  */
 import type { CheckoutErrorLogInput, CheckoutErrorLogOutput } from "./types";
-import {
-  inWindow,
-  isCheckoutFailedError,
-  parseLine,
-  resolveCustomerIdTopLevelOnly,
-} from "./rules";
+import { inWindow, isCheckoutFailedError, parseLine, resolveCustomerIdTopLevelOnly } from "./rules";
 
 export function naiveAnalyze(input: CheckoutErrorLogInput): CheckoutErrorLogOutput {
   const { from, to } = input.window;

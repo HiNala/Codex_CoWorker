@@ -24,8 +24,7 @@ const case003Input: ApiChangeImpactInput = {
         {
           file: "src/webhooks.ts",
           line: 42,
-          snippet:
-            "const meta = event.data.object.metadata;\nreturn meta.customer_ref;",
+          snippet: "const meta = event.data.object.metadata;\nreturn meta.customer_ref;",
         },
       ],
     },
@@ -47,8 +46,7 @@ const case003Expected: ApiChangeImpactOutput = {
         },
       ],
       breakingLikelihood: "certain",
-      suggestedFix:
-        "Update access of customer_ref to customer_id (via metadata alias)",
+      suggestedFix: "Update access of customer_ref to customer_id (via metadata alias)",
     },
   ],
   unaffected: [],

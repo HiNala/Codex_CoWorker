@@ -10,5 +10,9 @@
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --root ../.. packages/capability-fixtures"
+  },
+  "devDependencies": {
+    "@forge/capability-sdk": "workspace:*",
+    "@forge/contracts": "workspace:*"
   }
 }

@@ -34,8 +34,7 @@ describe("hand-verification against real ndjson", () => {
       const row = parseLine(line)!;
       const top = resolveCustomerIdTopLevelOnly(row);
       const both = resolveCustomerIdBothShapes(row);
-      const nestedOnlyId =
-        !top && both ? both : null;
+      const nestedOnlyId = !top && both ? both : null;
       if (top && top === both) topOnly++;
       else if (nestedOnlyId) nestedOnly++;
       else if (!both) noId++;

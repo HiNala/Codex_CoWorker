@@ -21,42 +21,48 @@ checkout-error-log-analyzer
 demo/acme-store/logs/checkout-errors.ndjson
 ```
 
-| Inventory | Count |
-| --- | ---: |
-| Total records | **44** |
-| Top-level-only `customer_id` | **26** |
+| Inventory                         |  Count |
+| --------------------------------- | -----: |
+| Total records                     | **44** |
+| Top-level-only `customer_id`      | **26** |
 | Nested-only `context.customer.id` | **15** |
-| No customer id | **3** |
+| No customer id                    |  **3** |
 
 ## TWO rules (both required)
 
 ### Rule 1 — filter
 
 ```js
-r.level === "error" && r.event === "checkout_failed"
+r.level === "error" && r.event === "checkout_failed";
 ```
 
 **Distractor (line 22, load-bearing — do not delete):**
 
 ```json
-{"ts":"2026-07-19T21:40:11Z","level":"warn","event":"card_declined","customer_id":"cus_ZZ9","message":"card_declined"}
+{
+  "ts": "2026-07-19T21:40:11Z",
+  "level": "warn",
+  "event": "card_declined",
+  "customer_id": "cus_ZZ9",
+  "message": "card_declined"
+}
 ```
 
 Miss Rule 1 → counts become **5 / 10** instead of **4 / 9**. Scripted beat dies.
 
 ### Rule 2 — field shape (the bug being repaired)
 
-| era | path |
-| --- | --- |
-| older | `customer_id` (top-level) |
+| era   | path                           |
+| ----- | ------------------------------ |
+| older | `customer_id` (top-level)      |
 | newer | `context.customer.id` (nested) |
 
 ## Attempt sequence (must be exact)
 
-| Attempt | Implementation | `distinctCount` | Gate |
-| --- | --- | ---: | --- |
-| **1** | Rule 1 ✓, Rule 2 ✗ (top-level only) | **4** | **FAIL** |
-| **2** | Rule 1 ✓, Rule 2 ✓ (both shapes) | **9** | **PASS** |
+| Attempt | Implementation                      | `distinctCount` | Gate     |
+| ------- | ----------------------------------- | --------------: | -------- |
+| **1**   | Rule 1 ✓, Rule 2 ✗ (top-level only) |           **4** | **FAIL** |
+| **2**   | Rule 1 ✓, Rule 2 ✓ (both shapes)    |           **9** | **PASS** |
 
 ### Exact failure message (attempt 1)
 
@@ -109,11 +115,11 @@ packages/capability-fixtures/checkout-error-log-analyzer/
 ## Loader API (`@forge/capability-fixtures`)
 
 ```ts
-loadCheckoutErrorLogCases()
-naiveAnalyzeCheckoutErrors(input)   // → distinctCount 4 on seed
-referenceAnalyzeCheckoutErrors(input) // → distinctCount 9 on seed
-DEMO_SEED_EXPECTED
-ATTEMPT_1_FAILURE_MESSAGE  // "expected 9, received 4"
+loadCheckoutErrorLogCases();
+naiveAnalyzeCheckoutErrors(input); // → distinctCount 4 on seed
+referenceAnalyzeCheckoutErrors(input); // → distinctCount 9 on seed
+DEMO_SEED_EXPECTED;
+ATTEMPT_1_FAILURE_MESSAGE; // "expected 9, received 4"
 ```
 
 ## Foundry / verifier requirements
@@ -131,9 +137,9 @@ ATTEMPT_1_FAILURE_MESSAGE  // "expected 9, received 4"
 
 ## Handoff
 
-| Field | Value |
-| --- | --- |
-| From | RIGEL |
-| To | **Cael** (verifier / foundry) |
-| When | see `docs/changelog/tracks/E.md` checkpoint |
-| Blocker | **Gate 2** — integrate before T+70 |
+| Field   | Value                                       |
+| ------- | ------------------------------------------- |
+| From    | RIGEL                                       |
+| To      | **Cael** (verifier / foundry)               |
+| When    | see `docs/changelog/tracks/E.md` checkpoint |
+| Blocker | **Gate 2** — integrate before T+70          |

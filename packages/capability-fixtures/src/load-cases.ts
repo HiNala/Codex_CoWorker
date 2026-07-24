@@ -11,7 +11,9 @@ function loadJsonCases(slug: string): TrustedFixtureCase[] {
   const dir = join(packageRoot, slug, "cases");
   let files: string[];
   try {
-    files = readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
+    files = readdirSync(dir)
+      .filter((f) => f.endsWith(".json"))
+      .sort();
   } catch {
     return [];
   }
@@ -50,7 +52,9 @@ export function loadCheckoutErrorLogCases(): CheckoutErrorLogCase[] {
   const dir = join(packageRoot, "checkout-error-log-analyzer", "cases");
   let files: string[];
   try {
-    files = readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
+    files = readdirSync(dir)
+      .filter((f) => f.endsWith(".json"))
+      .sort();
   } catch {
     return [];
   }

@@ -20,9 +20,7 @@ describe("reference-impl — passes all trusted cases including nested ids", () 
   it("passes every case file", () => {
     for (const { name, fixture } of cases) {
       const actual = referenceAnalyze(fixture.input);
-      expect(deepEqual(actual, fixture.expectedOutput), `reference should pass ${name}`).toBe(
-        true,
-      );
+      expect(deepEqual(actual, fixture.expectedOutput), `reference should pass ${name}`).toBe(true);
     }
   });
 

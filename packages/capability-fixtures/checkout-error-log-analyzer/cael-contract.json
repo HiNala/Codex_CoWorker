@@ -1,0 +1,131 @@
+{
+  "slug": "checkout-error-log-analyzer",
+  "role": "on_stage_live_build",
+  "authority": [
+    "docs/forge-mission-pack/23-DEMO-SCENARIO-the-broken-checkout.md#6",
+    "docs/agent-briefs/RIGEL-fixture-correction.md"
+  ],
+  "logSource": "demo/acme-store/logs/checkout-errors.ndjson",
+  "logInventory": {
+    "totalRecords": 44,
+    "topLevelOnly": 26,
+    "nestedOnly": 15,
+    "noCustomerId": 3,
+    "distractor": {
+      "line": 22,
+      "level": "warn",
+      "event": "card_declined",
+      "customer_id": "cus_ZZ9",
+      "note": "load-bearing — do not delete"
+    }
+  },
+  "window": {
+    "from": "2026-07-16T00:00:00Z",
+    "to": "2026-07-23T23:59:59Z"
+  },
+  "inputSchema": {
+    "type": "object",
+    "required": ["lines", "window"],
+    "properties": {
+      "lines": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Raw NDJSON lines from logSource"
+      },
+      "window": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": { "type": "string", "format": "date-time" },
+          "to": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "required": ["affectedCustomers", "distinctCount", "taxonomy", "firstSeen", "lastSeen"],
+    "properties": {
+      "affectedCustomers": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Sorted unique customer ids"
+      },
+      "distinctCount": { "type": "integer", "minimum": 0 },
+      "taxonomy": {
+        "type": "object",
+        "additionalProperties": { "type": "integer" }
+      },
+      "firstSeen": { "type": "string" },
+      "lastSeen": { "type": "string" }
+    }
+  },
+  "rules": {
+    "filter": {
+      "id": 1,
+      "expression": "level === 'error' && event === 'checkout_failed'",
+      "mustApplyOnAttempt1": true,
+      "ifMissedCountsBecome": { "naive": 5, "correct": 10 }
+    },
+    "fieldShape": {
+      "id": 2,
+      "paths": ["customer_id", "context.customer.id"],
+      "naiveMisses": true,
+      "description": "Logger migration — older top-level, newer nested"
+    }
+  },
+  "attempt1": {
+    "implementation": "naive — Rule1 yes, Rule2 no (top-level customer_id only)",
+    "distinctCount": 4,
+    "affectedCustomers": ["cus_AC2", "cus_BR3", "cus_KT4", "cus_NW1"],
+    "failureMessage": "expected 9, received 4",
+    "gate": "FAIL"
+  },
+  "attempt2": {
+    "implementation": "repaired — Rule1 yes, Rule2 both shapes",
+    "distinctCount": 9,
+    "affectedCustomers": [
+      "cus_AC2",
+      "cus_BR3",
+      "cus_KT4",
+      "cus_LM5",
+      "cus_NW1",
+      "cus_OP6",
+      "cus_QR7",
+      "cus_ST8",
+      "cus_UV9"
+    ],
+    "expectedOutput": {
+      "affectedCustomers": [
+        "cus_AC2",
+        "cus_BR3",
+        "cus_KT4",
+        "cus_LM5",
+        "cus_NW1",
+        "cus_OP6",
+        "cus_QR7",
+        "cus_ST8",
+        "cus_UV9"
+      ],
+      "distinctCount": 9,
+      "taxonomy": {
+        "card_declined": 1,
+        "checkout_failed": 40,
+        "rate_limit": 2,
+        "timeout": 1
+      },
+      "firstSeen": "2026-07-16T09:14:02Z",
+      "lastSeen": "2026-07-23T15:59:41Z"
+    },
+    "gate": "PASS"
+  },
+  "trustedCase": "packages/capability-fixtures/checkout-error-log-analyzer/cases/001-seeded-demo-window.json",
+  "packagePaths": {
+    "naive": "packages/capability-fixtures/checkout-error-log-analyzer/naive-impl.ts",
+    "reference": "packages/capability-fixtures/checkout-error-log-analyzer/reference-impl.ts",
+    "rules": "packages/capability-fixtures/checkout-error-log-analyzer/rules.ts",
+    "loader": "@forge/capability-fixtures → loadCheckoutErrorLogCases / naiveAnalyzeCheckoutErrors / referenceAnalyzeCheckoutErrors"
+  },
+  "neverIncludeInAffected": ["cus_ZZ9"],
+  "optionalNotLiveBuild": "api-change-impact-analyzer"
+}

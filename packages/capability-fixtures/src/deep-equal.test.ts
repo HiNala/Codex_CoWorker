@@ -11,8 +11,6 @@ describe("deepEqual", () => {
   });
 
   it("reports a path on mismatch", () => {
-    expect(deepEqualDiff({ a: { b: 1 } }, { a: { b: 2 } })).toBe(
-      "$.a.b: 1 !== 2",
-    );
+    expect(deepEqualDiff({ a: { b: 1 } }, { a: { b: 2 } })).toBe("$.a.b: 1 !== 2");
   });
 });
