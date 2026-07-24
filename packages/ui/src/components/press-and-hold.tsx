@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useRef, useState, type PointerEvent, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
 import { cn } from "../cn";
 import { motion } from "../motion";
 
@@ -35,6 +42,16 @@ export function PressAndHold({
   const raf = useRef<number | null>(null);
   const start = useRef<number | null>(null);
   const completed = useRef(false);
+  const durationRef = useRef(durationMs);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    durationRef.current = durationMs;
+  }, [durationMs]);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   const clear = useCallback(() => {
     if (raf.current != null) cancelAnimationFrame(raf.current);
@@ -43,29 +60,35 @@ export function PressAndHold({
     setProgress(0);
   }, []);
 
-  const tick = useCallback(
-    (ts: number) => {
+  // tick via ref so the rAF loop never closes over a stale self-reference
+  const tickRef = useRef<(ts: number) => void>(() => undefined);
+
+  useEffect(() => {
+    tickRef.current = (ts: number) => {
       if (start.current == null) start.current = ts;
       const elapsed = ts - start.current;
-      const p = Math.min(1, elapsed / durationMs);
+      const p = Math.min(1, elapsed / durationRef.current);
       setProgress(p);
       if (p >= 1 && !completed.current) {
         completed.current = true;
         clear();
-        onComplete();
+        onCompleteRef.current();
         return;
       }
-      raf.current = requestAnimationFrame(tick);
-    },
-    [clear, durationMs, onComplete],
-  );
+      raf.current = requestAnimationFrame((next) => {
+        tickRef.current(next);
+      });
+    };
+  }, [clear]);
 
   const onPointerDown = (e: PointerEvent<HTMLButtonElement>) => {
     if (disabled) return;
     if (e.pointerType === "mouse" && e.button !== 0) return;
     completed.current = false;
     e.currentTarget.setPointerCapture(e.pointerId);
-    raf.current = requestAnimationFrame(tick);
+    raf.current = requestAnimationFrame((ts) => {
+      tickRef.current(ts);
+    });
   };
 
   const onPointerUp = () => {

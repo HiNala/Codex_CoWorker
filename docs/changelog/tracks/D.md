@@ -16,13 +16,13 @@
 
 Node enforcement received. Serial panel work stopped. Five-way exclusive split:
 
-| # | Agent | Exclusive write dirs |
-|---|-------|----------------------|
-| 1 | foundation | `packages/ui/**`, `apps/web/src/styles/**`, `apps/web/src/components/cockpit/**`, `apps/web/src/components/ui/**` (primitives only), `apps/web/src/hooks/**` |
-| 2 | conversation | `apps/web/src/components/conversation/**` |
-| 3 | mission-control | `apps/web/src/components/plan/**` |
-| 4 | foundry | `apps/web/src/components/foundry/**` |
-| 5 | dock-approvals | `apps/web/src/components/dock/**`, `apps/web/src/components/approvals/**` |
+| #   | Agent           | Exclusive write dirs                                                                                                                                         |
+| --- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | foundation      | `packages/ui/**`, `apps/web/src/styles/**`, `apps/web/src/components/cockpit/**`, `apps/web/src/components/ui/**` (primitives only), `apps/web/src/hooks/**` |
+| 2   | conversation    | `apps/web/src/components/conversation/**`                                                                                                                    |
+| 3   | mission-control | `apps/web/src/components/plan/**`                                                                                                                            |
+| 4   | foundry         | `apps/web/src/components/foundry/**`                                                                                                                         |
+| 5   | dock-approvals  | `apps/web/src/components/dock/**`, `apps/web/src/components/approvals/**`                                                                                    |
 
 - Stay out of `(marketing)` (Wisp) and `outputs` (Rigel).
 - Fakes only; event-driven motion; tile states = icon + label.
@@ -60,13 +60,13 @@ Node correction accepted and in force for ARIA:
 - Track D/G UI builds against demo fakes; no live provider keys required for cockpit work. When any script is run, use root `pnpm` scripts so `.env.local` is loaded.
 - Credential state (name + status only, no values):
 
-| variable | status |
-|---|---|
-| `OPENAI_API_KEY` | CONFIGURED |
-| `CODEX_API_KEY` | CONFIGURED |
-| `OCTEN_API_KEY` | CONFIGURED |
-| `COMPOSIO_API_KEY` | CONFIGURED |
-| `ZENDESK_*` | UNSET (Tide) |
+| variable            | status                                   |
+| ------------------- | ---------------------------------------- |
+| `OPENAI_API_KEY`    | CONFIGURED                               |
+| `CODEX_API_KEY`     | CONFIGURED                               |
+| `OCTEN_API_KEY`     | CONFIGURED                               |
+| `COMPOSIO_API_KEY`  | CONFIGURED                               |
+| `ZENDESK_*`         | UNSET (Tide)                             |
 | `RAILWAY_API_TOKEN` | UNSET (not a blocker; CLI authenticated) |
 
 - Never paste `railway variable list` output. Never log key values, prefixes, or last-4.
@@ -83,18 +83,18 @@ If push is non-fast-forward: **STOP**, report Node, hold. No force.
 
 ### In-flight file verification (ARIA) — all present
 
-| path | status |
-|---|---|
+| path                                         | status  |
+| -------------------------------------------- | ------- |
 | `packages/ui/**` primitives + CapabilityTile | present |
-| `apps/web/src/styles/tokens.css` | present |
-| `apps/web/src/components/cockpit/*` | present |
-| `apps/web/src/hooks/*` | present |
-| `apps/web/src/components/conversation/*` | present |
-| `apps/web/src/components/plan/*` | present |
-| `apps/web/src/components/foundry/` | present |
-| `apps/web/src/components/dock/` | present |
-| `apps/web/src/components/approvals/` | present |
-| `docs/changelog/tracks/D.md` | present |
+| `apps/web/src/styles/tokens.css`             | present |
+| `apps/web/src/components/cockpit/*`          | present |
+| `apps/web/src/hooks/*`                       | present |
+| `apps/web/src/components/conversation/*`     | present |
+| `apps/web/src/components/plan/*`             | present |
+| `apps/web/src/components/foundry/`           | present |
+| `apps/web/src/components/dock/`              | present |
+| `apps/web/src/components/approvals/`         | present |
+| `docs/changelog/tracks/D.md`                 | present |
 
 `git stash list` empty. Nothing missing to report.
 
@@ -126,13 +126,13 @@ Panel agents (2–5) may import primitives + consume `RunState` from `useRunStre
 
 ## [T+panels] D · status · four of five exclusive surfaces landed
 
-| # | Surface | Commit / note |
-|---|---------|----------------|
-| 2 | Conversation | `9619eaa` + `ca21d5d` (shared ApprovalCard) |
-| 4 | Foundry | `9f2039c` |
-| 5 | Dock + approvals | `5887ce7` |
-| 3 | Mission Control | in flight |
-| 1 | Foundation polish | in flight (core already on main as `2160e5e`) |
+| #   | Surface           | Commit / note                                 |
+| --- | ----------------- | --------------------------------------------- |
+| 2   | Conversation      | `9619eaa` + `ca21d5d` (shared ApprovalCard)   |
+| 4   | Foundry           | `9f2039c`                                     |
+| 5   | Dock + approvals  | `5887ce7`                                     |
+| 3   | Mission Control   | in flight                                     |
+| 1   | Foundation polish | in flight (core already on main as `2160e5e`) |
 
 Cockpit shell integration: `b4a1eb9`.
 
@@ -146,13 +146,13 @@ Cockpit shell integration: `b4a1eb9`.
 
 ## [T+5/5] D/G · all five exclusive sub-agents complete
 
-| # | Surface | Note |
-|---|---------|------|
-| 1 | Foundation | done (`42b6896` polish; core earlier) |
-| 2 | Conversation | done |
-| 3 | Mission Control | done |
-| 4 | Foundry | done |
-| 5 | Dock + approvals | done |
+| #   | Surface          | Note                                  |
+| --- | ---------------- | ------------------------------------- |
+| 1   | Foundation       | done (`42b6896` polish; core earlier) |
+| 2   | Conversation     | done                                  |
+| 3   | Mission Control  | done                                  |
+| 4   | Foundry          | done                                  |
+| 5   | Dock + approvals | done                                  |
 
 Shell wired; demo fixture hydrates full cockpit.
 
@@ -171,20 +171,24 @@ ARIA will not run raw `git add` / `git commit` / `git push` again.
 ## [Gate1 freeze 17:58] D/G · checkpoint
 
 ### Commit command (host-correct)
+
 `powershell -ExecutionPolicy Bypass -File scripts/agent-commit.ps1 -Agent Aria -Paths <comma,no,spaces> -MessageFile .git/msg-aria.txt`
+
 - No `pwsh` on this host (Windows PowerShell 5.1 only).
 - No raw git add/commit/push; mutex mandatory.
 
 ### Track evidence
+
 - `pnpm exec vitest run packages/ui/src apps/web/src/hooks` → **21 passed**
 - ARIA path typecheck filter: clean
 - Five exclusive surfaces complete; `CockpitShell` wires Conversation / MissionControl / Foundry / ArtifactDock
 - Hydration: `useRunStream` default **demo fixture** (fakes) projects RunEvent log → timeline, steps, capabilities, gates, artifacts, approvals
 - Live SSE path present (`EventSource /api/runs/:id/stream`) but golden-path demo path is fixture-first until Cael stream is live
 - Capability tiles: icon + label every state; motion event-driven; no timer-owned status
-- Artifact dock renders fixture-declared/drafting cards (artifact *production* is Track E/A)
+- Artifact dock renders fixture-declared/drafting cards (artifact _production_ is Track E/A)
 
 ### Gate call
+
 **TRACK D GREEN** · **TRACK G GREEN**
 Most residual seam (not D-owned): live SSE + seed when `useDemoFixture=false` depends on Cael runtime; cockpit already renders persisted-shape events from fakes.
 
@@ -193,21 +197,53 @@ Mutex: released after this commit (script finally). No new feature work after fr
 ## [Gate1 prep 17:58] D/G · stop new work · evidence
 
 ### Narrow verification (this pane)
-| command | result |
-|---|---|
-| `pnpm exec vitest run packages/ui/src apps/web/src/hooks` | **PASS** 4 files / **21 tests** |
-| `pnpm exec vitest run apps/web/src/hooks/run-reducer.test.ts` | **PASS** 4 tests (fixture projects timeline/steps/caps/artifacts/approvals; seq idempotent) |
-| ARIA dirty tree (ui/styles/cockpit/conversation/plan/foundry/dock/approvals/hooks/D.md) | **clean** |
-| agent-commit.lock | **FREE** |
+
+| command                                                                                 | result                                                                                      |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `pnpm exec vitest run packages/ui/src apps/web/src/hooks`                               | **PASS** 4 files / **21 tests**                                                             |
+| `pnpm exec vitest run apps/web/src/hooks/run-reducer.test.ts`                           | **PASS** 4 tests (fixture projects timeline/steps/caps/artifacts/approvals; seq idempotent) |
+| ARIA dirty tree (ui/styles/cockpit/conversation/plan/foundry/dock/approvals/hooks/D.md) | **clean**                                                                                   |
+| agent-commit.lock                                                                       | **FREE**                                                                                    |
 
 ### Fake golden path (D/G slice)
+
 - **PASS** cockpit hydrates from demo fixture (`useDemoFixture` default true)
 - **PASS** reducer projects RunEvent log → conversation + mission control + foundry + dock VMs
 - **PASS** artifact cards declared/drafting from fixture; no live adapter work
 - **N/A owned** live SSE persist/stream (Track A) when fixture off
 
 ### Single most important red seam (workspace, not D-owned)
+
 **Live golden path SSE**: cockpit EventSource path exists but demo path is fixture-first; end-to-end "seeded assignment → persisted events → SSE → cockpit" requires Cael stream green at IT RUNS.
 
 ### Call
+
 **TRACK D GREEN · TRACK G GREEN** — most important red seam: live SSE/seed seam (Cael), not D/G panel render of fakes.
+
+## [Gate1 RED fix] D/G · scoped lint + fake SSE proof
+
+### Lint (targeted)
+| command | result |
+|---|---|
+| eslint approvals/conversation/hooks/cockpit/plan/foundry/dock | **PASS** exit 0 (was 9 errors + 2 warnings) |
+| eslint packages/ui | **PASS** exit 0 (was 1 error press-and-hold) |
+
+### Fixes
+- `approval-card`: no ref read during render; `locked` from state only
+- `trace-group`: derive open from events + user toggle (no setState-in-effect)
+- `use-trace-density`: lazy localStorage init (no setState-in-effect)
+- `use-run-stream`: lastSeq ref updated in effect; demo path uses Cael `serializeRunEvent` frames → `parseSseRunEventData` → reducer
+- `press-and-hold`: tick via ref (no self-before-declaration)
+- cockpit unused param warnings cleared
+
+### Fake SSE proof
+| command | result |
+|---|---|
+| `pnpm exec vitest run packages/ui/src apps/web/src/hooks` | **PASS** 5 files / **23 tests** |
+| `parse-sse-run-event.test.ts` | serializeRunEvent frames parse; full demo stream → timeline/artifacts/approvals/gates |
+
+### Residual red seam (not D-owned)
+Live `GET /api/runs/:id/stream` route still Cael; cockpit is wire-ready via EventSource when that lands.
+
+### Call
+**TRACK D GREEN · TRACK G GREEN** (scoped lint clean; fake SSE wire format proven)

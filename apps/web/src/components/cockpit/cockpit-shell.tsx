@@ -49,22 +49,20 @@ export function CockpitShell({
   const [dockCollapsed, setDockCollapsed] = useState(false);
   const [hoveredStepId, setHoveredStepId] = useState<string | null>(null);
 
-  const onApprove = useCallback((_approvalId: string) => {
-    // Live path: POST approval via Track A. Demo fixture is static.
+  const onApprove = useCallback((approvalId: string) => {
+    // Live path: POST approval via Track A. Demo stream is static.
+    void approvalId;
   }, []);
-  const onDeny = useCallback((_approvalId: string) => {
+  const onDeny = useCallback((approvalId: string) => {
     // Live path: POST denial via Track A.
+    void approvalId;
   }, []);
 
   const defaultConversation = (
     <ConversationPanel state={state} onApprove={onApprove} onDeny={onDeny} />
   );
-  const defaultMission = (
-    <MissionControl state={state} onStepHover={setHoveredStepId} />
-  );
-  const defaultFoundry = (
-    <FoundryPanel state={state} onApprove={onApprove} onDeny={onDeny} />
-  );
+  const defaultMission = <MissionControl state={state} onStepHover={setHoveredStepId} />;
+  const defaultFoundry = <FoundryPanel state={state} onApprove={onApprove} onDeny={onDeny} />;
   const artifacts = Object.values(state.artifacts);
   const dockHighlightClass = hoveredStepId
     ? "[&_[data-artifact-card]]:opacity-50 data-[related=true]:opacity-100"

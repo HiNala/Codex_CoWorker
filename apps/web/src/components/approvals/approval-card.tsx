@@ -72,10 +72,12 @@ export function ApprovalCard({
 }: ApprovalCardProps) {
   const reduced = useReducedMotion();
   const [submitted, setSubmitted] = useState<"approve" | "deny" | null>(null);
-  const committed = useRef(status !== "pending");
+  // Double-submit guard only — never read during render
+  const committed = useRef(false);
   const riskMeta = RISK_META[risk] ?? RISK_META.low;
   const hold = requiresHold(risk);
-  const locked = status !== "pending" || submitted !== null || committed.current;
+  // Render-safe lock: state only (ref is handler-only)
+  const locked = status !== "pending" || submitted !== null;
   const resolvedLabel =
     status === "granted"
       ? "Approved"
@@ -132,7 +134,6 @@ export function ApprovalCard({
           title={riskMeta.hint}
           aria-label={`Risk: ${riskMeta.label}`}
         >
-          {/* Colour is never the sole cue — label text always present */}
           {riskMeta.label}
         </Badge>
       </header>
@@ -203,10 +204,6 @@ export function ApprovalCard({
   );
 }
 
-/**
- * Low / customer_facing approve: pointer single-click;
- * keyboard path is two-step (never require holding a key).
- */
 function TwoStepApproveButton({
   disabled,
   onConfirm,
@@ -233,7 +230,6 @@ function TwoStepApproveButton({
       aria-label={armed ? confirmLabel : label}
       title={armed ? confirmLabel : undefined}
       onPointerDown={() => {
-        // Pointer users approve in one activation; clear keyboard arm state
         skipClick.current = false;
         setArmed(false);
       }}

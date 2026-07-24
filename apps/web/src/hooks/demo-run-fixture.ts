@@ -171,7 +171,8 @@ export function buildDemoEvents(): RunEvent[] {
         name: "API change impact analyzer",
         slug: "api-change-impact-analyzer",
         kind: "skill",
-        reason: "No installed skill can resolve nested/aliased field renames across consumer call sites.",
+        reason:
+          "No installed skill can resolve nested/aliased field renames across consumer call sites.",
       },
     }),
     ev(15, "capability.spec_written", "capability", "Spec written", {
@@ -211,8 +212,7 @@ export function buildDemoEvents(): RunEvent[] {
         durationMs: 1800,
         passed: 7,
         total: 8,
-        message:
-          "nested field rename not detected in payment_intent.metadata.customer_ref",
+        message: "nested field rename not detected in payment_intent.metadata.customer_ref",
       },
     }),
     ev(23, "capability.repair_started", "capability", "Repair attempt 1", {

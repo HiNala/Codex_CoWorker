@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import type { TraceDensity } from "@/hooks/run-state";
 
 export const TRACE_DENSITY_KEY = "forge.trace-density";
@@ -9,29 +9,34 @@ function isDensity(value: string | null): value is TraceDensity {
   return value === "narrative" || value === "detailed" || value === "everything";
 }
 
-/** Persist trace density to localStorage under forge.trace-density. */
+function readStoredDensity(fallback: TraceDensity): TraceDensity {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const saved = localStorage.getItem(TRACE_DENSITY_KEY);
+    if (isDensity(saved)) return saved;
+  } catch {
+    /* private mode / SSR */
+  }
+  return fallback;
+}
+
+/**
+ * Persist trace density to localStorage under forge.trace-density.
+ * Lazy init reads storage once (no setState-in-effect). Writes happen on set only.
+ */
 export function useTraceDensity(defaultValue: TraceDensity = "narrative") {
-  const [density, setDensity] = useState<TraceDensity>(defaultValue);
-  const [hydrated, setHydrated] = useState(false);
+  const [density, setDensityState] = useState<TraceDensity>(() =>
+    readStoredDensity(defaultValue),
+  );
 
-  useEffect(() => {
+  const setDensity = useCallback((next: TraceDensity) => {
+    setDensityState(next);
     try {
-      const saved = localStorage.getItem(TRACE_DENSITY_KEY);
-      if (isDensity(saved)) setDensity(saved);
-    } catch {
-      /* private mode / SSR */
-    }
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem(TRACE_DENSITY_KEY, density);
+      localStorage.setItem(TRACE_DENSITY_KEY, next);
     } catch {
       /* ignore quota */
     }
-  }, [density, hydrated]);
+  }, []);
 
   return { density, setDensity } as const;
 }

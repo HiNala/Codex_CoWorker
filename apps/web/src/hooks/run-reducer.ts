@@ -149,12 +149,17 @@ function applyEvent(state: RunState, event: RunEvent): RunState {
             : "Considered";
       next = {
         ...next,
-        timeline: upsertTrace(next.timeline, stepId, {
-          id: event.id,
-          verb,
-          text: String(detail.text ?? event.summary),
-          ts: event.ts,
-        }, event.seq),
+        timeline: upsertTrace(
+          next.timeline,
+          stepId,
+          {
+            id: event.id,
+            verb,
+            text: String(detail.text ?? event.summary),
+            ts: event.ts,
+          },
+          event.seq,
+        ),
       };
       break;
     }
@@ -214,8 +219,7 @@ function applyEvent(state: RunState, event: RunEvent): RunState {
           ...existing,
           status: "completed",
           durationMs,
-          costMicrocredits:
-            event.cost?.microcredits ?? existing.costMicrocredits ?? 0,
+          costMicrocredits: event.cost?.microcredits ?? existing.costMicrocredits ?? 0,
         };
         next = {
           ...next,
@@ -367,10 +371,7 @@ function applyEvent(state: RunState, event: RunEvent): RunState {
         ...next,
         capabilities: { ...next.capabilities, [id]: cap },
         build,
-        status:
-          event.type === "capability.approval_requested"
-            ? "awaiting_approval"
-            : next.status,
+        status: event.type === "capability.approval_requested" ? "awaiting_approval" : next.status,
       };
       break;
     }
@@ -438,10 +439,7 @@ function applyEvent(state: RunState, event: RunEvent): RunState {
                     ? ("testing" as const)
                     : prevCap.state,
               progress: { passed, total },
-              failingGate:
-                event.type === "capability.gate_failed"
-                  ? name
-                  : prevCap.failingGate,
+              failingGate: event.type === "capability.gate_failed" ? name : prevCap.failingGate,
             },
           }
         : next.capabilities;
@@ -503,11 +501,8 @@ function applyEvent(state: RunState, event: RunEvent): RunState {
         title: String(detail.title ?? event.summary),
         summary: String(detail.summary ?? event.summary),
         risk:
-          (detail.risk as
-            | "low"
-            | "customer_facing"
-            | "irreversible"
-            | "capability_install") ?? "low",
+          (detail.risk as "low" | "customer_facing" | "irreversible" | "capability_install") ??
+          "low",
         payloadPreview: String(detail.payloadPreview ?? ""),
         status: "pending" as const,
       };

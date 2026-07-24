@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useReducedMotion } from "@forge/ui";
 import type { TimelineItem } from "@/hooks/run-state";
 import { formatCredits, formatDuration } from "@/hooks/run-state";
@@ -22,25 +22,21 @@ export interface TraceGroupProps {
 /**
  * Signature interaction: live groups stay open; settled groups collapse to one
  * summary line. Height collapse uses CSS grid-template-rows (not JS timers).
+ * Open state is derived from events + optional user override — no setState-in-effect.
  */
 export function TraceGroup({ item, defaultExpanded = false }: TraceGroupProps) {
   const reduced = useReducedMotion();
-  const [open, setOpen] = useState(item.status === "live" || defaultExpanded);
-  const [userOverrode, setUserOverrode] = useState(false);
+  const [userToggle, setUserToggle] = useState<{
+    forStatus: TraceGroupItem["status"];
+    open: boolean;
+  } | null>(null);
 
-  useEffect(() => {
-    if (userOverrode) return;
-    if (item.status === "live") {
-      setOpen(true);
-      return;
-    }
-    // settled — expand only when density requests everything
-    setOpen(defaultExpanded);
-  }, [item.status, defaultExpanded, userOverrode]);
+  const autoOpen = item.status === "live" || defaultExpanded;
+  const open =
+    userToggle && userToggle.forStatus === item.status ? userToggle.open : autoOpen;
 
   const toggle = () => {
-    setUserOverrode(true);
-    setOpen((o) => !o);
+    setUserToggle({ forStatus: item.status, open: !open });
   };
 
   const summary = item.summary ?? (item.status === "live" ? "Working…" : "Trace");

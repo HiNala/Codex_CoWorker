@@ -16,6 +16,7 @@
     "@forge/db": "workspace:*",
     "@forge/auth": "workspace:*",
     "@forge/demo": "workspace:*",
+    "@forge/events": "workspace:*",
     "@forge/jobs": "workspace:*",
     "@forge/object-store": "workspace:*",
     "@forge/ui": "workspace:*",

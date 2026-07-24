@@ -31,10 +31,10 @@ describe("runReducer", () => {
   });
 
   it("ignores out-of-order older seq", () => {
-    let s = runReducer(
-      initialRunState,
-      { type: "event", event: baseEvent({ seq: 5, type: "run.started" }) },
-    );
+    let s = runReducer(initialRunState, {
+      type: "event",
+      event: baseEvent({ seq: 5, type: "run.started" }),
+    });
     s = runReducer(s, {
       type: "event",
       event: baseEvent({ seq: 3, type: "user.message", channel: "narrative", summary: "old" }),
