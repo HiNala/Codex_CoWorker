@@ -126,10 +126,16 @@ try {
 
   # ---- push: NEVER pull, rebase, or stash ---------------------------------
   if (-not $NoPush) {
-    $out = & git push origin main 2>&1
-    if ($LASTEXITCODE -ne 0) {
-      Write-Output "PUSH REJECTED. Do NOT pull, rebase, or force."
-      Write-Output ($out | Out-String)
+    # NOTE: do NOT use `2>&1` here. Windows PowerShell 5.1 wraps a native exe's
+    # stderr in NativeCommandError and flips $? to false even on exit code 0 —
+    # and `git push` writes its normal progress to stderr. Let it write through
+    # and trust $LASTEXITCODE, which is the only reliable signal.
+    $ErrorActionPreference = 'Continue'
+    & git push origin main
+    $pushCode = $LASTEXITCODE
+    $ErrorActionPreference = 'Stop'
+    if ($pushCode -ne 0) {
+      Write-Output "PUSH REJECTED (exit $pushCode). Do NOT pull, rebase, or force."
       Write-Output "Your commit is safe locally at $sha. STOP git work and report to Node for a central sync gate."
       exit 3
     }
