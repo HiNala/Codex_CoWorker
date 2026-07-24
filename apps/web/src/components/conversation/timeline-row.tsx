@@ -3,7 +3,7 @@
 import { EvidenceChip } from "@forge/ui";
 import type { TimelineItem, TraceDensity } from "@/hooks/run-state";
 import { cn } from "@/lib/utils";
-import { ApprovalCard } from "./conversation-approval-stub";
+import { ApprovalCard } from "@/components/approvals/approval-card";
 import { GapMarker } from "./gap-marker";
 import { TraceGroup } from "./trace-group";
 
@@ -78,17 +78,17 @@ export function TimelineRow({
     case "gap_marker":
       return <GapMarker slug={item.slug} reason={item.reason} />;
 
-    case "approval": {
-      const approvalProps = {
-        title: item.title,
-        summary: item.summary,
-        risk: item.risk,
-        payloadPreview: item.payloadPreview,
-        ...(onApprove ? { onApprove: () => onApprove(item.approvalId) } : {}),
-        ...(onDeny ? { onDeny: () => onDeny(item.approvalId) } : {}),
-      };
-      return <ApprovalCard {...approvalProps} />;
-    }
+    case "approval":
+      return (
+        <ApprovalCard
+          title={item.title}
+          summary={item.summary}
+          risk={item.risk}
+          payloadPreview={item.payloadPreview}
+          onApprove={() => onApprove?.(item.approvalId)}
+          onDeny={() => onDeny?.(item.approvalId)}
+        />
+      );
 
     case "notice":
       return (

@@ -4,10 +4,6 @@ export { TraceGroup, type TraceGroupProps } from "./trace-group";
 export { TimelineRow, type TimelineRowProps } from "./timeline-row";
 export { GapMarker, type GapMarkerProps } from "./gap-marker";
 export { DensityControl, type DensityControlProps } from "./density-control";
-export {
-  ConversationApprovalStub,
-  ApprovalCard,
-  type ConversationApprovalStubProps,
-} from "./conversation-approval-stub";
 export { usePinScroll } from "./use-pin-scroll";
 export { useTraceDensity, TRACE_DENSITY_KEY } from "./use-trace-density";
+// Approvals live in @/components/approvals — do not re-export the stub.
