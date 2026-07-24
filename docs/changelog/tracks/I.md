@@ -40,6 +40,29 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] Rehearsal gate — golden-path x2, deterministic reset, PANIC fallback
+
+Base: `https://web-production-7d71d.up.railway.app` · `DEMO_ACCESS_CODE=CONFIGURED` (value never printed)
+
+| Check | URL / action | Status / result |
+|-------|----------------|-----------------|
+| live | `GET /api/health/live` | **200** `{status:live,service:web}` |
+| ready | `GET /api/health/ready` | **200** `status=ready` all deps up |
+| status | `GET /api/health/status` | **200** secret_shaped=**false** |
+| reset #1 | `POST /api/demo/reset` | **200** mode=database ~112ms |
+| seed #1 | `POST /api/demo/seed` | **200** ids `…0005` / `…0003` / `…0001` |
+| reset #2 | `POST /api/demo/reset` | **200** same ids |
+| seed #2 | `POST /api/demo/seed` | **200** same ids → **RESET_DETERMINISTIC=true** |
+| golden replay #1 | `POST /api/demo/replay` | **200** eventCount=**22** |
+| golden replay #2 | `POST /api/demo/replay` | **200** eventCount=**22** |
+| PANIC | `POST /api/demo/panic` | **200** all adapters **fake** |
+| post-PANIC replay | `POST /api/demo/replay` | **200** eventCount=**22** (fallback parachute) |
+| prod smoke | `node scripts/smoke.mjs <base>` | **pass=6 warn=0 fail=0** |
+| log scan | `railway logs --service web` (patterns only) | **LOG_SECRET_SHAPED=false** (no sk-/AKIA/postgres URL/JWT) |
+
+Failures: **none**.  
+Stance: **deployment/rehearsal blockers only** (marketing remains CUT #1).
+
 ### [2026-07-23] GATE 1 RED response — CUT #1 marketing cut; ready GREEN
 
 **CUT #1 ACTIVE:** marketing/pricing **stopped**. Sub-agent 5 stands down.
