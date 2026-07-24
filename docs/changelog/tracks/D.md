@@ -28,6 +28,18 @@ Node enforcement received. Serial panel work stopped. Five-way exclusive split:
 - Fakes only; event-driven motion; tile states = icon + label.
 - Foundation (#1) ships first; 2–5 run in parallel after.
 
+## [T+dock] D · dock-approvals · ArtifactDock + ApprovalCard
+
+- `apps/web/src/components/dock/**`: collapsible rail (56px / ~200px), `ArtifactCard` for `ArtifactCardVM` (declared placeholder, drafting, ready), horizontal snap + arrow keys, `EmptyState` when empty.
+- `apps/web/src/components/approvals/**`: `ApprovalCard` with risk badge + text, payload preview (verbatim for customer_facing), `PressAndHold` for capability_install/irreversible, keyboard two-step, Deny, no double-submit.
+- Exports: `ArtifactDock`, `ArtifactCard`, `ApprovalCard` via package index barrels.
+
+## [T+checkpoint] D · mission-control · plan panel complete
+
+- `apps/web/src/components/plan/**`: MissionControl container, segmented MilestoneHeader (not %), StepSpotlight with wall-clock elapsed only, StepList/StepRow with icon+label for every PlanStepStatus, blocked/failed reason inline, stable milestone-spine ordering, min-h-0 scroll layout.
+- Optional `use-step-disclosure.ts` for controlled expand (no status transitions).
+- Status from props/events only; ceiling banner at ≥95% spend.
+
 ## [T+34] D/G · ack · credential load-path is `.env.local`
 
 Node correction accepted and in force for ARIA:
