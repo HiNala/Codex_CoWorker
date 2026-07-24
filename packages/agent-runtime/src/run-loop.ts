@@ -63,10 +63,24 @@ export async function executeStep(ctx: RunContext, step: PlanStep): Promise<void
   const needed = await ctx.capabilities.resolve(ctx.orgId, descriptors);
   if (needed.missing.length > 0) {
     const gap = needed.missing[0]!;
+    // Deterministic capability id so cockpit tiles track gap→build→install (CUT #4).
+    const capabilityId =
+      gap.slug === "checkout-error-log-analyzer"
+        ? "019f0000-0000-7000-8000-00000000a006"
+        : crypto.randomUUID();
     await transitionWithEvent(ctx, step, "needs_capability", {
       type: "capability.gap_detected",
       summary: `Capability gap detected: ${gap.slug} is required for "${step.title}".`,
-      detail: gap,
+      refs: { capabilityId },
+      detail: {
+        name: "Checkout error log analyzer",
+        slug: gap.slug,
+        kind: "skill",
+        reason: gap.purpose,
+        purpose: gap.purpose,
+        inputShape: gap.inputShape,
+        outputShape: gap.outputShape,
+      },
     });
     await ctx.foundry.requestBuild(ctx, step, gap);
     return;
@@ -105,12 +119,26 @@ async function handleStepResult(
         await handleFailure(ctx, step, "Capability gap reported without a descriptor.");
         return;
       }
+      const gap = result.missing;
+      const capabilityId =
+        gap.slug === "checkout-error-log-analyzer"
+          ? "019f0000-0000-7000-8000-00000000a006"
+          : crypto.randomUUID();
       await transitionWithEvent(ctx, step, "needs_capability", {
         type: "capability.gap_detected",
-        summary: `Capability gap detected mid-step: ${result.missing.slug}.`,
-        detail: result.missing,
+        summary: `Capability gap detected mid-step: ${gap.slug}.`,
+        refs: { capabilityId },
+        detail: {
+          name: "Checkout error log analyzer",
+          slug: gap.slug,
+          kind: "skill",
+          reason: gap.purpose,
+          purpose: gap.purpose,
+          inputShape: gap.inputShape,
+          outputShape: gap.outputShape,
+        },
       });
-      await ctx.foundry.requestBuild(ctx, step, result.missing);
+      await ctx.foundry.requestBuild(ctx, step, gap);
       return;
     }
     case "needs_approval": {
@@ -264,6 +292,15 @@ interface TransitionEvent {
   level?: "info" | "warn" | "error";
   blockedReason?: string | null;
   endedAt?: string | null;
+  /** Merged into default step/milestone refs (e.g. capabilityId for cockpit tiles). */
+  refs?: {
+    stepId?: string;
+    milestoneId?: string;
+    capabilityId?: string;
+    capabilityVersionId?: string;
+    artifactId?: string;
+    approvalId?: string;
+  };
 }
 
 /**
@@ -285,7 +322,11 @@ async function transitionWithEvent(
   const emitInput: Omit<Parameters<typeof emit>[1], "runId" | "assignmentId" | "orgId"> = {
     type: event.type,
     summary: event.summary,
-    refs: { stepId: step.id, milestoneId: step.milestoneId },
+    refs: {
+      stepId: step.id,
+      milestoneId: step.milestoneId,
+      ...event.refs,
+    },
   };
   if (event.detail !== undefined) emitInput.detail = event.detail;
   if (event.level !== undefined) emitInput.level = event.level;

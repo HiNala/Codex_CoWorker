@@ -262,3 +262,32 @@ Terminal counts per run: `run.completed=1`, `artifact.ready=1`, `capability.gate
 - Cael work remains: golden-path proof (4→9 repair, attempt-1 `expected 9, received 4`, attempt-2 pass), verifier/foundry fake path for that slug only, worker SSE + same-tx events + Rigel `table.typed` artifact.
 - **STOP** any mid-work on a second executable capability. No fixtures/demo data for a second executable path from this track.
 - Rationale accepted: one rehearsed fail→repair beats five unrehearsed modules.
+
+### 2026-07-23T18:40Z — DEMO SEED FIX: Broken Checkout ids for Aria (prod correctness)
+
+**Problem:** Cockpit showed api-change-impact-analyzer install / "Analyse API change…" — wrong scenario. Runtime golden path was already checkout-correct; **seed + event cockpit fields** were incomplete / prod DB stale (`onConflictDoNothing` left old assignment text).
+
+**Fix (Cael seed + runtime events only; no apps/web):**
+1. `packages/db/src/seed.ts` — **upsert** active assignment to Broken Checkout request + contract (`requiredCapabilities: checkout-error-log-analyzer`); seed milestones/steps; clear active-run events on reseed; never seed api-change as installed.
+2. Golden path emits `plan.drafted`/`plan.approved` **detail** with title `The broken annual checkout` + checkout milestones/steps for Mission Control.
+3. Capability events carry `refs.capabilityId` + detail `name/slug` so install tile is **Checkout error log analyzer**, not API change.
+
+**IDs for Aria (cockpit must point here):**
+
+| | UUID |
+|--|------|
+| **assignmentId** | `0198206f-5f53-7000-8000-000000000005` |
+| **runId** | `0198206f-5f53-7000-8000-000000000006` |
+| **orgId** | `0198206f-5f53-7000-8000-000000000001` |
+| Live-build slug | `checkout-error-log-analyzer` only |
+
+**Verify (local):**
+```
+pnpm db:seed
+# → Demo seed ready (Broken Checkout). assignmentId=…005 runId=…006
+pnpm exec dotenv -e .env.local -- tsx packages/agent-runtime/src/golden-path/prove-it-runs.ts  # EXIT 0, 4→9
+```
+
+**Wisp / prod:** re-run `pnpm db:seed` (or deploy seed job) against production DATABASE_URL so Railway DB overwrites stale assignment text. Relay: production must reseed.
+
+**SSE after reseed+prove:** `GET /runs/0198206f-5f53-7000-8000-000000000006/stream?after=0`

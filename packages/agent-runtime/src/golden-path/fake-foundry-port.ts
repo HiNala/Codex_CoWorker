@@ -15,15 +15,15 @@ export interface InstallRecord {
   mode: "naive" | "repaired";
 }
 
+const CAP_NAME = "Checkout error log analyzer";
+
 /**
- * Fake FoundryPort for Gate-1 golden path.
- * Emits the full capability.* beat against ctx.tx (same unit as step transitions):
- *   gap → build → gate fail (expected 9, received 4) → repair → gate pass → install
- * Then returns the step to `ready` so the run loop reclaims it with a pin.
+ * Fake FoundryPort — CUT #4 only: checkout-error-log-analyzer.
+ * Cockpit tiles require refs.capabilityId on every capability.* event.
  */
 export class FakeCheckoutFoundryPort implements FoundryPort {
   readonly installs: InstallRecord[] = [];
-  #installed = new Map<string, CapabilityRef>();
+  readonly #installed = new Map<string, CapabilityRef>();
 
   getInstalled(slug: string): CapabilityRef | null {
     return this.#installed.get(slug) ?? null;
@@ -38,7 +38,11 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
       throw new Error(`Fake foundry only builds ${CHECKOUT_ANALYZER_SLUG}, got ${gap.slug}`);
     }
 
-    // Reload after run-loop's needs_capability transition (stale `step` is still "running").
+    const capRefs = {
+      stepId: step.id,
+      capabilityId: GOLDEN.capabilityId,
+    };
+
     const listed = await ctx.steps.list(ctx.runId);
     const latest = listed.find((s) => s.id === step.id);
     if (!latest) throw new Error(`Step ${step.id} missing from store`);
@@ -46,18 +50,19 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
       throw new Error(`Expected needs_capability, got ${latest.status}`);
     }
 
-    // needs_capability → building_capability (paired with build_started)
     let current =
       latest.status === "building_capability"
         ? latest
         : await ctx.steps.transition(latest, "building_capability");
+
     await emit(ctx.tx, {
       runId: ctx.runId,
       assignmentId: ctx.assignmentId,
       orgId: ctx.orgId,
       type: "capability.build_started",
       summary: `Building ${gap.slug} in an isolated sandbox (fake Codex).`,
-      refs: { stepId: step.id },
+      refs: capRefs,
+      detail: { name: CAP_NAME, slug: gap.slug, attempt: 1, maxAttempts: 2, version: "1.0.0" },
     });
 
     await emit(ctx.tx, {
@@ -66,10 +71,9 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
       orgId: ctx.orgId,
       type: "capability.build_output",
       summary: "Attempt 1: naive top-level customer_id extractor written.",
-      refs: { stepId: step.id },
+      refs: capRefs,
     });
 
-    // Trusted gate fails: distinctCount 4 ≠ 9
     const naive = naiveAnalyzeSeed();
     const failMsg = attempt1FailureMessage(naive.distinctCount, REPAIRED_DISTINCT);
     if (failMsg !== ATTEMPT_1_FAILURE_MESSAGE) {
@@ -82,8 +86,8 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
       orgId: ctx.orgId,
       type: "capability.gate_started",
       summary: "Gate trusted_tests started.",
-      refs: { stepId: step.id },
-      detail: { gate: "trusted_tests", attempt: 1 },
+      refs: capRefs,
+      detail: { name: "trusted_tests", gate: "trusted_tests", attempt: 1 },
     });
     await emit(ctx.tx, {
       runId: ctx.runId,
@@ -92,8 +96,9 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
       type: "capability.gate_failed",
       summary: `Gate trusted_tests failed: ${failMsg}`,
       level: "warn",
-      refs: { stepId: step.id },
+      refs: capRefs,
       detail: {
+        name: "trusted_tests",
         gate: "trusted_tests",
         attempt: 1,
         message: failMsg,
@@ -109,8 +114,8 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
       orgId: ctx.orgId,
       type: "capability.repair_started",
       summary: `Repair attempt 1: fix nested context.customer.id — ${failMsg}`,
-      refs: { stepId: step.id },
-      detail: { message: failMsg },
+      refs: capRefs,
+      detail: { attempt: 1, message: failMsg, name: CAP_NAME, slug: gap.slug },
     });
 
     const repaired = repairedAnalyzeSeed();
@@ -120,7 +125,7 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
       orgId: ctx.orgId,
       type: "capability.build_output",
       summary: "Attempt 2: dual-shape customer id resolver applied (top-level + nested).",
-      refs: { stepId: step.id },
+      refs: capRefs,
     });
 
     await emit(ctx.tx, {
@@ -129,8 +134,8 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
       orgId: ctx.orgId,
       type: "capability.gate_started",
       summary: "Gate trusted_tests started (post-repair).",
-      refs: { stepId: step.id },
-      detail: { gate: "trusted_tests", attempt: 2 },
+      refs: capRefs,
+      detail: { name: "trusted_tests", gate: "trusted_tests", attempt: 2 },
     });
     await emit(ctx.tx, {
       runId: ctx.runId,
@@ -138,8 +143,9 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
       orgId: ctx.orgId,
       type: "capability.gate_passed",
       summary: `Gate trusted_tests passed: distinctCount=${repaired.distinctCount}.`,
-      refs: { stepId: step.id },
+      refs: capRefs,
       detail: {
+        name: "trusted_tests",
         gate: "trusted_tests",
         attempt: 2,
         distinctCount: repaired.distinctCount,
@@ -153,18 +159,26 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
       orgId: ctx.orgId,
       type: "capability.repair_succeeded",
       summary: "Repair restored a clean verification report for checkout-error-log-analyzer.",
-      refs: { stepId: step.id },
+      refs: capRefs,
+      detail: { name: CAP_NAME, slug: gap.slug },
     });
 
-    // Auto-approve install (demo fake path)
     current = await ctx.steps.transition(current, "awaiting_approval");
     await emit(ctx.tx, {
       runId: ctx.runId,
       assignmentId: ctx.assignmentId,
       orgId: ctx.orgId,
       type: "capability.approval_requested",
-      summary: "Capability checkout-error-log-analyzer ready for approval (auto-approved in fake path).",
-      refs: { stepId: step.id },
+      summary: "Install checkout error log analyzer — ready for approval (auto-approved in fake path).",
+      refs: capRefs,
+      detail: {
+        name: CAP_NAME,
+        slug: gap.slug,
+        version: "1.0.0",
+        title: "Install checkout error log analyzer",
+        summary:
+          "Given checkout error logs and plan metadata, finds annual-plan checkout failures and lists distinct affected customers (top-level + nested ids).",
+      },
     });
 
     const ref: CapabilityRef = {
@@ -187,21 +201,15 @@ export class FakeCheckoutFoundryPort implements FoundryPort {
         capabilityId: ref.capabilityId,
         capabilityVersionId: ref.versionId,
       },
+      detail: { name: CAP_NAME, slug: ref.slug, version: ref.version },
     });
 
-    // awaiting_approval → running is legal, but reclaim path needs ready:
-    // awaiting_approval → blocked → ready
-    current = await ctx.steps.transition(current, "blocked", {
-      blockedReason: null,
-    });
-    await ctx.steps.transition(current, "ready", {
-      blockedReason: null,
-    });
-
+    current = await ctx.steps.transition(current, "blocked", { blockedReason: null });
+    await ctx.steps.transition(current, "ready", { blockedReason: null });
     await this.onInstalled(ref, step.id);
   }
 
   async onInstalled(_capabilityRef: CapabilityRef, _stepId: string): Promise<void> {
-    // Resume is claimNextReady on the next loop iteration (step is ready).
+    // Resume via claimNextReady on next loop iteration.
   }
 }

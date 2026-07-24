@@ -192,19 +192,52 @@ export async function runSeededGoldenPathPostgres(
       };
 
       const { emit } = await import("@forge/events");
+      // Cockpit Mission Control hydrates title + milestones from plan.* detail.
+      const planDetail = {
+        title: "The broken annual checkout",
+        milestones: [
+          {
+            id: GOLDEN.milestoneId,
+            ordinal: 0,
+            title: "Diagnose checkout failures from error logs",
+            status: "active",
+            outcome: "Root cause and affected customers known",
+          },
+          {
+            id: "019f0000-0000-7000-8000-00000000a00a",
+            ordinal: 1,
+            title: "Install checkout-error-log-analyzer and deliver impact table",
+            status: "pending",
+            outcome: "table.typed artifact with 9 affected customers",
+          },
+        ],
+        steps: [
+          {
+            id: GOLDEN.stepAnalyzeId,
+            milestoneId: GOLDEN.milestoneId,
+            title: "Analyse checkout error logs",
+            status: "ready",
+            dependsOn: [],
+            capabilityRefs: [],
+            artifactIds: [],
+          },
+        ],
+      };
       await emit(eventTx, {
         runId: PG_SEED.runId,
         assignmentId: PG_SEED.assignmentId,
         orgId: PG_SEED.orgId,
         type: "plan.drafted",
-        summary: "Drafted seeded assignment contract for checkout log diagnosis.",
+        summary: "Drafted Broken Checkout contract — gap is checkout-error-log-analyzer.",
+        detail: planDetail,
       });
       await emit(eventTx, {
         runId: PG_SEED.runId,
         assignmentId: PG_SEED.assignmentId,
         orgId: PG_SEED.orgId,
         type: "plan.approved",
-        summary: "Contract approved; execute-run started (fake adapters).",
+        summary: "Broken Checkout plan approved; execute-run started (fakes only).",
+        detail: planDetail,
       });
 
       await executeRun(ctx);

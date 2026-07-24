@@ -12,8 +12,11 @@ import {
   creditAccounts,
   creditLedgerEntries,
   memberships,
+  milestones,
   organizations,
+  planSteps,
   projects,
+  runEvents,
   users,
 } from "./schema";
 
@@ -31,12 +34,58 @@ export const DEMO_IDS = {
   creditAccount: "0198206f-5f53-7000-8000-00000000000b",
 } as const;
 
+/** Prebuilt inventory only — NOT the live-build gap (CUT #4). */
 const capabilitySeeds = [
   ["ticket-clusterer", "Ticket clusterer", "workflow"],
   ["customer-impact-mapper", "Customer impact mapper", "skill"],
   ["release-note-drafter", "Release note drafter", "skill"],
   ["repository-change-proposer", "Repository change proposer", "workflow"],
 ] as const;
+
+/** CUT #4 / 23-DEMO — Broken Checkout (must match packages/demo GOLDEN_PATH_REQUEST). */
+const BROKEN_CHECKOUT_REQUEST =
+  "Find out why customers cannot buy the annual plan and prepare a verified fix. " +
+  "Customer Priya Raghunathan (Northwind Logistics) reports Team annual billing errors out " +
+  'with "Something went wrong. Please try again." while monthly checkout works. ' +
+  "Assess impact from checkout error logs (demo/acme-store/logs/checkout-errors.ndjson), " +
+  "build checkout-error-log-analyzer if missing, open a PR, and draft a short owner email.";
+
+const BROKEN_CHECKOUT_CONTRACT = {
+  title: "The broken annual checkout",
+  objective:
+    "Diagnose annual checkout failures from error logs, measure distinct affected customers, install any missing capability, and deliver a verified fix path.",
+  deliverables: [
+    "Root-cause analysis of annual vs monthly checkout",
+    "Affected customers table (distinctCount from dual-shape log analyzer)",
+    "Verified code change / PR",
+  ],
+  constraints: ["Only checkout-error-log-analyzer may be built live (CUT #4)"],
+  definitionOfDone: [
+    "checkout-error-log-analyzer installed after trusted-test repair (expected 9, received 4 → pass)",
+    "table.typed artifact lists 9 affected customers (no cus_ZZ9)",
+  ],
+  expectedArtifacts: [
+    { type: "table.typed", title: "Affected customers — annual checkout", description: "9 customers" },
+  ],
+  requiredCapabilities: [
+    {
+      slug: "checkout-error-log-analyzer",
+      purpose: "Count distinct customers in checkout_failed logs (top-level + nested ids)",
+      inputShape: "{ lines, window }",
+      outputShape: "{ affectedCustomers, distinctCount, taxonomy, firstSeen, lastSeen }",
+    },
+  ],
+  requiredIntegrations: ["zendesk", "github"],
+  riskLevel: "medium",
+  actionsRequiringApproval: ["capability install", "open PR", "owner email"],
+  estimatedCostMicrocredits: { low: 500_000, high: 2_000_000 },
+  recommendedCeilingMicrocredits: 5_000_000,
+  clarifyingQuestions: [],
+} as const;
+
+const MILESTONE_DIAGNOSE = "0198206f-5f53-7000-8000-0000000000c1";
+const MILESTONE_DELIVER = "0198206f-5f53-7000-8000-0000000000c2";
+const STEP_ANALYSE_LOGS = "0198206f-5f53-7000-8000-0000000000d1";
 
 export async function seedDatabase(databaseUrl: string): Promise<void> {
   const { db, client } = createDatabase(databaseUrl, { max: 1 });
@@ -85,19 +134,37 @@ export async function seedDatabase(databaseUrl: string): Promise<void> {
         })
         .onConflictDoNothing();
 
+      // Active assignment = Broken Checkout only (CUT #4). Upsert overwrites stale API-change copy.
       await tx
         .insert(assignments)
-        .values([
-          {
-            id: DEMO_IDS.activeAssignment,
-            orgId: DEMO_IDS.org,
-            coworkerId: DEMO_IDS.coworker,
-            projectId: DEMO_IDS.project,
-            rawRequest: "Find out why customers cannot buy the annual plan and prepare a fix.",
+        .values({
+          id: DEMO_IDS.activeAssignment,
+          orgId: DEMO_IDS.org,
+          coworkerId: DEMO_IDS.coworker,
+          projectId: DEMO_IDS.project,
+          rawRequest: BROKEN_CHECKOUT_REQUEST,
+          contract: BROKEN_CHECKOUT_CONTRACT as unknown as Record<string, unknown>,
+          contractVersion: 1,
+          status: "approved",
+          source: "demo",
+          ceilingMicrocredits: 5_000_000,
+        })
+        .onConflictDoUpdate({
+          target: assignments.id,
+          set: {
+            rawRequest: BROKEN_CHECKOUT_REQUEST,
+            contract: BROKEN_CHECKOUT_CONTRACT as unknown as Record<string, unknown>,
+            contractVersion: 1,
             status: "approved",
             source: "demo",
             ceilingMicrocredits: 5_000_000,
+            updatedAt: new Date(),
           },
+        });
+
+      await tx
+        .insert(assignments)
+        .values([
           {
             id: DEMO_IDS.historyAssignmentOne,
             orgId: DEMO_IDS.org,
@@ -125,13 +192,25 @@ export async function seedDatabase(databaseUrl: string): Promise<void> {
 
       await tx
         .insert(assignmentRuns)
-        .values([
-          {
-            id: DEMO_IDS.activeRun,
-            orgId: DEMO_IDS.org,
+        .values({
+          id: DEMO_IDS.activeRun,
+          orgId: DEMO_IDS.org,
+          assignmentId: DEMO_IDS.activeAssignment,
+          status: "queued",
+        })
+        .onConflictDoUpdate({
+          target: assignmentRuns.id,
+          set: {
             assignmentId: DEMO_IDS.activeAssignment,
             status: "queued",
+            eventSeq: 0,
+            updatedAt: new Date(),
           },
+        });
+
+      await tx
+        .insert(assignmentRuns)
+        .values([
           {
             id: DEMO_IDS.historyRunOne,
             orgId: DEMO_IDS.org,
@@ -147,6 +226,49 @@ export async function seedDatabase(databaseUrl: string): Promise<void> {
         ])
         .onConflictDoNothing();
 
+      // Clear prior active-run events so UI cannot hydrate a stale scenario after reseed.
+      // outbox rows cascade from run_events.event_id.
+      await tx.delete(runEvents).where(eq(runEvents.runId, DEMO_IDS.activeRun));
+
+      // Mission Control: checkout milestones/steps for the active run.
+      await tx.delete(planSteps).where(eq(planSteps.runId, DEMO_IDS.activeRun));
+      await tx.delete(milestones).where(eq(milestones.runId, DEMO_IDS.activeRun));
+      await tx.insert(milestones).values([
+        {
+          id: MILESTONE_DIAGNOSE,
+          orgId: DEMO_IDS.org,
+          runId: DEMO_IDS.activeRun,
+          ordinal: 0,
+          title: "Diagnose checkout failures from error logs",
+          outcome: "Root cause known; impact measurable from checkout-errors.ndjson",
+          status: "active",
+        },
+        {
+          id: MILESTONE_DELIVER,
+          orgId: DEMO_IDS.org,
+          runId: DEMO_IDS.activeRun,
+          ordinal: 1,
+          title: "Install checkout-error-log-analyzer and deliver impact table",
+          outcome: "Capability installed after 4→9 repair; table.typed lists 9 customers",
+          status: "pending",
+        },
+      ]);
+      await tx.insert(planSteps).values({
+        id: STEP_ANALYSE_LOGS,
+        orgId: DEMO_IDS.org,
+        runId: DEMO_IDS.activeRun,
+        milestoneId: MILESTONE_DIAGNOSE,
+        ordinal: 0,
+        title: "Analyse checkout error logs",
+        description:
+          "Run checkout-error-log-analyzer over demo/acme-store/logs/checkout-errors.ndjson (live-build if missing).",
+        status: "ready",
+        dependsOn: [],
+        capabilityRefs: [],
+        artifactIds: [],
+      });
+
+      // Never seed api-change-impact-analyzer — inventory only, not live-build.
       for (const [index, [slug, name, kind]] of capabilitySeeds.entries()) {
         const capabilityId = `0198206f-5f53-7000-8000-0000000001${index.toString(16).padStart(2, "0")}`;
         const versionId = `0198206f-5f53-7000-8000-0000000002${index.toString(16).padStart(2, "0")}`;
@@ -301,5 +423,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
 
   await seedDatabase(databaseUrl);
-  console.log(`Demo seed is ready. Assignment: ${DEMO_IDS.activeAssignment}`);
+  console.log(
+    `Demo seed ready (Broken Checkout). assignmentId=${DEMO_IDS.activeAssignment} runId=${DEMO_IDS.activeRun} liveBuild=checkout-error-log-analyzer`,
+  );
 }
