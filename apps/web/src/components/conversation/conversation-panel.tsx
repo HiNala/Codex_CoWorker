@@ -147,16 +147,18 @@ export function ConversationPanel({
               $<Odometer value={formatCredits(spent)} />
             </span>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="min-h-8 px-2.5 text-[11px]"
-            disabled={state.status !== "running"}
-            onClick={onPause}
-          >
-            Pause
-          </Button>
+          {onPause ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="min-h-8 px-2.5 text-[11px]"
+              disabled={state.status !== "running"}
+              onClick={onPause}
+            >
+              Pause
+            </Button>
+          ) : null}
           <div
             role="group"
             aria-label="Detail level"

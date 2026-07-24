@@ -41,7 +41,6 @@ export function CockpitShell({
   conversation,
   missionControl,
   foundry,
-  onPause: onPauseProp,
 }: CockpitShellProps) {
   const layout = useShellLayout();
   const { state, controls, streamMode } = useRunStream(assignmentId, {
@@ -56,10 +55,7 @@ export function CockpitShell({
   const onApprove = controls.approve;
   const onDeny = controls.deny;
   const onSend = controls.send;
-  const onPause = () => {
-    controls.pause();
-    onPauseProp?.();
-  };
+  // Pause is UI-only/local — not exposed on final cockpit (no worker pause).
 
   const onStart = useCallback(async () => {
     setStartPending(true);
@@ -110,7 +106,6 @@ export function CockpitShell({
       onApprove={onApprove}
       onDeny={onDeny}
       onSend={onSend}
-      onPause={onPause}
       onStart={onStart}
       startPending={startPending}
       startError={startError}
