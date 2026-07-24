@@ -99,11 +99,11 @@ describe("CUT #4 rehearsal — checkout-error-log-analyzer only", () => {
     );
   });
 
-  it("flags Cael markdown emission as incompatible with golden table contract", () => {
-    // Documented in CAEL-MISMATCH.md — rehearsal still fails if Cael emits markdown.
-    const caelType = "document.markdown";
-    expect(caelType).not.toBe(golden.artifact.type);
+  it("Cael table.typed emission matches golden contentInline (prod launch)", () => {
+    // Cael rigel-artifact.ts — keep this green for launch.
+    expect(golden.artifact.type).toBe("table.typed");
     expect(golden.artifact.version.contentInline.startsWith("{")).toBe(true);
+    expect(golden.artifact.version.contentInline).toContain("customerId");
     expect(golden.artifact.version.contentInline).not.toContain(
       "# Checkout customer impact",
     );

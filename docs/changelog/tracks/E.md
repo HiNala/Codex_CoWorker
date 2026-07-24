@@ -148,3 +148,12 @@
 - **Four pre-shipped modules:** inventory/display only — no further polish, no second runnable path
 - All remaining Rigel effort: golden-path proof + Cael verifier handoff (`GOLDEN-ARTIFACT.json`, `CAEL-MISMATCH.md`, attempt1 `expected 9, received 4` → attempt2 pass)
 - No work on second executable capability
+
+### [2026-07-23T18:26Z] E · PROD LAUNCH FREEZE · table.typed GREEN
+
+- Feature freeze: no new artifact features; verify-only.
+- Re-audit Cael `rigel-artifact.ts` + PG persist: **table.typed** + json contentInline **byte-equal** to `GOLDEN-ARTIFACT.json`
+- Aria path: TypedTableArtifact / canvas registry ready; chips from `rows.length`
+- Scoped verify: golden-path + checkout fixtures + rehearsal **28 PASS**; artifacts tsc **PASS**
+- **No blocking mismatch** to Cael/Aria for payload type/shape
+- Non-blocking: evidence panel may need evidenceRecords join; provenance optional
