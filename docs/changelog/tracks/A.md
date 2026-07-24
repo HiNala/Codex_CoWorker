@@ -61,3 +61,25 @@ Owner: **Cael** (orchestrator + capability foundry). Escalate to **Node**.
 - Earlier Cael `pull --rebase --autostash` was no-op on origin (Node confirmed harmless); stash list empty; **will not run again**.
 - **In-flight file verification (exclusive paths):** **0 missing.** All run-loop/emit/jobs/execution/foundry/verifier/capability-sdk/worker/foundry/A.md present.
 - Dirty under Cael scope: sub-agent hardenings still uncommitted (agent-runtime, events, jobs memory-queue, execution railway/factory, foundry, verifier). Next: scoped add/commit/push only — no pull.
+
+### 2026-07-23T17:50Z — TEMPORARY GIT HOLD (Birch → all; Node notified)
+
+- **ACK HOLD:** no `git add` / `commit` / `push` / `pull` / `rebase` / `stash` / `reset` / `checkout` until Node broadcasts single-writer commit mutex.
+- Reason: shared `.git/index` cleared another agent's staged set mid-commit. Keep coding + testing in exclusive paths; files do not stop.
+- Cael: running `pnpm` package tests under exclusive scopes only. Local edits allowed; **no git ops**.
+- Holding uncommitted hardenings + this checkpoint until mutex opens.
+
+### 2026-07-23T17:52Z — HOLD IN FORCE; tests + jobs fix (no git)
+
+- Package tests (no commit): events 6 pass, agent-runtime 164 pass, execution 27 pass, verifier 7 pass, foundry 6 pass, capability-sdk 10 pass.
+- **jobs** failed discovery (`vitest run src` + root include mismatch). Fixing in-tree: `JobQueue`/`FailDisposition` exports, `cancel` on Postgres queue, memory-queue export, local vitest config, memory-queue tests, worker `dispatchJob` for all JOB_KINDS (fake path) + heartbeat while leased.
+- Still **no git add/commit/push** until Node mutex broadcast.
+
+### 2026-07-23T17:55Z — BINDING COMMIT MUTEX ACK (Node)
+
+- **ACK:** only `pwsh scripts/agent-commit.ps1 -Agent Cael -Paths <owned> -MessageFile <file>`.
+- Why: `.git/index` is global; scoped `git add` alone races (Rigel stage swallowed into Track D commit).
+- Script: atomic repo mutex → add → contamination guard → commit → push → release in finally.
+- **LOCK BUSY (exit 2)** = correct; keep coding, retry next checkpoint. No wait loop. No raw git. No workarounds.
+- Still forbidden: pull/rebase/autostash/stash/reset/checkout non-owned. Non-FF push → stop, report Node.
+- Committing held jobs/worker hardenings via agent-commit.ps1 only.

@@ -1,9 +1,11 @@
 import { createServer, type Server } from "node:http";
 import { hostname } from "node:os";
 import { getFlags, log, parseWorkerEnv } from "@forge/config";
-import { PostgresJobQueue, type LeasedJob } from "@forge/jobs";
+import { PostgresJobQueue } from "@forge/jobs";
 import { S3ObjectStore } from "@forge/object-store";
+import { dispatchJob } from "./handlers";
 
+// Config comes from process.env — root scripts inject via dotenv -e .env.local.
 const environment = parseWorkerEnv();
 const flags = getFlags();
 const workerId = `${hostname()}-${process.pid}`;
@@ -36,6 +38,9 @@ async function readiness(): Promise<Record<string, unknown>> {
     queueDepth: depth,
     objectStore: storageMarker ? "marker_present" : "reachable",
     adapters: flags.adapters,
+    // Provider keys: report presence only, never values (public repo).
+    openai: environment.OPENAI_API_KEY ? "configured" : "unset",
+    codexUpstream: "via-foundry",
   };
 }
 
@@ -64,15 +69,6 @@ function startHealthServer(): Server {
   return server;
 }
 
-async function execute(job: LeasedJob): Promise<void> {
-  if (job.type === "health.noop") {
-    log("info", "Processed worker health job.", { jobId: job.id, runId: job.runId });
-    return;
-  }
-
-  throw new Error(`No handler registered for job type: ${job.type}`);
-}
-
 async function runLoop(): Promise<void> {
   while (!stopping) {
     try {
@@ -83,8 +79,13 @@ async function runLoop(): Promise<void> {
         continue;
       }
 
+      // Heartbeat while working so long model/foundry jobs keep the lease.
+      const heartbeat = setInterval(() => {
+        void queue.heartbeat(job.id, workerId, environment.JOB_LEASE_MS);
+      }, Math.max(5_000, Math.floor(environment.JOB_LEASE_MS / 3)));
+
       try {
-        await execute(job);
+        await dispatchJob(job);
         const completed = await queue.complete(job.id, workerId);
         if (!completed) {
           log("warn", "Job lease was lost before completion.", { jobId: job.id });
@@ -93,6 +94,8 @@ async function runLoop(): Promise<void> {
         const message = error instanceof Error ? error.message : "unknown worker error";
         const disposition = await queue.fail(job.id, workerId, message);
         log("error", "Job failed.", { jobId: job.id, disposition, error: message });
+      } finally {
+        clearInterval(heartbeat);
       }
     } catch (error) {
       log("error", "Worker loop dependency error; retrying.", {

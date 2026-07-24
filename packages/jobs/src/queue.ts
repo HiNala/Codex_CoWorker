@@ -43,6 +43,22 @@ export interface JobState {
   leaseOwner: string | null;
 }
 
+export type FailDisposition = "retrying" | "dead" | "lost";
+
+/** Shared surface for Postgres and in-memory queues. */
+export interface JobQueue {
+  enqueue(input: EnqueueInput): Promise<string>;
+  lease(queue: string, workerId: string, leaseMs: number): Promise<LeasedJob | null>;
+  heartbeat(jobId: string, workerId: string, leaseMs: number): Promise<boolean>;
+  complete(jobId: string, workerId: string): Promise<boolean>;
+  fail(jobId: string, workerId: string, error: string): Promise<FailDisposition>;
+  releaseExpiredLeases(): Promise<number>;
+  cancel(jobId: string): Promise<boolean>;
+  depth(queue?: string): Promise<number>;
+  get(jobId: string): Promise<JobState | null>;
+  close(): Promise<void>;
+}
+
 interface LeasedRow {
   id: string;
   org_id: string;
@@ -60,7 +76,7 @@ export function retryDelayMs(attempt: number): number {
   return Math.min(60_000, 1_000 * 2 ** Math.max(0, attempt - 1));
 }
 
-export class PostgresJobQueue {
+export class PostgresJobQueue implements JobQueue {
   readonly #sql: Sql;
   readonly #ownsConnection: boolean;
 
@@ -206,11 +222,7 @@ export class PostgresJobQueue {
     });
   }
 
-  async fail(
-    jobId: string,
-    workerId: string,
-    error: string,
-  ): Promise<"retrying" | "dead" | "lost"> {
+  async fail(jobId: string, workerId: string, error: string): Promise<FailDisposition> {
     return this.#sql.begin(async (transaction) => {
       const current = await transaction<{ attempt: number; max_attempts: number }[]>`
         select attempt, max_attempts
@@ -260,6 +272,21 @@ export class PostgresJobQueue {
       returning id
     `;
     return rows.length;
+  }
+
+  async cancel(jobId: string): Promise<boolean> {
+    const rows = await this.#sql<{ id: string }[]>`
+      update jobs
+      set status = 'cancelled'::job_status,
+          lease_owner = null,
+          lease_expires_at = null,
+          heartbeat_at = null,
+          updated_at = now()
+      where id = ${jobId}::uuid
+        and status in ('queued', 'leased')
+      returning id
+    `;
+    return rows.length === 1;
   }
 
   async depth(queue = "default"): Promise<number> {

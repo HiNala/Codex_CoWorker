@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run src"
+    "test": "vitest run"
   },
   "dependencies": {
     "postgres": "3.4.9",
