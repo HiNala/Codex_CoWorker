@@ -11,7 +11,7 @@ export default function OutputsLibraryPage() {
   const items = listSeedArtifactItems();
 
   return (
-    <div className="px-6 py-8">
+    <div className="h-full overflow-y-auto px-6 py-8">
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
