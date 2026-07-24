@@ -76,3 +76,17 @@ Never include secrets (even truncated).
 - Re-plan approved external action arguments
 - Call Composio / Octokit / Zendesk SDKs from the run loop
 - Forward raw ticket text as system instructions (use `wrapUntrustedBlock`)
+
+## Wisp (Track I) — sandbox / host env
+
+| Surface | May hold provider keys? | Notes |
+| --- | --- | --- |
+| Sandbox container / foundry worker for Codex | **No** | Patch out only; no `GITHUB_*`, `COMPOSIO_*`, `ZENDESK_*`, `OCTEN_*` |
+| Host worker / web | Yes (server-side) | Read via `packages/config` after `dotenv -e .env.local` |
+| RunEvent / SSE payloads | **No secrets** | `ActionResult.permalink` + ids only |
+
+If a provider is unset, Tide factories return `not_configured` + fake — Wisp health checks should surface that state, not invent “connected”.
+
+## Smoke (Tide)
+
+See `packages/integrations/GOLDEN-PATH.md` — one command, all fakes.

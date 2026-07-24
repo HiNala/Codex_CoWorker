@@ -9,7 +9,8 @@
   "scripts": {
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run src --passWithNoTests"
+    "test": "vitest run --root ../.. packages/integrations",
+    "smoke:golden": "vitest run --root ../.. packages/integrations/src/golden-path.smoke.test.ts packages/research/src/golden-path.smoke.test.ts packages/integrations/src/approval packages/integrations/src/github packages/integrations/src/email packages/integrations/src/status.test.ts packages/integrations/src/zendesk packages/research/src/octen.test.ts"
   },
   "dependencies": {
     "@composio/core": "^0.14.0",

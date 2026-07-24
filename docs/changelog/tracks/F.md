@@ -220,3 +220,14 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - See `packages/integrations/src/cael-contract.md` — `action.proposed` → approval (`payloadSha256`) → `execute` exact args → `action.executed` / `action.failed`.
 - Never re-plan approved args; never put PAT/API keys in events; sandbox emits **patch only**.
 
+
+### [2026-07-23] War room — Broken Checkout rehearsal package
+
+- **One smoke command:** `pnpm --filter @forge/integrations run smoke:golden`
+- **Result (just now):** **8 files / 73 tests PASS** (golden-path + approval + github + email + status + zendesk + octen + research golden)
+- **Runbook:** `packages/integrations/GOLDEN-PATH.md`
+- **Cael + Wisp contract:** `packages/integrations/src/cael-contract.md` (events, approval hash, sandbox zero-creds, host PAT only)
+- Boundary locked: deterministic fakes · host patch apply · exact approval payloads · honest `not_configured`
+- **No real external write** without exact approved payload.
+- Live-auth blockers unchanged (names only): `ZENDESK_*` UNSET · `GITHUB_*` ABSENT · Composio Gmail not linked for live path.
+
