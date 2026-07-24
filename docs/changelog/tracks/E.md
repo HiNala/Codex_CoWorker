@@ -117,3 +117,14 @@
 - Generator: `generate-golden.mjs` (reproducible SHA)
 - Test: `golden-artifact.test.ts` proves file matches live naive/reference + lineage
 - Standing by to review Cael/Aria integration payloads immediately after they land
+
+### [2026-07-23T18:20Z] E · WAR ROOM · Cael payload audit + Aria render proof
+
+- Read-only: `packages/agent-runtime/src/golden-path/{run-seeded,run-seeded-pg,checkout-analyzer-fake,memory-artifacts,ids}.ts`
+- **MATCH:** capability 4→9, customer lists, taxonomy, `expected 9, received 4`
+- **MISMATCH (blocking Aria table):** Cael persists **`document.markdown`** markdown body titled "Checkout customer impact"; golden requires **`table.typed`** + JSON `contentInline` + evidence/provenance
+- Notes for Cael: `packages/capability-fixtures/checkout-error-log-analyzer/CAEL-MISMATCH.md`
+- Tests:
+  - `cael-compatibility.test.ts` — pins MATCH on capability, MISMATCH on artifact type
+  - `aria-render-from-golden.test.ts` — parses golden contentInline, dock chips from `rows.length` (no hardcoded 9 in production path)
+- Aria UI already maps `table.typed` → TypedTableArtifact; will work once Cael emits golden shape
