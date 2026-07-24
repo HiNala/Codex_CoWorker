@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  CapabilityInputError,
-  createRestrictedContext,
-} from "@forge/capability-sdk";
+import { CapabilityInputError, createRestrictedContext } from "@forge/capability-sdk";
 import capability from "../src/index";
 import type { ReportComposerInput } from "../src/lib/types";
 
@@ -110,7 +107,7 @@ describe("incident-report-composer", () => {
   it("escapes HTML in user content", async () => {
     const out = await run(
       sampleInput({
-        title: 'Break <script>alert(1)</script>',
+        title: "Break <script>alert(1)</script>",
         impactRows: [
           {
             rowId: "r",
@@ -139,8 +136,6 @@ describe("incident-report-composer", () => {
   });
 
   it("rejects empty title", async () => {
-    await expect(run(sampleInput({ title: "  " }))).rejects.toBeInstanceOf(
-      CapabilityInputError,
-    );
+    await expect(run(sampleInput({ title: "  " }))).rejects.toBeInstanceOf(CapabilityInputError);
   });
 });

@@ -1,8 +1,4 @@
-import {
-  CapabilityInputError,
-  assertArray,
-  assertObject,
-} from "@forge/capability-sdk";
+import { CapabilityInputError, assertArray, assertObject } from "@forge/capability-sdk";
 import type {
   ClusterIn,
   EvidenceIn,
@@ -20,9 +16,7 @@ function parseCluster(raw: unknown, i: number): ClusterIn {
     throw new CapabilityInputError(`clusters[${i}].label must be a string`);
   }
   if (typeof raw.rootCauseHypothesis !== "string") {
-    throw new CapabilityInputError(
-      `clusters[${i}].rootCauseHypothesis must be a string`,
-    );
+    throw new CapabilityInputError(`clusters[${i}].rootCauseHypothesis must be a string`);
   }
   assertArray(raw.ticketIds, `clusters[${i}].ticketIds must be an array`);
   if (typeof raw.confidence !== "number") {
@@ -36,21 +30,18 @@ function parseCluster(raw: unknown, i: number): ClusterIn {
     confidence: raw.confidence,
   };
   if (Array.isArray(raw.representativeQuotes)) {
-    base.representativeQuotes =
-      raw.representativeQuotes as ClusterIn["representativeQuotes"];
+    // exactOptionalPropertyTypes: assign only when present; cast excludes `| undefined`
+    // (ClusterIn["representativeQuotes"] is optional and therefore includes undefined).
+    base.representativeQuotes = raw.representativeQuotes as NonNullable<
+      ClusterIn["representativeQuotes"]
+    >;
   }
   return base;
 }
 
 function parseImpact(raw: unknown, i: number): ImpactRowIn {
   assertObject(raw, `impactRows[${i}] must be an object`);
-  const req = [
-    "rowId",
-    "accountId",
-    "accountName",
-    "plan",
-    "severity",
-  ] as const;
+  const req = ["rowId", "accountId", "accountName", "plan", "severity"] as const;
   for (const k of req) {
     if (typeof raw[k] !== "string") {
       throw new CapabilityInputError(`impactRows[${i}].${k} must be a string`);
@@ -60,9 +51,7 @@ function parseImpact(raw: unknown, i: number): ImpactRowIn {
     throw new CapabilityInputError(`impactRows[${i}].ticketCount must be a number`);
   }
   if (typeof raw.mrrAtRiskMicrodollars !== "number") {
-    throw new CapabilityInputError(
-      `impactRows[${i}].mrrAtRiskMicrodollars must be a number`,
-    );
+    throw new CapabilityInputError(`impactRows[${i}].mrrAtRiskMicrodollars must be a number`);
   }
   assertArray(raw.affectedClusterIds, `impactRows[${i}].affectedClusterIds must be an array`);
   assertArray(raw.evidenceRefs, `impactRows[${i}].evidenceRefs must be an array`);

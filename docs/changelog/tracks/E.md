@@ -128,3 +128,9 @@
   - `cael-compatibility.test.ts` — pins MATCH on capability, MISMATCH on artifact type
   - `aria-render-from-golden.test.ts` — parses golden contentInline, dock chips from `rows.length` (no hardcoded 9 in production path)
 - Aria UI already maps `table.typed` → TypedTableArtifact; will work once Cael emits golden shape
+
+### [2026-07-23T18:20Z] E · fix · incident-report-composer exactOptionalPropertyTypes TS2412
+
+- `capabilities/incident-report-composer/src/lib/validate.ts:33` — assign `representativeQuotes` only when present; cast `NonNullable<ClusterIn["representativeQuotes"]>` (not `| undefined`, not `any`)
+- `tsc -p capabilities/incident-report-composer` PASS · unit tests 7/7 PASS
+- Workspace typecheck sole red package cleared

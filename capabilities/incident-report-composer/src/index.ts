@@ -1,10 +1,7 @@
 import type { Capability, RestrictedCapabilityContext } from "@forge/capability-sdk";
 import { deepFreeze } from "@forge/capability-sdk";
 import { composeReport } from "./lib/compose";
-import type {
-  ReportComposerInput,
-  ReportComposerOutput,
-} from "./lib/types";
+import type { ReportComposerInput, ReportComposerOutput } from "./lib/types";
 import { validateInput } from "./lib/validate";
 
 export type {

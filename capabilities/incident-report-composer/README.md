@@ -6,13 +6,13 @@ Turns clusters, impact rows, evidence, and a timeline into a markdown incident r
 
 ## Sections
 
-1. Summary  
-2. Impact  
-3. Timeline  
-4. Root cause  
-5. Evidence  
-6. Recommended actions  
-7. Open questions  
+1. Summary
+2. Impact
+3. Timeline
+4. Root cause
+5. Evidence
+6. Recommended actions
+7. Open questions
 
 ## Citations
 
@@ -36,4 +36,4 @@ See Track C §4. Optional `changeSummary` is woven into Summary and Recommended 
 
 - Template recommended actions, not LLM prose.
 - Evidence matching prefers id equality / substring of ticket id, else first evidence.
-}
+  }

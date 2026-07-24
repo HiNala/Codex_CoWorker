@@ -1,9 +1,4 @@
-import type {
-  Citation,
-  ReportComposerInput,
-  ReportComposerOutput,
-  SectionMeta,
-} from "./types";
+import type { Citation, ReportComposerInput, ReportComposerOutput, SectionMeta } from "./types";
 import { escapeUserContent, formatUsd, wordCount } from "./escape";
 
 /**
@@ -20,9 +15,7 @@ export function composeReport(input: ReportComposerInput): ReportComposerOutput 
 
   const cite = (evidenceId: string, claim: string): string => {
     if (!evidenceById.has(evidenceId)) {
-      warnings.push(
-        `unsupported claim (missing evidence ${evidenceId}): ${claim}`,
-      );
+      warnings.push(`unsupported claim (missing evidence ${evidenceId}): ${claim}`);
       return " **[unsupported]**";
     }
     anchorSeq += 1;
@@ -41,12 +34,8 @@ export function composeReport(input: ReportComposerInput): ReportComposerOutput 
   };
 
   const title = escapeUserContent(input.title);
-  const clusters = [...input.clusters].sort((a, b) =>
-    a.clusterId.localeCompare(b.clusterId),
-  );
-  const impactRows = [...input.impactRows].sort((a, b) =>
-    a.accountId.localeCompare(b.accountId),
-  );
+  const clusters = [...input.clusters].sort((a, b) => a.clusterId.localeCompare(b.clusterId));
+  const impactRows = [...input.impactRows].sort((a, b) => a.accountId.localeCompare(b.accountId));
   const timeline = [...input.timeline].sort((a, b) => a.ts.localeCompare(b.ts));
 
   // --- Summary ---
@@ -103,9 +92,7 @@ export function composeReport(input: ReportComposerInput): ReportComposerOutput 
     timelineLines.push("_No timeline events supplied._");
   } else {
     for (const ev of timeline) {
-      timelineLines.push(
-        `- **${escapeUserContent(ev.ts)}** — ${escapeUserContent(ev.event)}`,
-      );
+      timelineLines.push(`- **${escapeUserContent(ev.ts)}** — ${escapeUserContent(ev.event)}`);
     }
   }
 
@@ -131,9 +118,7 @@ export function composeReport(input: ReportComposerInput): ReportComposerOutput 
 
   // --- Evidence ---
   const evidenceLines: string[] = [];
-  const sortedEvidence = [...input.evidence].sort((a, b) =>
-    a.id.localeCompare(b.id),
-  );
+  const sortedEvidence = [...input.evidence].sort((a, b) => a.id.localeCompare(b.id));
   if (sortedEvidence.length === 0) {
     evidenceLines.push("_No evidence records supplied._");
     warnings.push("Evidence section is empty");
@@ -152,9 +137,7 @@ export function composeReport(input: ReportComposerInput): ReportComposerOutput 
     "- Prepare a customer-facing status update once root cause is verified.",
   ];
   if (input.changeSummary) {
-    actionLines.push(
-      `- Review the related change: ${escapeUserContent(input.changeSummary)}.`,
-    );
+    actionLines.push(`- Review the related change: ${escapeUserContent(input.changeSummary)}.`);
   }
   if (clusters[0]) {
     actionLines.push(
@@ -211,16 +194,17 @@ export function composeReport(input: ReportComposerInput): ReportComposerOutput 
     parts.push("---", "", ...footnoteLines, "");
   }
 
-  const markdown = parts.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
+  const markdown =
+    parts
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trimEnd() + "\n";
 
   // Sort citations by anchor for stable output (already sequential)
   citations.sort((a, b) => a.anchorId.localeCompare(b.anchorId));
 
   // Defence in depth: strip residual raw tags (escaped entities are left alone)
-  const safeMarkdown = markdown.replace(
-    /<(script|iframe|img|style|object|embed)[^>]*>/gi,
-    "",
-  );
+  const safeMarkdown = markdown.replace(/<(script|iframe|img|style|object|embed)[^>]*>/gi, "");
 
   warnings.sort((a, b) => a.localeCompare(b));
 
