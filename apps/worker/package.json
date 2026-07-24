@@ -14,8 +14,10 @@
   "dependencies": {
     "@forge/agent-runtime": "workspace:*",
     "@forge/config": "workspace:*",
+    "@forge/events": "workspace:*",
     "@forge/jobs": "workspace:*",
-    "@forge/object-store": "workspace:*"
+    "@forge/object-store": "workspace:*",
+    "postgres": "3.4.9"
   },
   "devDependencies": {
     "@types/node": "^22",
