@@ -231,3 +231,14 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - **No real external write** without exact approved payload.
 - Live-auth blockers unchanged (names only): `ZENDESK_*` UNSET · `GITHUB_*` ABSENT · Composio Gmail not linked for live path.
 
+
+### [2026-07-23] fix(research): exactOptionalPropertyTypes on Octen mapper
+
+- **Before:** `pnpm --filter @forge/research typecheck` → **FAIL** EXIT 2
+  - `src/octen.ts(229)` TS2322: mapped hits assign `url: string | undefined` into `url?: string` under `exactOptionalPropertyTypes`
+  - same at line 249 `extractItems`
+- **Fix:** widen mapper target to `OctenMappedHit` with `url?: string | undefined` (and title/text/page_structure) — upstream missing fields are real, not accidental. No `any`, no disabling exactOptionalPropertyTypes.
+- **No Main Content discard** unchanged (`page_structure.primary === 'No Main Content'` still drops before evidence).
+- **After:** `pnpm --filter @forge/research typecheck` → **PASS** EXIT 0
+- **Tests:** `pnpm exec vitest run packages/research` → **2 files / 10 tests PASS**
+

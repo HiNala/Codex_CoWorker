@@ -132,15 +132,7 @@ export class OctenResearchGateway implements ResearchGateway {
     return res.json() as Promise<unknown>;
   }
 
-  #toEvidence(
-    hits: Array<{
-      url?: string;
-      title?: string;
-      text?: string;
-      page_structure?: { primary?: string };
-    }>,
-    kind: EvidenceRecord["kind"],
-  ): EvidenceRecord[] {
+  #toEvidence(hits: OctenMappedHit[], kind: EvidenceRecord["kind"]): EvidenceRecord[] {
     const now = new Date().toISOString();
     const out: EvidenceRecord[] = [];
 
@@ -214,12 +206,18 @@ export function createResearchGateway(
   };
 }
 
-function extractHits(data: unknown): Array<{
-  url?: string;
-  title?: string;
-  text?: string;
-  page_structure?: { primary?: string };
-}> {
+/**
+ * Upstream Octen fields are often missing; with exactOptionalPropertyTypes,
+ * optional keys must allow explicit `undefined` (real missing payload data).
+ */
+interface OctenMappedHit {
+  url?: string | undefined;
+  title?: string | undefined;
+  text?: string | undefined;
+  page_structure?: { primary?: string | undefined } | undefined;
+}
+
+function extractHits(data: unknown): OctenMappedHit[] {
   const root = data as {
     results?: OctenSearchHit[];
     data?: OctenSearchHit[];
@@ -234,12 +232,7 @@ function extractHits(data: unknown): Array<{
   }));
 }
 
-function extractItems(data: unknown): Array<{
-  url?: string;
-  title?: string;
-  text?: string;
-  page_structure?: { primary?: string };
-}> {
+function extractItems(data: unknown): OctenMappedHit[] {
   const root = data as {
     results?: OctenExtractItem[];
     data?: OctenExtractItem[];
