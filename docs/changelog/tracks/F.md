@@ -27,6 +27,18 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - PR pipeline: hand-written patch first, then Codex wiring later.
 - Spawning 5 exclusive-directory sub-agents now (Zendesk / Composio Gmail / Octen / GitHub PR / acme-store).
 
+### Zendesk sub-agent
+
+- Hardened `packages/integrations/src/zendesk/webhook.ts`:
+  - Raw-body contract documented on `VerifyZendeskWebhookOptions` + handler JSDoc (capture `req.text()` before parse).
+  - Signature: `base64(HMAC-SHA256(timestamp + rawBody, secret))` via `signZendeskWebhook` / `timingSafeEqualB64` (never throws on length mismatch).
+  - `parseZendeskWebhookHeaders` for Headers / plain objects.
+  - Local fixture path: `ZENDESK_LOCAL_FIXTURE_SECRET` + `createSignedWebhookFixture` (no `ZENDESK_*` env).
+  - Dedupe: `WebhookDedupe` port + `MemoryWebhookDedupe`; prod note → `webhook_receipts_provider_invocation_idx`.
+  - Sync `handleZendeskWebhook` + async `handleZendeskWebhookAsync` (enqueue signal only, 2xx fast).
+- Tests expanded (valid / tampered / expired / future ts / replay / malformed / fixture HMAC / under 1s).
+- `ZENDESK_*` remain unset — verification path is fully offline.
+
 ### Octen sub-agent
 
 - Hardened `@forge/research` Octen gateway against frozen `ResearchGateway`.
@@ -37,3 +49,27 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - Named degrade: `octen.unauthorized` (401), `octen.rate_limited` (429), `octen.server_error` (5xx).
 - `createResearchGateway` → `not_configured` + `FakeResearchGateway` when `OCTEN_API_KEY` missing (key name only; value never logged).
 - Verify: `pnpm exec vitest run packages/research`.
+
+### [2026-07-23] ACK credential load-path correction (`.env.local`)
+
+- **Authoritative file: `.env.local` only.** All 9 root scripts use `dotenv -e .env.local`. Zero load `.env`.
+- Will **not** re-add provider keys to `.env` (dual-file drift risk). Both remain gitignored; never force-add.
+- `packages/config` reads `process.env` only — depends entirely on the wrapper loading `.env.local`.
+- Adapters/factories (`createTicketGateway`, `createResearchGateway`, `createNotifier`, `createPullRequestPort`, `integrationStatus`) take env snapshots / `process.env` after that load; no embedded dotenv in integrations/research.
+- Verified status (name + CONFIGURED/UNSET only):
+
+| variable | status |
+| --- | --- |
+| `OPENAI_API_KEY` | CONFIGURED |
+| `CODEX_API_KEY` | CONFIGURED |
+| `OCTEN_API_KEY` | CONFIGURED |
+| `COMPOSIO_API_KEY` | CONFIGURED |
+| `ZENDESK_SUBDOMAIN` | UNSET (Tide owns; local HMAC fixture path) |
+| `ZENDESK_EMAIL` | UNSET |
+| `ZENDESK_API_TOKEN` | UNSET |
+| `ZENDESK_WEBHOOK_SECRET` | UNSET |
+| `RAILWAY_API_TOKEN` | UNSET (not Tide blocker; not Wisp deploy blocker) |
+| `GITHUB_TOKEN` / `GITHUB_PAT` | ABSENT → FakeGitHubPullRequestAdapter |
+| `RESEND_API_KEY` | ABSENT → FakeNotifier unless Composio Gmail linked |
+
+- Reporting rule locked: key name + CONFIGURED/UNSET only — never value, prefix, length, or last-4.
