@@ -36,9 +36,7 @@ export class MemoryStepStore implements StepStore {
   async transition(
     step: PlanStep,
     to: PlanStepStatus,
-    patch: Partial<
-      Pick<PlanStep, "blockedReason" | "attempt" | "startedAt" | "endedAt">
-    > = {},
+    patch: Partial<Pick<PlanStep, "blockedReason" | "attempt" | "startedAt" | "endedAt">> = {},
   ): Promise<PlanStep> {
     assertTransition(step.status, to);
     const index = this.steps.findIndex((candidate) => candidate.id === step.id);

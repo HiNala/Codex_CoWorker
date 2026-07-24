@@ -5,6 +5,9 @@
 
 export * from "./budget";
 export * from "./fakes/fake-agent-model";
+export * from "./golden-path/checkout-analyzer-fake";
+export * from "./golden-path/ids";
+export * from "./golden-path/run-seeded";
 export * from "./memory/step-store";
 export * from "./plan/transitions";
 export * from "./prompts/contract";

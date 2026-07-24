@@ -98,24 +98,63 @@ Owner: **Cael** (orchestrator + capability foundry). Escalate to **Node**.
   - Foundry build→verify→repair→install under FakeCodex — GREEN
   - 12-gate verifier + fixture tamper hard-fail — GREEN
   - Cockpit render / seeded assignment HTTP / artifact dock: owned by D/E/J — not Cael write scope
-- **Status lines:**  
-  - TRACK A GREEN  
-  - TRACK B GREEN  
+- **Status lines:**
+  - TRACK A GREEN
+  - TRACK B GREEN
 - Mutex: lock free before commit; will release after checkpoint commit. No hold.
 
 ### 2026-07-23T18:00Z — BIRCH GATE 1 PREP (IT RUNS 18:02)
 
 - No new features. No live adapters. No polish.
 - **Narrow verify exact evidence:**
-  - `pnpm verify:A` → **EXIT 0**  
-    - `@forge/jobs` 8 pass  
-    - `@forge/events` 6 pass  
-    - `@forge/agent-runtime` 164 pass  
-  - `pnpm verify:B` → **EXIT 0**  
-    - `@forge/execution` 27 pass  
-    - `@forge/verifier` 7 pass  
-    - `@forge/foundry-core` 6 pass  
+  - `pnpm verify:A` → **EXIT 0**
+    - `@forge/jobs` 8 pass
+    - `@forge/events` 6 pass
+    - `@forge/agent-runtime` 164 pass
+  - `pnpm verify:B` → **EXIT 0**
+    - `@forge/execution` 27 pass
+    - `@forge/verifier` 7 pass
+    - `@forge/foundry-core` 6 pass
 - **TRACK A GREEN** / **TRACK B GREEN** at package-test level.
 - **Single most important RED seam (golden path, not package tests):**  
   Worker `dispatchJob` is still **fake no-op** — `execute-run` does not open a DB transaction, call `executeRun`, or stream events to a live `GET /api/runs/:id/stream`. Unit fakes prove emit+run-loop+SSE primitives; **end-to-end seeded assignment → persisted events → cockpit SSE is not wired in worker/web under this exclusive scope.** Swarm target if collective IT RUNS fails: wire `execute-run` → run-loop + EventStoreTx + bus (Cael) with D/J consuming SSE.
 - Committing this checkpoint only via agent-commit.ps1; mutex must release.
+
+### 2026-07-23T18:12Z — GATE 1 RED WIRE: fake golden path (Birch override)
+
+**Scope:** `packages/agent-runtime/src/golden-path/**`, `apps/worker` dispatch only. No apps/web (Aria/Wisp SSE handoff = `events[]` + `lastSeq` from `runSeededGoldenPath`).
+
+**Commands (pass):**
+```
+pnpm --filter @forge/agent-runtime test   # 166 pass (incl. golden-path)
+pnpm --filter @forge/worker test          # 3 pass (execute-run → golden path)
+```
+
+**Seam wired:**
+`JOB_KINDS.EXECUTE_RUN` → `dispatchExecuteRunJob` → `runSeededGoldenPath` →
+`plan.drafted/approved` → `executeRun` → gap `checkout-error-log-analyzer` →
+FakeFoundry 4→9 repair (message `expected 9, received 4`) → install pin →
+reclaim step → artifact "Checkout customer impact" (distinctCount **9**) → `run.completed`.
+
+**Event sequence (order-preserving required subset):**
+1. `plan.drafted`
+2. `plan.approved`
+3. `run.started`
+4. `step.started`
+5. `capability.gap_detected`
+6. `capability.build_started`
+7. `capability.gate_failed` (detail.message = `expected 9, received 4`)
+8. `capability.repair_started`
+9. `capability.gate_passed` (distinctCount=9)
+10. `capability.repair_succeeded`
+11. `capability.installed`
+12. `step.started` (reclaim)
+13. `artifact.ready`
+14. `step.completed`
+15. `run.completed`
+
+**Invariants proven:** same `EventStoreTx` for state transitions + emit; gapless seq; SSE resume fold equals continuous consumer; fixture 4-vs-9 integrated (naive ids top-level only; repaired 9; no `cus_ZZ9`).
+
+**REQUEST → Node / Aria / Wisp:** mount `GET /api/runs/:runId/stream` on `@forge/events` `createRunEventStream` + `MemoryEventStore`/`RunEventBus` (or Postgres emit) consuming the same seq; do not re-implement event shapes.
+
+**Status:** TRACK A package+golden-path **GREEN** for fake seam; full IT RUNS still needs D cockpit + E artifact dock + J seed HTTP.

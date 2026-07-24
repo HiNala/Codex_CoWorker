@@ -30,11 +30,7 @@ export interface CapabilityResolver {
 }
 
 export interface FoundryPort {
-  requestBuild(
-    ctx: RunContext,
-    step: PlanStep,
-    gap: CapabilityDescriptor,
-  ): Promise<void>;
+  requestBuild(ctx: RunContext, step: PlanStep, gap: CapabilityDescriptor): Promise<void>;
   onInstalled(capabilityRef: CapabilityRef, stepId: string): Promise<void>;
 }
 
@@ -50,10 +46,7 @@ export interface ArtifactPort {
 }
 
 export interface BudgetPort {
-  check(
-    ctx: RunContext,
-    step: PlanStep,
-  ): Promise<{ ok: true } | { ok: false; reason: string }>;
+  check(ctx: RunContext, step: PlanStep): Promise<{ ok: true } | { ok: false; reason: string }>;
   consume(ctx: RunContext, microcredits: number, reason: string): Promise<void>;
 }
 
@@ -88,8 +81,5 @@ export interface RunContext extends RunIdentity {
   /** Optional hook for side effects after a successful emit (e.g. live bus). */
   onEvent?: (event: RunEvent) => void;
   /** Executes the concrete work for a step once capabilities and budget are ready. */
-  runStepWork(
-    step: PlanStep,
-    resolved: CapabilityRef[],
-  ): Promise<StepWorkResult>;
+  runStepWork(step: PlanStep, resolved: CapabilityRef[]): Promise<StepWorkResult>;
 }

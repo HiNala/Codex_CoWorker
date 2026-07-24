@@ -12,6 +12,7 @@
     "test": "vitest run --root ../.. apps/worker"
   },
   "dependencies": {
+    "@forge/agent-runtime": "workspace:*",
     "@forge/config": "workspace:*",
     "@forge/jobs": "workspace:*",
     "@forge/object-store": "workspace:*"

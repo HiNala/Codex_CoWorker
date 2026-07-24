@@ -80,9 +80,12 @@ async function runLoop(): Promise<void> {
       }
 
       // Heartbeat while working so long model/foundry jobs keep the lease.
-      const heartbeat = setInterval(() => {
-        void queue.heartbeat(job.id, workerId, environment.JOB_LEASE_MS);
-      }, Math.max(5_000, Math.floor(environment.JOB_LEASE_MS / 3)));
+      const heartbeat = setInterval(
+        () => {
+          void queue.heartbeat(job.id, workerId, environment.JOB_LEASE_MS);
+        },
+        Math.max(5_000, Math.floor(environment.JOB_LEASE_MS / 3)),
+      );
 
       try {
         await dispatchJob(job);

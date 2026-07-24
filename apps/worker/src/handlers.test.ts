@@ -10,7 +10,7 @@ function job(type: string): LeasedJob {
     stepId: null,
     queue: "default",
     type,
-    payload: {},
+    payload: { seededGolden: true },
     attempt: 1,
     maxAttempts: 3,
     leaseExpiresAt: new Date(),
@@ -18,8 +18,13 @@ function job(type: string): LeasedJob {
 }
 
 describe("dispatchJob", () => {
-  it("accepts all canonical job kinds on the fake path", async () => {
+  it("execute-run runs the seeded golden path end-to-end", async () => {
+    await expect(dispatchJob(job(JOB_KINDS.EXECUTE_RUN))).resolves.toBeUndefined();
+  });
+
+  it("accepts other canonical kinds on the fake path", async () => {
     for (const type of Object.values(JOB_KINDS)) {
+      if (type === JOB_KINDS.EXECUTE_RUN) continue;
       await expect(dispatchJob(job(type))).resolves.toBeUndefined();
     }
   });
