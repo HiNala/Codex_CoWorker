@@ -1,3 +1,12 @@
+# FORGE local stack
+# Infra only (agents day-to-day):  pnpm dev:infra  → postgres + minio + createbucket
+# Full app stack:                  docker compose up -d --build
+# Sandbox image smoke:             docker compose --profile sandbox run --rm sandbox-runner
+# Dev extras (mailpit):            docker compose --profile dev up -d mailpit
+#
+# Local credentials below are intentionally weak and bind to 127.0.0.1 only.
+# Never reuse them for Railway or any shared environment.
+
 name: forge
 
 services:
@@ -69,6 +78,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      HOSTNAME: 0.0.0.0
       DATABASE_URL: postgresql://postgres:forge@postgres:5432/forge
       S3_ENDPOINT: http://minio:9000
       S3_REGION: us-east-1
@@ -208,6 +218,7 @@ services:
     pids_limit: 64
     mem_limit: 512m
     cpus: 1
+    # Batch entrypoint — not a long-running HTTP service. No healthcheck.
 
   mailpit:
     image: axllent/mailpit@sha256:b868afa176bfd6cce2323ea316cd99ccad77915e51e595748f6d786700ecf109

@@ -1,9 +1,47 @@
+# Railway upload ignore — keep deploys small and secret-free.
+# Dockerfiles still control the final image layers.
+
+# Dependencies and build outputs
 **/node_modules
 **/.next
-coverage
-playwright-report
-test-results
+**/dist
+**/.turbo
+**/.cache
+**/coverage
+**/*.tsbuildinfo
+
+# Secrets — never upload. Repo is public.
 .env
 .env.*
 !.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# VCS / IDE / OS noise
+.git
+.github
+.vscode
+.idea
+**/.DS_Store
+**/Thumbs.db
+
+# Tests and local reports
+e2e
+playwright-report
+test-results
+coverage
 *.log
+**/*.log
+
+# Docs bulk not needed for container builds
+docs
+**/*.md
+
+# Local-only artefacts
+*.pem
+*.key
+*.p12
+tmp
+temp
+.pnpm-store

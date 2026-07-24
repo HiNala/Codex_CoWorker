@@ -1,3 +1,7 @@
+/**
+ * Minimal Railway hello probe — no dependencies, no secrets.
+ * Liveness: GET /api/health/live | /health | /healthz
+ */
 import http from "node:http";
 
 const port = Number(process.env.PORT ?? 3000);

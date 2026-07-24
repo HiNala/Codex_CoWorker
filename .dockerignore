@@ -1,11 +1,51 @@
+# Dependencies and build outputs — rebuilt inside Docker.
 **/node_modules
 **/.next
 **/dist
-coverage
-playwright-report
-test-results
+**/.turbo
+**/.cache
+**/coverage
+**/*.tsbuildinfo
+
+# Secrets — never ship into image context. Repo is public.
 .env
 .env.*
 !.env.example
-docs/forge-mission-pack
+**/.env
+**/.env.*
+!**/.env.example
+
+# VCS / IDE / OS noise
+.git
+.gitignore
+.gitattributes
+.github
+.vscode
+.idea
+**/.DS_Store
+**/Thumbs.db
+
+# Tests, reports, and local tooling not needed at image build time
+e2e
+playwright-report
+test-results
+playwright.config.ts
+coverage
 *.log
+**/*.log
+
+# Docs bulk (mission pack, ADRs, runbooks) — not required to build images
+docs
+**/*.md
+
+# Hello-world Railway probe is a separate build context
+infra/hello
+infra/railway
+
+# Misc local artefacts
+*.pem
+*.key
+*.p12
+tmp
+temp
+.pnpm-store
