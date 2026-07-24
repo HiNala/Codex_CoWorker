@@ -1,0 +1,97 @@
+diff --git a/src/checkout/prices.test.ts b/src/checkout/prices.test.ts
+index f953be5..d208dc8 100644
+--- a/src/checkout/prices.test.ts
++++ b/src/checkout/prices.test.ts
+@@ -1,5 +1,5 @@
+ import { describe, expect, it } from "vitest";
+-import { isKnownPlan, PRICE_IDS, resolvePriceId } from "./prices";
++import { isKnownPlan, PRICE_IDS, resolvePrice, resolvePriceId } from "./prices";
+ 
+ describe("resolvePriceId", () => {
+   it("resolves starter monthly", () => {
+@@ -14,6 +14,12 @@ describe("resolvePriceId", () => {
+     expect(resolvePriceId("scale", "monthly")).toBe(PRICE_IDS.scale_monthly);
+   });
+ 
++  it("resolves annual plans under the yearly key", () => {
++    expect(resolvePriceId("starter", "yearly")).toBe(PRICE_IDS.starter_yearly);
++    expect(resolvePriceId("team", "yearly")).toBe(PRICE_IDS.team_yearly);
++    expect(resolvePriceId("scale", "yearly")).toBe(PRICE_IDS.scale_yearly);
++  });
++
+   it("returns undefined for unknown plan", () => {
+     expect(resolvePriceId("enterprise", "monthly")).toBeUndefined();
+   });
+@@ -27,3 +33,19 @@ describe("resolvePriceId", () => {
+     expect(isKnownPlan("hobby")).toBe(false);
+   });
+ });
++
++describe("resolvePrice", () => {
++  it("returns ok for team yearly", () => {
++    expect(resolvePrice("team", "yearly")).toEqual({
++      ok: true,
++      priceId: PRICE_IDS.team_yearly,
++    });
++  });
++
++  it("returns typed unknown_interval for annual (legacy key)", () => {
++    expect(resolvePrice("team", "annual")).toEqual({
++      ok: false,
++      reason: "unknown_interval",
++    });
++  });
++});
+diff --git a/src/checkout/prices.ts b/src/checkout/prices.ts
+index 35abfcd..d9c4a8a 100644
+--- a/src/checkout/prices.ts
++++ b/src/checkout/prices.ts
+@@ -1,20 +1,44 @@
+ /**
+  * Stripe Price IDs for each plan × billing cadence.
+  * Keys are composed as `${plan}_${interval}`.
++ * Interval vocabulary is shared with the pricing page toggle: monthly | yearly.
+  */
++export type BillingInterval = "monthly" | "yearly";
++
+ export const PRICE_IDS = {
+   starter_monthly: "price_1QxStarterM",
+-  starter_annual: "price_1QxStarterA",
++  starter_yearly: "price_1QxStarterA",
+   team_monthly: "price_1QxTeamM",
+-  team_annual: "price_1QxTeamA",
++  team_yearly: "price_1QxTeamA",
+   scale_monthly: "price_1QxScaleM",
+-  scale_annual: "price_1QxScaleA",
++  scale_yearly: "price_1QxScaleA",
+ } as const;
+ 
+ export type PriceKey = keyof typeof PRICE_IDS;
+ 
++export type ResolvePriceResult =
++  | { ok: true; priceId: string }
++  | { ok: false; reason: "unknown_plan" | "unknown_interval" };
++
+ export function resolvePriceId(plan: string, interval: string): string | undefined {
+-  return PRICE_IDS[`${plan}_${interval}` as keyof typeof PRICE_IDS];
++  const result = resolvePrice(plan, interval);
++  return result.ok ? result.priceId : undefined;
++}
++
++/** Typed lookup used by the checkout route - never returns a silent miss. */
++export function resolvePrice(plan: string, interval: string): ResolvePriceResult {
++  if (!isKnownPlan(plan)) {
++    return { ok: false, reason: "unknown_plan" };
++  }
++  if (interval !== "monthly" && interval !== "yearly") {
++    return { ok: false, reason: "unknown_interval" };
++  }
++  const key = `${plan}_${interval}` as PriceKey;
++  const priceId = PRICE_IDS[key];
++  if (!priceId) {
++    return { ok: false, reason: "unknown_interval" };
++  }
++  return { ok: true, priceId };
+ }
+ 
+ export function isKnownPlan(plan: string): plan is "starter" | "team" | "scale" {

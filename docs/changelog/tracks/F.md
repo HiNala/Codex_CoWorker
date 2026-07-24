@@ -27,6 +27,17 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - PR pipeline: hand-written patch first, then Codex wiring later.
 - Spawning 5 exclusive-directory sub-agents now (Zendesk / Composio Gmail / Octen / GitHub PR / acme-store).
 
+### Demo repo sub-agent
+
+- Completed `demo/acme-store` Broken Checkout storefront (Track L demo scope only).
+- Pricing UI: 3 plans + monthly/yearly toggle; `PlanToggle` emits `yearly`.
+- Bug intact: `PRICE_IDS` keyed `annual`; annual path → undefined price → generic 500.
+- `POST /api/checkout` uses Stripe session create structure; honest `not_configured` without key.
+- Unit suite: prices (6) + session (4) + format (3) = 13.
+- Seeded `logs/checkout-errors.ndjson`: 40 checkout_failed, first 2026-07-16 / last 2026-07-23, naive customer count **4**, correct **9**; unrelated rate_limit/timeout/card_declined for taxonomy.
+- `scripts/verify-customer-counts.mjs` + `npm run verify:logs` asserts 4 vs 9.
+- README/CONTRIBUTING present; `.env.example` placeholders only.
+
 ### Zendesk sub-agent
 
 - Hardened `packages/integrations/src/zendesk/webhook.ts`:
@@ -73,3 +84,12 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 | `RESEND_API_KEY` | ABSENT → FakeNotifier unless Composio Gmail linked |
 
 - Reporting rule locked: key name + CONFIGURED/UNSET only — never value, prefix, length, or last-4.
+
+### [2026-07-23] ACK git protocol correction — NO pull/rebase/stash
+
+- Binding sequence only: `git add <explicit own paths>` → `git commit` → `git push origin main`.
+- **Forbidden:** `git pull`, `git pull --rebase`, `--autostash`, `git stash`, `git reset`, checkout of foreign paths.
+- Non-fast-forward push → **STOP**, report Node, hold for central sync gate.
+- Shared tree = shared HEAD; no per-agent divergence to reconcile.
+- **In-flight file verify (TIDE exclusive scope):** all core paths present — integrations (zendesk/email/github/approval/status/composio), research (octen + fakes), demo/acme-store (checkout + app + components + logs), F.md. **Nothing missing.**
+- `git stash list`: empty.
