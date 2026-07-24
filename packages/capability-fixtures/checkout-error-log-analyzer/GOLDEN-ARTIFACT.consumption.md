@@ -6,7 +6,9 @@
 packages/capability-fixtures/checkout-error-log-analyzer/GOLDEN-ARTIFACT.json
 ```
 
-**War-room cut:** `checkout-error-log-analyzer` is **PREBUILT**, not live-built on stage.
+**War-room cuts:**  
+- **CUT #4:** only `checkout-error-log-analyzer` executes. Other capability cards = display inventory.  
+- Capability itself is **PREBUILT** (not live-built on stage).
 
 ---
 

@@ -134,3 +134,10 @@
 - `capabilities/incident-report-composer/src/lib/validate.ts:33` — assign `representativeQuotes` only when present; cast `NonNullable<ClusterIn["representativeQuotes"]>` (not `| undefined`, not `any`)
 - `tsc -p capabilities/incident-report-composer` PASS · unit tests 7/7 PASS
 - Workspace typecheck sole red package cleared
+
+### [2026-07-23T18:22Z] E · CUT #4 · only checkout-error-log-analyzer executes
+
+- Stopped spending effort on other modules as runnable; they remain prebuilt **display inventory**.
+- `rehearsal-audit.test.ts` narrowed to analyzer 4→9 + GOLDEN-ARTIFACT table.typed pins + Cael markdown incompatibility flag
+- Canonical contract unchanged: `GOLDEN-ARTIFACT.json` + `CAEL-MISMATCH.md` (Cael must emit table.typed JSON, not document.markdown)
+- Scoped tests: checkout-error-log-analyzer + golden-path — **25 PASS**
