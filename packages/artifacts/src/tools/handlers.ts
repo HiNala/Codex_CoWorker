@@ -1,4 +1,4 @@
-import type { Session } from "@forge/contracts";
+import type { ArtifactStatus, ArtifactType, Session } from "@forge/contracts";
 import type { ArtifactService } from "../service/artifact-service";
 import type {
   AttachEvidenceInput,
@@ -8,6 +8,29 @@ import type {
 } from "../types";
 import { ArtifactValidationError } from "../errors";
 import { ARTIFACT_TOOL_NAMES, type ArtifactToolName } from "./descriptors";
+
+const ARTIFACT_TYPES: readonly ArtifactType[] = [
+  "document.markdown",
+  "table.typed",
+  "code.change",
+  "capability.package",
+  "receipt.assignment",
+];
+
+const ARTIFACT_STATUSES: readonly ArtifactStatus[] = [
+  "declared",
+  "drafting",
+  "ready_for_review",
+  "approved",
+  "delivered",
+  "published",
+  "superseded",
+  "archived",
+  "blocked",
+  "failed",
+  "rejected",
+  "withdrawn",
+];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -103,11 +126,7 @@ export function dispatchArtifactTool(
         authorRef: requireString(a, "authorRef"),
       };
       const contentFormat = optionalString(a, "contentFormat");
-      if (
-        contentFormat === "markdown" ||
-        contentFormat === "json" ||
-        contentFormat === "diff"
-      ) {
+      if (contentFormat === "markdown" || contentFormat === "json" || contentFormat === "diff") {
         input.contentFormat = contentFormat;
       }
       const range = a["sourceEventRange"];
@@ -130,9 +149,20 @@ export function dispatchArtifactTool(
       const assignmentId = optionalString(a, "assignmentId");
       if (assignmentId !== undefined) filter.assignmentId = assignmentId;
       const type = optionalString(a, "type");
-      if (type !== undefined) filter.type = type as ListArtifactsFilter["type"];
+      if (type !== undefined) {
+        if (!(ARTIFACT_TYPES as readonly string[]).includes(type)) {
+          throw new ArtifactValidationError(`invalid artifact type: ${type}`);
+        }
+        // Assign only when present — never set the optional key to undefined.
+        filter.type = type as ArtifactType;
+      }
       const status = optionalString(a, "status");
-      if (status !== undefined) filter.status = status as ListArtifactsFilter["status"];
+      if (status !== undefined) {
+        if (!(ARTIFACT_STATUSES as readonly string[]).includes(status)) {
+          throw new ArtifactValidationError(`invalid artifact status: ${status}`);
+        }
+        filter.status = status as ArtifactStatus;
+      }
       const orgId = optionalString(a, "orgId");
       if (orgId !== undefined) filter.orgId = orgId;
       return service.list(session, filter);

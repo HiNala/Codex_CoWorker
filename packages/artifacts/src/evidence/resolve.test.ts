@@ -63,10 +63,7 @@ const records: EvidenceRecord[] = [
 
 describe("resolveEvidence", () => {
   it("resolves known ids in order", () => {
-    const resolved = resolveEvidence(records, [
-      records[1]!.id,
-      records[0]!.id,
-    ]);
+    const resolved = resolveEvidence(records, [records[1]!.id, records[0]!.id]);
     expect(resolved).toHaveLength(2);
     expect(resolved[0]).toMatchObject({
       supported: true,
@@ -195,9 +192,7 @@ describe("trust ranking", () => {
   });
 
   it("aggregates to the weakest trust in the set", () => {
-    expect(aggregateTrust(["official", "secondary", "user_supplied"])).toBe(
-      "user_supplied",
-    );
+    expect(aggregateTrust(["official", "secondary", "user_supplied"])).toBe("user_supplied");
     expect(aggregateTrust([])).toBe("untrusted");
   });
 });

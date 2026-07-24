@@ -46,10 +46,7 @@ function shortId(id: string): string {
   return id.length > 8 ? id.slice(0, 8) : id;
 }
 
-function upsertNode(
-  nodes: Map<string, ProvenanceNode>,
-  node: ProvenanceNode,
-): void {
+function upsertNode(nodes: Map<string, ProvenanceNode>, node: ProvenanceNode): void {
   const existing = nodes.get(node.id);
   if (!existing) {
     nodes.set(node.id, node);
@@ -58,9 +55,8 @@ function upsertNode(
   // Prefer richer labels / meta; never drop known kind.
   nodes.set(node.id, {
     ...existing,
-    label: node.label && node.label !== defaultLabel(node.kind, node.id)
-      ? node.label
-      : existing.label,
+    label:
+      node.label && node.label !== defaultLabel(node.kind, node.id) ? node.label : existing.label,
     meta: { ...existing.meta, ...node.meta },
   });
 }
@@ -143,12 +139,16 @@ export function buildProvenanceGraph(
           : defaultLabel("artifact", fromId),
     });
 
-    upsertNode(nodes, {
+    const targetNode: ProvenanceNode = {
       id: toId,
       kind: versionsById.has(toId) ? "artifact_version" : targetKind,
       label: label ?? defaultLabel(targetKind, toId),
-      meta,
-    });
+    };
+    // exactOptionalPropertyTypes: omit key when meta is absent (do not assign undefined)
+    if (meta !== undefined) {
+      targetNode.meta = meta;
+    }
+    upsertNode(nodes, targetNode);
 
     const key = `${fromId}->${toId}:${rel.relation}`;
     if (edgeKeys.has(key)) continue;
@@ -181,10 +181,7 @@ export function buildProvenanceGraph(
  * Returns nodes in discovery order, excluding the start node.
  * Cycles are ignored via a visited set.
  */
-export function traverseUpstream(
-  graph: ProvenanceGraph,
-  fromId: string,
-): ProvenanceNode[] {
+export function traverseUpstream(graph: ProvenanceGraph, fromId: string): ProvenanceNode[] {
   const byId = new Map(graph.nodes.map((n) => [n.id, n]));
   const adjacency = new Map<string, string[]>();
 

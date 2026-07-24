@@ -5,13 +5,7 @@ export const MAX_ROWS = 50_000;
 export const MAX_TABLE_BYTES = 10 * 1024 * 1024;
 
 export type TypedTableColumnType =
-  | "string"
-  | "number"
-  | "boolean"
-  | "date"
-  | "url"
-  | "json"
-  | (string & {});
+  "string" | "number" | "boolean" | "date" | "url" | "json" | (string & {});
 
 export type TypedTableColumn = {
   id: string;
@@ -137,7 +131,11 @@ export function exportCsvDetailed(table: TypedTableContent): TableExportResult {
     }
     parts.push(sanitizeCsvCell("… truncated: export exceeded 10 MB limit"));
     body = parts.join("\n");
-    return { body, truncated: true, truncatedRows: Math.max(truncatedRows, table.rows.length - (parts.length - 2)) };
+    return {
+      body,
+      truncated: true,
+      truncatedRows: Math.max(truncatedRows, table.rows.length - (parts.length - 2)),
+    };
   }
 
   return { body, truncated, truncatedRows };

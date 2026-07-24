@@ -1,9 +1,4 @@
-import type {
-  Artifact,
-  ArtifactStatus,
-  ArtifactType,
-  ArtifactVersion,
-} from "@forge/contracts";
+import type { Artifact, ArtifactStatus, ArtifactType, ArtifactVersion } from "@forge/contracts";
 
 export type ContentFormat = ArtifactVersion["contentFormat"];
 export type AuthorType = ArtifactVersion["authorType"];

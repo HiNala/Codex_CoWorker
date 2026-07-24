@@ -70,10 +70,7 @@ describe("exportJson", () => {
 describe("tableMetrics", () => {
   it("reports row and warning counts", () => {
     const table = sampleTable(5);
-    table.warnings = [
-      { rowId: "r0", message: "duplicate" },
-      { message: "type mismatch" },
-    ];
+    table.warnings = [{ rowId: "r0", message: "duplicate" }, { message: "type mismatch" }];
     expect(tableMetrics(table)).toEqual({ rows: 5, warnings: 2 });
   });
 

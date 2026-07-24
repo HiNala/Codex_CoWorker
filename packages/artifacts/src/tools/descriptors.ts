@@ -132,8 +132,7 @@ export const artifactToolDescriptors: ToolDescriptor[] = [
   },
   {
     name: "artifact.request_review",
-    description:
-      "Transition an artifact with content to ready_for_review for human approval.",
+    description: "Transition an artifact with content to ready_for_review for human approval.",
     inputSchema: {
       type: "object",
       required: ["artifactId"],

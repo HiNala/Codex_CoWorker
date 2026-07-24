@@ -194,11 +194,7 @@ export class ArtifactService {
   /**
    * `artifact.read` — by id + optional version. Cross-tenant → null (404 semantics).
    */
-  read(
-    session: Session,
-    artifactId: string,
-    versionId?: string,
-  ): ArtifactReadResult | null {
+  read(session: Session, artifactId: string, versionId?: string): ArtifactReadResult | null {
     const artifact = this.#store.getArtifact(artifactId);
     if (!artifact || artifact.orgId !== session.orgId) {
       return null;
@@ -350,8 +346,7 @@ export class ArtifactService {
       ...artifact,
       status: to,
       updatedAt: nowIso(),
-      approvedVersionId:
-        to === "approved" ? artifact.currentVersionId : artifact.approvedVersionId,
+      approvedVersionId: to === "approved" ? artifact.currentVersionId : artifact.approvedVersionId,
     };
     this.#store.putArtifact(updated);
     return cloneArtifact(updated);
@@ -370,9 +365,7 @@ export class ArtifactService {
     for (const id of ids) {
       if (id === undefined) continue;
       // Loose UUID check; contracts use z.string().uuid()
-      if (
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
-      ) {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
         throw new ArtifactValidationError(`Invalid id: ${id}`);
       }
     }

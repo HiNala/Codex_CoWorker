@@ -34,17 +34,18 @@ export type EvidenceResolution =
       supported: true;
       unsupported: false;
       evidenceId: string;
-      anchorId?: string;
+      /** Present when resolved from a citation/cell anchor; may be explicitly undefined. */
+      anchorId?: string | undefined;
       record: EvidenceRecord;
-      claim?: string;
-      excerptSpan?: { start: number; end: number };
+      claim?: string | undefined;
+      excerptSpan?: { start: number; end: number } | undefined;
     }
   | {
       supported: false;
       unsupported: true;
       evidenceId: string | null;
-      anchorId?: string;
-      claim?: string;
+      anchorId?: string | undefined;
+      claim?: string | undefined;
       reason: "missing_evidence" | "missing_citation" | "empty_ref";
     };
 

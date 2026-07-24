@@ -86,13 +86,20 @@ export function parseUnifiedDiff(diff: string): FileDiff[] {
     if (raw.startsWith("--- ")) {
       if (!current) {
         current = {
-          path: raw.slice(4).replace(/^[ab]\//, "").trim() || "unknown",
+          path:
+            raw
+              .slice(4)
+              .replace(/^[ab]\//, "")
+              .trim() || "unknown",
           lines: [],
           additions: 0,
           deletions: 0,
         };
       }
-      const oldPath = raw.slice(4).replace(/^[ab]\//, "").trim();
+      const oldPath = raw
+        .slice(4)
+        .replace(/^[ab]\//, "")
+        .trim();
       if (oldPath && oldPath !== "/dev/null") {
         current.oldPath = oldPath;
       }
@@ -109,7 +116,10 @@ export function parseUnifiedDiff(diff: string): FileDiff[] {
           deletions: 0,
         };
       }
-      const newPath = raw.slice(4).replace(/^[ab]\//, "").trim();
+      const newPath = raw
+        .slice(4)
+        .replace(/^[ab]\//, "")
+        .trim();
       if (newPath && newPath !== "/dev/null") {
         current.path = newPath;
       }

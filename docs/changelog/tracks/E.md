@@ -73,3 +73,19 @@
 - **TRACK E GREEN** · most residual risk: Cael must integrate fixture into verifier before Gate 2 (not a Gate 1 unit-test fail)
 - **TRACK C GREEN** · same residual: live-build path is fixture-ready; foundry loop is Cael
 - Mutex not held. Ready for IT RUNS 18:02.
+
+### [2026-07-23T17:58:30Z] E · Gate 1 prep · IT RUNS standing by
+
+- Command: `pnpm exec vitest run packages/artifacts packages/capability-fixtures packages/capability-sdk capabilities`
+- Result: **PASS** — 22 files, **292 tests**, exit 0 (re-run at 17:58:12)
+- Exclusive paths dirty: **none** · mutex: **released** · no live adapters · no polish started
+- **Single most important red seam (collective, not E unit-red):** Cael verifier not yet proven to run trusted case `001-seeded-demo-window` so attempt-1 surfaces exact `expected 9, received 4` on the golden path. Rigel fixture is ready; integration is the seam.
+
+### [2026-07-23T18:01Z] E · fix · exactOptionalPropertyTypes Gate 1 blocker
+
+- All 8+ monorepo typecheck failures were in `@forge/artifacts` under `exactOptionalPropertyTypes`.
+- **resolve.ts / types:** widened `anchorId` / `claim` / `excerptSpan` to `?: X | undefined` (callers legitimately pass optional claim/anchor).
+- **graph.ts:** omit `meta` key when undefined (do not assign `undefined`).
+- **handlers.ts:** parse type/status against enum unions; assign only when present (never `undefined` into optional).
+- No `any`, did not disable `exactOptionalPropertyTypes`.
+- Verify: `tsc -p packages/artifacts --types node` clean; evidence/provenance/tools/service tests pass.

@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Session } from "@forge/contracts";
 import { ArtifactService } from "./service/artifact-service";
-import {
-  ARTIFACT_TOOL_NAMES,
-  artifactToolDescriptors,
-} from "./tools/descriptors";
+import { ARTIFACT_TOOL_NAMES, artifactToolDescriptors } from "./tools/descriptors";
 import { dispatchArtifactTool, isArtifactToolName } from "./tools/handlers";
 
 const ORG = "0198206f-5f53-7000-8000-0000000000a1";

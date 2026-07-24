@@ -12,9 +12,9 @@ function indexById(records: readonly EvidenceRecord[]): Map<string, EvidenceReco
 function supported(
   record: EvidenceRecord,
   extras?: {
-    anchorId?: string;
-    claim?: string;
-    excerptSpan?: { start: number; end: number };
+    anchorId?: string | undefined;
+    claim?: string | undefined;
+    excerptSpan?: { start: number; end: number } | undefined;
   },
 ): EvidenceResolution {
   return {
@@ -30,8 +30,8 @@ function supported(
 
 function unsupported(input: {
   evidenceId: string | null;
-  anchorId?: string;
-  claim?: string;
+  anchorId?: string | undefined;
+  claim?: string | undefined;
   reason: "missing_evidence" | "missing_citation" | "empty_ref";
 }): EvidenceResolution {
   return {

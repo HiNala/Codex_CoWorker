@@ -169,8 +169,6 @@ describe("nodesByRelation", () => {
   it("filters direct dependencies by relation", () => {
     const graph = buildProvenanceGraph(ARTIFACT_ID, relations, evidence, versions);
     const evidenceNodes = nodesByRelation(graph, ARTIFACT_ID, "evidence");
-    expect(evidenceNodes.map((n) => n.id).sort()).toEqual(
-      [EVIDENCE_A, EVIDENCE_B].sort(),
-    );
+    expect(evidenceNodes.map((n) => n.id).sort()).toEqual([EVIDENCE_A, EVIDENCE_B].sort());
   });
 });

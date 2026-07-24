@@ -53,10 +53,7 @@ export function aggregateTrust(trusts: readonly EvidenceTrust[]): EvidenceTrust 
  * Clamp a proposed trust so it never exceeds an established ceiling.
  * Used when re-attaching or summarizing evidence: proposed ≤ ceiling.
  */
-export function clampTrust(
-  proposed: EvidenceTrust,
-  ceiling: EvidenceTrust,
-): EvidenceTrust {
+export function clampTrust(proposed: EvidenceTrust, ceiling: EvidenceTrust): EvidenceTrust {
   return weakerTrust(proposed, ceiling);
 }
 
@@ -70,10 +67,7 @@ export function isTrustUpgrade(current: EvidenceTrust, next: EvidenceTrust): boo
 /**
  * Apply a trust transition. Illegal upgrades return the current trust unchanged.
  */
-export function applyTrustTransition(
-  current: EvidenceTrust,
-  next: EvidenceTrust,
-): EvidenceTrust {
+export function applyTrustTransition(current: EvidenceTrust, next: EvidenceTrust): EvidenceTrust {
   if (isTrustUpgrade(current, next)) return current;
   return next;
 }

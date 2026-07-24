@@ -18,9 +18,7 @@ describe("sanitizeMarkdown", () => {
   });
 
   it("strips other HTML tags", () => {
-    expect(sanitizeMarkdown("<b>bold</b> and <img src=x onerror=alert(1)>")).toBe(
-      "bold and ",
-    );
+    expect(sanitizeMarkdown("<b>bold</b> and <img src=x onerror=alert(1)>")).toBe("bold and ");
   });
 
   it("blocks javascript: URLs in markdown links", () => {

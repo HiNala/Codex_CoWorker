@@ -472,12 +472,7 @@ describe("ArtifactService", () => {
         authorRef: "agent-1",
       });
 
-      const compare = service.compareVersions(
-        sessionA,
-        artifact.id,
-        v1.version.id,
-        v2.version.id,
-      );
+      const compare = service.compareVersions(sessionA, artifact.id, v1.version.id, v2.version.id);
 
       expect(compare.versionA.id).toBe(v1.version.id);
       expect(compare.versionB.id).toBe(v2.version.id);
@@ -488,12 +483,7 @@ describe("ArtifactService", () => {
       expect(compare.summary.addedLines).toBeGreaterThan(0);
       expect(compare.summary.removedLines).toBeGreaterThan(0);
 
-      const same = service.compareVersions(
-        sessionA,
-        artifact.id,
-        v1.version.id,
-        v1.version.id,
-      );
+      const same = service.compareVersions(sessionA, artifact.id, v1.version.id, v1.version.id);
       expect(same.summary.contentEqual).toBe(true);
       expect(same.summary.changed).toBe(false);
     });

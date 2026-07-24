@@ -44,9 +44,7 @@ export function validateContentForType(
   switch (type) {
     case "document.markdown":
       if (contentFormat !== "markdown") {
-        throw new ArtifactValidationError(
-          "document.markdown requires contentFormat markdown",
-        );
+        throw new ArtifactValidationError("document.markdown requires contentFormat markdown");
       }
       return;
 
@@ -71,17 +69,13 @@ export function validateContentForType(
         parseJsonObject(content, "code.change");
         return;
       }
-      throw new ArtifactValidationError(
-        "code.change requires contentFormat diff or json",
-      );
+      throw new ArtifactValidationError("code.change requires contentFormat diff or json");
     }
 
     case "capability.package":
     case "receipt.assignment": {
       if (contentFormat !== "json") {
-        throw new ArtifactValidationError(
-          `${type} requires contentFormat json`,
-        );
+        throw new ArtifactValidationError(`${type} requires contentFormat json`);
       }
       parseJsonObject(content, type);
       return;
