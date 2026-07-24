@@ -45,18 +45,49 @@ git pull            git pull --rebase       --autostash
 git stash           git reset               git checkout <paths you don't own>
 ```
 
-## Cadence — the only sequence you run
+## 🔒 THE COMMIT MUTEX — the only sanctioned commit command (T+48)
+
+**Scoped `git add` is not sufficient on its own.** `.git/index` is a single
+**global** file. This race is confirmed, not theoretical:
+
+```
+Agent A: git add packages/artifacts     <- stages A's files into the shared index
+Agent B: git commit -m "..."            <- B commits A's files under B's message
+Agent A: git commit -m "..."            <- index already empty
+```
+
+It happened to Rigel. Commit `1c0fe06` is labelled `feat(track-d): Mission
+Control plan panel` but actually contains **123 files**, including
+`capabilities/`, `packages/artifacts`, `packages/capability-fixtures`, and
+`packages/capability-sdk` — all Rigel's Track E/C work, swallowed into Aria's
+commit. Nothing was lost that time. Next time it will be.
+
+**Do not run raw `git add` / `git commit` / `git push` any more.** Use:
+
+```powershell
+pwsh scripts/agent-commit.ps1 -Agent <YourName> `
+  -Paths <comma,separated,owned,paths> `
+  -MessageFile <path-to-message-file>
+```
+
+It acquires one atomic repo-wide mutex before `git add`, holds it across
+add+commit+push, and releases it in a `finally`. It also **refuses to commit if
+any staged file falls outside your declared `-Paths`**, so contamination is
+caught before it lands rather than found in an audit afterwards.
+
+### If the lock is busy
+
+The script exits **2** and performs **no git at all**. That is the correct
+outcome. **Keep coding and retry at your next checkpoint.** Do not wait in a
+loop, do not run raw git, do not work around it. Locks older than 5 minutes are
+reclaimed automatically, so a crashed agent cannot wedge the repo.
+
+## Cadence
 
 - Commit every **8–12 minutes**. Small, scoped, individually-working increments.
 - Never let uncommitted work sit longer than 12 minutes.
-
-```bash
-git add <your explicit paths>      # never -A, never .
-git commit -F <message-file>       # or -m
-git push origin main
-```
-
-That is the whole procedure. Nothing before it, nothing between the steps.
+- One `agent-commit.ps1` invocation per checkpoint. Nothing before it, nothing
+  between its steps.
 
 ### If push is rejected as non-fast-forward
 
