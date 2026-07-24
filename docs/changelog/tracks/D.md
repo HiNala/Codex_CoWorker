@@ -357,3 +357,12 @@ When DB has Cael's golden path: cockpit `data-last-seq` should reach **24** (gap
 - `901–1279` → tablet only  
 - `<=900` → mobile only
 Never two shells in the React tree.
+
+## [NAV] D · universal rail + /home dashboard
+
+1. `(app)/layout.tsx` wraps all product routes with `DextworkSidebar` + main.
+2. Home → `/home` assignment list (Broken Checkout + history seeds), not marketing `/`.
+3. Active highlight via `usePathname` on Home / Runs / Outputs / Settings.
+4. Cockpit no longer embeds a second rail (grid is chat + right rail only).
+
+Verify: `/home`, `/a/…`, `/outputs`, `/outputs/[id]`, `/settings` all show the rail.

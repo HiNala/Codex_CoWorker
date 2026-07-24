@@ -9,7 +9,6 @@ import { FoundryPanel } from "@/components/foundry/foundry-panel";
 import { useRunStream } from "@/hooks/use-run-stream";
 import { useShellLayout } from "@/hooks/use-shell-layout";
 import type { RunState } from "@/hooks/run-state";
-import { DextworkSidebar } from "./dextwork-sidebar";
 
 export interface CockpitShellProps {
   assignmentId: string;
@@ -32,8 +31,8 @@ function resolveSlot(
 }
 
 /**
- * Dextwork shell — exactly one layout tree:
- * desktop ≥1280 · tablet 901–1279 · mobile ≤900
+ * Cockpit workspace only (chat + tasks/capabilities rail).
+ * Universal Dextwork icon rail lives in (app)/layout — not here.
  */
 export function CockpitShell({
   assignmentId,
@@ -80,8 +79,7 @@ export function CockpitShell({
   const pendingApprovals = state.approvals.filter((a) => a.status === "pending").length;
 
   const shellAttrs = {
-    "data-dextwork-shell": true,
-    "data-ops-console": true,
+    "data-cockpit": true,
     "data-shell-layout": layout,
     "data-stream-mode": streamMode,
     "data-use-demo-fixture": streamMode === "fixture" ? "true" : "false",
@@ -96,7 +94,6 @@ export function CockpitShell({
 
       {layout === "desktop" ? (
         <div className="cockpit-grid" {...shellAttrs}>
-          <DextworkSidebar runTitle={state.title} runStatus={state.status} />
           <div className="cockpit-chat">{conversationNode}</div>
           <div className="cockpit-rail">
             {missionNode}
@@ -105,62 +102,14 @@ export function CockpitShell({
         </div>
       ) : null}
 
-      {layout === "tablet" ? (
-        <div className="flex h-dvh min-h-0 flex-col overflow-hidden" {...shellAttrs}>
-          <div className="flex min-h-0 flex-1 overflow-hidden">
-            <DextworkSidebar runTitle={state.title} runStatus={state.status} />
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-              <Tabs
-                value={mobileTab}
-                onValueChange={(v) => setMobileTab(v as "chat" | "plan" | "foundry")}
-                className="flex min-h-0 flex-1 flex-col"
-              >
-                <TabsList className="grid h-11 w-full shrink-0 grid-cols-3 rounded-none border-b border-border">
-                  <TabsTrigger value="chat" className="text-xs">
-                    Chat
-                    {pendingApprovals > 0 ? (
-                      <span className="ms-1 tabular-nums text-[10px]">{pendingApprovals}</span>
-                    ) : null}
-                  </TabsTrigger>
-                  <TabsTrigger value="plan" className="text-xs">
-                    Tasks
-                  </TabsTrigger>
-                  <TabsTrigger value="foundry" className="text-xs">
-                    Caps
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent
-                  value="chat"
-                  className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
-                >
-                  {conversationNode}
-                </TabsContent>
-                <TabsContent
-                  value="plan"
-                  className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
-                >
-                  {missionNode}
-                </TabsContent>
-                <TabsContent
-                  value="foundry"
-                  className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
-                >
-                  {foundryNode}
-                </TabsContent>
-              </Tabs>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {layout === "mobile" ? (
-        <div className="flex min-h-dvh flex-col" {...shellAttrs}>
+      {layout === "tablet" || layout === "mobile" ? (
+        <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden" {...shellAttrs}>
           <Tabs
             value={mobileTab}
             onValueChange={(v) => setMobileTab(v as "chat" | "plan" | "foundry")}
-            className="flex min-h-dvh flex-1 flex-col p-2"
+            className="flex min-h-0 flex-1 flex-col"
           >
-            <TabsList className="grid h-11 w-full shrink-0 grid-cols-3">
+            <TabsList className="grid h-11 w-full shrink-0 grid-cols-3 rounded-none border-b border-border">
               <TabsTrigger value="chat" className="text-xs">
                 Chat
                 {pendingApprovals > 0 ? (
@@ -174,13 +123,22 @@ export function CockpitShell({
                 Caps
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="chat" className="m-0 min-h-0 flex-1 overflow-hidden">
+            <TabsContent
+              value="chat"
+              className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+            >
               {conversationNode}
             </TabsContent>
-            <TabsContent value="plan" className="m-0 min-h-0 flex-1 overflow-hidden">
+            <TabsContent
+              value="plan"
+              className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+            >
               {missionNode}
             </TabsContent>
-            <TabsContent value="foundry" className="m-0 min-h-0 flex-1 overflow-hidden">
+            <TabsContent
+              value="foundry"
+              className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+            >
               {foundryNode}
             </TabsContent>
           </Tabs>

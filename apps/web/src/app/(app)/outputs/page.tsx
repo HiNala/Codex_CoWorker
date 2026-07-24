@@ -25,10 +25,10 @@ export default function OutputsLibraryPage() {
           </p>
         </div>
         <Link
-          href="/"
+          href="/home"
           className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
-          Back to home
+          Back to assignments
         </Link>
       </header>
 

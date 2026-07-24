@@ -21,9 +21,9 @@
     overflow-x: hidden;
   }
 
-  /* Desktop only: shell owns scroll. Mobile/tab layout needs page scroll. */
-  @media (min-width: 1024px) {
-    html:has([data-dextwork-shell]) body {
+  /* Product shell owns scroll on desktop; marketing/mobile may page-scroll. */
+  @media (min-width: 901px) {
+    html:has([data-product-shell]) body {
       overflow: hidden;
       height: 100dvh;
     }

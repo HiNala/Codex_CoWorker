@@ -168,19 +168,13 @@
 }
 
 /*
- * Dextwork desktop shell — three columns, full viewport.
- * 76px rail | DOMINANT chat (minmax 620px,1fr) | right rail ~35vw (max 640).
- * Chat is visibly wider than the right rail (operator screenshots 2967–2969).
- * Body never scrolls. Each content region: exactly one .panel-body scroll.
- * Children of flex/grid tracks MUST have min-height:0 + overflow:hidden
- * or content size becomes the min and panels paint over each other.
+ * Product shell: universal 76px rail (layout) + main content.
+ * Cockpit grid is only chat | rail (sidebar is NOT inside the cockpit).
  */
-.cockpit,
-.cockpit-grid {
+.dextwork-app {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr) clamp(440px, 35vw, 640px);
+  grid-template-columns: 76px minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
-  grid-template-areas: "sidebar chat rail";
   height: 100dvh;
   max-height: 100dvh;
   width: 100%;
@@ -189,8 +183,7 @@
   color: var(--foreground);
 }
 
-.cockpit-sidebar {
-  grid-area: sidebar;
+.dextwork-rail {
   min-height: 0;
   min-width: 0;
   overflow: hidden;
@@ -198,6 +191,32 @@
   flex-direction: column;
   border-right: 1px solid var(--border);
   background: var(--ops-ink);
+}
+
+.dextwork-main {
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+}
+
+/* Cockpit: dominant chat | right rail 35vw — no sidebar column here */
+.cockpit,
+.cockpit-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(440px, 35vw, 640px);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "chat rail";
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
 }
 
 .cockpit-chat {
@@ -223,9 +242,14 @@
 
 /* Defeat content-size auto-min so tracks scroll instead of overflow. */
 .cockpit-chat > *,
-.cockpit-rail > * {
+.cockpit-rail > *,
+.dextwork-main > * {
   min-height: 0;
   min-width: 0;
+}
+
+.cockpit-chat > *,
+.cockpit-rail > * {
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -325,5 +349,21 @@
 /*
  * Layout trees are mounted exclusively in React (useShellLayout):
  * desktop ≥1280 · tablet 901–1279 · mobile ≤900.
- * CSS grid below is only for the desktop mount.
+ * Universal rail always comes from (app)/layout.tsx.
  */
+@media (max-width: 900px) {
+  .dextwork-app {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .dextwork-rail {
+    display: none;
+  }
+
+  .dextwork-main {
+    overflow: visible;
+  }
+}
