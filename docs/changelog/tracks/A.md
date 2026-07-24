@@ -83,3 +83,39 @@ Owner: **Cael** (orchestrator + capability foundry). Escalate to **Node**.
 - **LOCK BUSY (exit 2)** = correct; keep coding, retry next checkpoint. No wait loop. No raw git. No workarounds.
 - Still forbidden: pull/rebase/autostash/stash/reset/checkout non-owned. Non-FF push → stop, report Node.
 - Committing held jobs/worker hardenings via agent-commit.ps1 only.
+
+### 2026-07-23T17:58Z — GATE 1 FREEZE
+
+- **Commit command correction ACK:** host is Windows PowerShell 5.1; use  
+  `powershell -ExecutionPolicy Bypass -File scripts/agent-commit.ps1 -Agent Cael -Paths <comma,no,spaces> -MessageFile <path>`  
+  (or in-process `& .\scripts\agent-commit.ps1 -Paths @(...)`). **No `pwsh`.** Mutex mandatory.
+- **Freeze:** no new feature work. In-flight under exclusive scope: clean (nothing uncommitted beyond this checkpoint).
+- **Gate 1 test evidence (all EXIT 0):** events, agent-runtime, jobs, execution, verifier, foundry-core, capability-sdk, worker. Aggregate A core: 178 tests pass (`packages/events`+`agent-runtime`+`jobs`).
+- **Golden-path seam (A/B contribution, fakes):**
+  - Run loop executes ready steps with same-tx emit (MemoryEventStore) — GREEN
+  - Events gapless seq + SSE resume fold — GREEN
+  - Jobs MemoryJobQueue lease/SKIP LOCKED semantics + worker dispatch all JOB_KINDS — GREEN
+  - Foundry build→verify→repair→install under FakeCodex — GREEN
+  - 12-gate verifier + fixture tamper hard-fail — GREEN
+  - Cockpit render / seeded assignment HTTP / artifact dock: owned by D/E/J — not Cael write scope
+- **Status lines:**  
+  - TRACK A GREEN  
+  - TRACK B GREEN  
+- Mutex: lock free before commit; will release after checkpoint commit. No hold.
+
+### 2026-07-23T18:00Z — BIRCH GATE 1 PREP (IT RUNS 18:02)
+
+- No new features. No live adapters. No polish.
+- **Narrow verify exact evidence:**
+  - `pnpm verify:A` → **EXIT 0**  
+    - `@forge/jobs` 8 pass  
+    - `@forge/events` 6 pass  
+    - `@forge/agent-runtime` 164 pass  
+  - `pnpm verify:B` → **EXIT 0**  
+    - `@forge/execution` 27 pass  
+    - `@forge/verifier` 7 pass  
+    - `@forge/foundry-core` 6 pass  
+- **TRACK A GREEN** / **TRACK B GREEN** at package-test level.
+- **Single most important RED seam (golden path, not package tests):**  
+  Worker `dispatchJob` is still **fake no-op** — `execute-run` does not open a DB transaction, call `executeRun`, or stream events to a live `GET /api/runs/:id/stream`. Unit fakes prove emit+run-loop+SSE primitives; **end-to-end seeded assignment → persisted events → cockpit SSE is not wired in worker/web under this exclusive scope.** Swarm target if collective IT RUNS fails: wire `execute-run` → run-loop + EventStoreTx + bus (Cael) with D/J consuming SSE.
+- Committing this checkpoint only via agent-commit.ps1; mutex must release.
