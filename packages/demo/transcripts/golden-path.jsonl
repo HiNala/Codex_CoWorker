@@ -1,0 +1,22 @@
+{"seq":1,"type":"run.started","channel":"system","summary":"Golden path demo run started","ts":"2026-07-23T18:00:00.000Z","level":"info"}
+{"seq":2,"type":"user.message","channel":"narrative","summary":"Ticket #4471: Can't upgrade to Team — annual billing errors out","ts":"2026-07-23T18:00:02.000Z","level":"info","detail":{"ticketId":"4471","requester":"Priya Raghunathan"}}
+{"seq":3,"type":"coworker.message","channel":"narrative","summary":"Drafting assignment contract for annual checkout failure","ts":"2026-07-23T18:00:06.000Z","level":"info"}
+{"seq":4,"type":"plan.drafted","channel":"plan","summary":"Plan: triage ticket, read repo, assess impact, fix, PR, notify","ts":"2026-07-23T18:00:08.000Z","level":"info"}
+{"seq":5,"type":"plan.approved","channel":"plan","summary":"Presenter approved contract and budget ceiling","ts":"2026-07-23T18:00:12.000Z","level":"info"}
+{"seq":6,"type":"step.started","channel":"plan","summary":"Reading acme-store checkout and pricing code","ts":"2026-07-23T18:00:15.000Z","level":"info"}
+{"seq":7,"type":"trace.observed","channel":"trace","summary":"PlanToggle emits yearly; PRICE_IDS keyed on annual","ts":"2026-07-23T18:00:22.000Z","level":"info"}
+{"seq":8,"type":"capability.gap_detected","channel":"capability","summary":"Gap: checkout-error-log-analyzer required for impact assessment","ts":"2026-07-23T18:00:28.000Z","level":"info","detail":{"slug":"checkout-error-log-analyzer"}}
+{"seq":9,"type":"capability.spec_written","channel":"capability","summary":"Spec written for checkout-error-log-analyzer","ts":"2026-07-23T18:00:35.000Z","level":"info"}
+{"seq":10,"type":"capability.build_started","channel":"capability","summary":"Codex build started in credential-free sandbox","ts":"2026-07-23T18:00:38.000Z","level":"info"}
+{"seq":11,"type":"capability.gate_failed","channel":"capability","summary":"trusted_tests 7/8 — expected 9 distinct customers, received 4","ts":"2026-07-23T18:01:10.000Z","level":"warn","detail":{"gate":"trusted_tests","expected":9,"received":4}}
+{"seq":12,"type":"capability.repair_started","channel":"capability","summary":"Repair: read nested context.customer.id in log lines","ts":"2026-07-23T18:01:12.000Z","level":"info"}
+{"seq":13,"type":"capability.repair_succeeded","channel":"capability","summary":"Repair succeeded; trusted tests 8/8","ts":"2026-07-23T18:01:35.000Z","level":"info"}
+{"seq":14,"type":"capability.approval_requested","channel":"approval","summary":"Install approval requested for checkout-error-log-analyzer@1.0.0","ts":"2026-07-23T18:01:38.000Z","level":"info"}
+{"seq":15,"type":"capability.installed","channel":"capability","summary":"Capability installed and ready to invoke","ts":"2026-07-23T18:01:42.000Z","level":"info"}
+{"seq":16,"type":"capability.returned","channel":"capability","summary":"Impact: 9 distinct customers across 40 failed attempts","ts":"2026-07-23T18:01:48.000Z","level":"info","detail":{"distinctCount":9}}
+{"seq":17,"type":"artifact.ready","channel":"artifact","summary":"Code change artifact ready for annual checkout fix","ts":"2026-07-23T18:02:40.000Z","level":"info"}
+{"seq":18,"type":"action.proposed","channel":"approval","summary":"Propose open PR on acme-store and owner email","ts":"2026-07-23T18:02:45.000Z","level":"info"}
+{"seq":19,"type":"approval.granted","channel":"approval","summary":"Presenter granted external actions","ts":"2026-07-23T18:02:50.000Z","level":"info"}
+{"seq":20,"type":"action.executed","channel":"approval","summary":"Pull request opened; owner email sent with approved body","ts":"2026-07-23T18:02:55.000Z","level":"info"}
+{"seq":21,"type":"artifact.ready","channel":"artifact","summary":"Assignment receipt ready","ts":"2026-07-23T18:03:00.000Z","level":"info"}
+{"seq":22,"type":"run.completed","channel":"system","summary":"Golden path completed","ts":"2026-07-23T18:03:02.000Z","level":"info"}
