@@ -172,8 +172,7 @@ export async function createComposioConnectLink(input: {
   });
 
   const redirectUrl =
-    connectionRequest.redirectUrl ??
-    (connectionRequest as { redirect_url?: string }).redirect_url;
+    connectionRequest.redirectUrl ?? (connectionRequest as { redirect_url?: string }).redirect_url;
   if (!redirectUrl) {
     throw new ComposioError(
       "composio.link_failed",

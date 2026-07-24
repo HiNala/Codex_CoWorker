@@ -153,9 +153,7 @@ describe("gmail helpers", () => {
           providerId: "fetch",
           raw: {
             data: {
-              messages: [
-                { id: "1", subject: "Hi", from: "x@y.test", threadId: "t1" },
-              ],
+              messages: [{ id: "1", subject: "Hi", from: "x@y.test", threadId: "t1" }],
             },
           },
         };

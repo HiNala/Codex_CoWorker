@@ -66,12 +66,11 @@ export function integrationStatus(env: IntegrationEnvSnapshot = process.env): Co
         env.RESEND_API_KEY?.trim()
           ? "connected"
           : "not_configured",
-      detail:
-        env.COMPOSIO_GMAIL_ACCOUNT_ID?.trim()
-          ? "Composio Gmail primary"
-          : env.RESEND_API_KEY?.trim()
-            ? "Resend fallback"
-            : "using FakeNotifier",
+      detail: env.COMPOSIO_GMAIL_ACCOUNT_ID?.trim()
+        ? "Composio Gmail primary"
+        : env.RESEND_API_KEY?.trim()
+          ? "Resend fallback"
+          : "using FakeNotifier",
     },
   ];
 }

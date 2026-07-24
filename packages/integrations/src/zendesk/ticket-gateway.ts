@@ -78,10 +78,7 @@ export class ZendeskTicketGateway implements TicketGateway {
   readonly #fetchFn: typeof fetch;
   readonly #appliedNotes = new Set<string>();
 
-  constructor(
-    credentials: ZendeskCredentials,
-    fetchFn: typeof fetch = fetch,
-  ) {
+  constructor(credentials: ZendeskCredentials, fetchFn: typeof fetch = fetch) {
     this.#baseUrl = `https://${credentials.subdomain}.zendesk.com/api/v2`;
     const token = Buffer.from(`${credentials.email}/token:${credentials.apiToken}`).toString(
       "base64",

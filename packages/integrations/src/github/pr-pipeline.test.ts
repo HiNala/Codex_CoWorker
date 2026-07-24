@@ -111,8 +111,7 @@ describe("hand-written annual-checkout-fix fixture (Track L step 3)", () => {
       headBranch: "forge/fix-annual-checkout-interval-handwritten",
       title: "Fix annual checkout returning a generic 500",
       body: assemblePrBody({
-        diagnosis:
-          "PlanToggle emits interval yearly while PRICE_IDS is keyed on annual.",
+        diagnosis: "PlanToggle emits interval yearly while PRICE_IDS is keyed on annual.",
         impactCustomers: 9,
         impactWindow: "Jul 16 and Jul 23",
         impactAttempts: 40,
@@ -133,106 +132,98 @@ describe("hand-written annual-checkout-fix fixture (Track L step 3)", () => {
 });
 
 describe("GitHubPullRequestAdapter (local bare remote + hand-written patch)", () => {
-  it(
-    "clones, applies fixture, commits trailers, pushes, creates PR",
-    async () => {
-      const { bareRemote, workRoot } = await stageLocalDemoRemote({
-        sourceCheckoutDir: demoCheckoutDir,
-        baseBranch: "main",
-      });
+  it("clones, applies fixture, commits trailers, pushes, creates PR", async () => {
+    const { bareRemote, workRoot } = await stageLocalDemoRemote({
+      sourceCheckoutDir: demoCheckoutDir,
+      baseBranch: "main",
+    });
 
-      try {
-        const patch = await readPatchFile(ANNUAL_CHECKOUT_FIX_PATCH_PATH);
-        let createBody: unknown;
-        const fetchFn: typeof fetch = async (_url, init) => {
-          createBody = JSON.parse(String(init?.body ?? "{}"));
-          return new Response(
-            JSON.stringify({
-              number: 42,
-              html_url: "https://github.com/acme-payments/acme-store/pull/42",
-            }),
-            { status: 201, headers: { "Content-Type": "application/json" } },
-          );
-        };
-
-        const port = new GitHubPullRequestAdapter({
-          token: "test-token-not-a-real-pat",
-          fetchFn,
-          workRoot,
-          remoteUrl: () => bareRemote,
-        });
-
-        const result = await port.openPullRequest({
-          repo: "acme-payments/acme-store",
-          baseBranch: "main",
-          headBranch: "forge/fix-annual-checkout-interval-local",
-          title: "Fix annual checkout interval mismatch",
-          body: assemblePrBody({ diagnosis: "yearly vs annual key drift." }),
-          patch,
-          assignmentId: "asg_local_e2e",
-          coAuthor: "Nala <nala@forge.local>",
-        });
-
-        expect(result.number).toBe(42);
-        expect(result.url).toContain("/pull/42");
-        expect(result.sha).toMatch(/^[0-9a-f]{40}$/);
-        expect(createBody).toMatchObject({
-          title: "Fix annual checkout interval mismatch",
-          head: "forge/fix-annual-checkout-interval-local",
-          base: "main",
-        });
-
-        // Idempotent retry must not open a second PR.
-        const again = await port.openPullRequest({
-          repo: "acme-payments/acme-store",
-          baseBranch: "main",
-          headBranch: "forge/fix-annual-checkout-interval-local",
-          title: "Fix annual checkout interval mismatch",
-          body: "ignored",
-          patch,
-          assignmentId: "asg_local_e2e",
-        });
-        expect(again).toEqual(result);
-      } finally {
-        await rm(workRoot, { recursive: true, force: true }).catch(() => undefined);
-      }
-    },
-    30_000,
-  );
-
-  it(
-    "fails loudly when the patch does not apply",
-    async () => {
-      const { bareRemote, workRoot } = await stageLocalDemoRemote({
-        sourceCheckoutDir: demoCheckoutDir,
-        baseBranch: "main",
-      });
-
-      try {
-        const port = new GitHubPullRequestAdapter({
-          token: "test-token",
-          workRoot,
-          remoteUrl: () => bareRemote,
-          fetchFn: async () => new Response("should not be called", { status: 500 }),
-        });
-
-        await expect(
-          port.openPullRequest({
-            repo: "acme-payments/acme-store",
-            baseBranch: "main",
-            headBranch: "forge/bad-patch",
-            title: "t",
-            body: "b",
-            patch: samplePatch, // context does not match real prices.ts
-            assignmentId: "asg_bad",
+    try {
+      const patch = await readPatchFile(ANNUAL_CHECKOUT_FIX_PATCH_PATH);
+      let createBody: unknown;
+      const fetchFn: typeof fetch = async (_url, init) => {
+        createBody = JSON.parse(String(init?.body ?? "{}"));
+        return new Response(
+          JSON.stringify({
+            number: 42,
+            html_url: "https://github.com/acme-payments/acme-store/pull/42",
           }),
-        ).rejects.toMatchObject({ code: "patch.apply_failed" });
-      } finally {
-        await rm(workRoot, { recursive: true, force: true }).catch(() => undefined);
-      }
-    },
-    30_000,
-  );
+          { status: 201, headers: { "Content-Type": "application/json" } },
+        );
+      };
+
+      const port = new GitHubPullRequestAdapter({
+        token: "test-token-not-a-real-pat",
+        fetchFn,
+        workRoot,
+        remoteUrl: () => bareRemote,
+      });
+
+      const result = await port.openPullRequest({
+        repo: "acme-payments/acme-store",
+        baseBranch: "main",
+        headBranch: "forge/fix-annual-checkout-interval-local",
+        title: "Fix annual checkout interval mismatch",
+        body: assemblePrBody({ diagnosis: "yearly vs annual key drift." }),
+        patch,
+        assignmentId: "asg_local_e2e",
+        coAuthor: "Nala <nala@forge.local>",
+      });
+
+      expect(result.number).toBe(42);
+      expect(result.url).toContain("/pull/42");
+      expect(result.sha).toMatch(/^[0-9a-f]{40}$/);
+      expect(createBody).toMatchObject({
+        title: "Fix annual checkout interval mismatch",
+        head: "forge/fix-annual-checkout-interval-local",
+        base: "main",
+      });
+
+      // Idempotent retry must not open a second PR.
+      const again = await port.openPullRequest({
+        repo: "acme-payments/acme-store",
+        baseBranch: "main",
+        headBranch: "forge/fix-annual-checkout-interval-local",
+        title: "Fix annual checkout interval mismatch",
+        body: "ignored",
+        patch,
+        assignmentId: "asg_local_e2e",
+      });
+      expect(again).toEqual(result);
+    } finally {
+      await rm(workRoot, { recursive: true, force: true }).catch(() => undefined);
+    }
+  }, 30_000);
+
+  it("fails loudly when the patch does not apply", async () => {
+    const { bareRemote, workRoot } = await stageLocalDemoRemote({
+      sourceCheckoutDir: demoCheckoutDir,
+      baseBranch: "main",
+    });
+
+    try {
+      const port = new GitHubPullRequestAdapter({
+        token: "test-token",
+        workRoot,
+        remoteUrl: () => bareRemote,
+        fetchFn: async () => new Response("should not be called", { status: 500 }),
+      });
+
+      await expect(
+        port.openPullRequest({
+          repo: "acme-payments/acme-store",
+          baseBranch: "main",
+          headBranch: "forge/bad-patch",
+          title: "t",
+          body: "b",
+          patch: samplePatch, // context does not match real prices.ts
+          assignmentId: "asg_bad",
+        }),
+      ).rejects.toMatchObject({ code: "patch.apply_failed" });
+    } finally {
+      await rm(workRoot, { recursive: true, force: true }).catch(() => undefined);
+    }
+  }, 30_000);
 
   it("refuses empty patch before clone", async () => {
     const port = new GitHubPullRequestAdapter({
@@ -317,4 +308,3 @@ describe("createPullRequestPort", () => {
     expect(port).toBeInstanceOf(GitHubPullRequestAdapter);
   });
 });
-

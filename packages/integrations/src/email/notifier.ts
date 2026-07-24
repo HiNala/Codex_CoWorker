@@ -352,9 +352,7 @@ export function createNotifier(env: CreateNotifierEnv): {
       }),
       state: "connected",
       provider: "resend",
-      detail: env.COMPOSIO_API_KEY?.trim()
-        ? `Resend fallback (${live.reason})`
-        : "Resend fallback",
+      detail: env.COMPOSIO_API_KEY?.trim() ? `Resend fallback (${live.reason})` : "Resend fallback",
     };
   }
 

@@ -93,15 +93,7 @@ export class GitHubPullRequestAdapter implements PullRequestPort {
     const dir = await mkdtemp(join(this.#workRoot, "forge-pr-"));
     try {
       const remote = this.#remoteUrl(input.repo);
-      await this.#gitCmd(dir, [
-        "clone",
-        "--depth",
-        "1",
-        "--branch",
-        input.baseBranch,
-        remote,
-        ".",
-      ]);
+      await this.#gitCmd(dir, ["clone", "--depth", "1", "--branch", input.baseBranch, remote, "."]);
       await this.#gitCmd(dir, ["checkout", "-b", input.headBranch]);
 
       // Write outside the clone so `git add -A` cannot commit the raw patch file.
@@ -272,10 +264,7 @@ export function assemblePrBody(parts: {
   assignmentId?: string;
   notAddressed?: string[];
 }): string {
-  const lines: string[] = [
-    "## Fix annual checkout returning a generic 500",
-    "",
-  ];
+  const lines: string[] = ["## Fix annual checkout returning a generic 500", ""];
   if (parts.diagnosis) {
     lines.push(parts.diagnosis, "");
   }
@@ -409,4 +398,3 @@ export async function stageLocalDemoRemote(options: {
   // Prefer file:// so shallow clones and push behave consistently on Windows.
   return { bareRemote: pathToFileURL(bare).href, workRoot };
 }
-

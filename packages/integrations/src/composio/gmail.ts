@@ -82,16 +82,19 @@ export async function gmailReadRecent(
     dangerouslySkipVersionCheck: true,
   });
 
-  const raw = out.raw as
-    | { data?: { messages?: unknown[] }; messages?: unknown[] }
-    | undefined;
+  const raw = out.raw as { data?: { messages?: unknown[] }; messages?: unknown[] } | undefined;
   const list = (raw?.data?.messages ?? raw?.messages ?? []) as Array<Record<string, unknown>>;
   const messages: GmailMessageSummary[] = list.map((m, i) => ({
     id: String(m.id ?? m.messageId ?? `msg-${i}`),
     subject: m.subject != null ? String(m.subject) : undefined,
     from: m.from != null ? String(m.from) : undefined,
     snippet: m.snippet != null ? String(m.snippet) : undefined,
-    threadId: m.threadId != null ? String(m.threadId) : m.thread_id != null ? String(m.thread_id) : undefined,
+    threadId:
+      m.threadId != null
+        ? String(m.threadId)
+        : m.thread_id != null
+          ? String(m.thread_id)
+          : undefined,
   }));
 
   return { messages, providerId: out.providerId };

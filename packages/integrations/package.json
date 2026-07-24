@@ -12,6 +12,7 @@
     "test": "vitest run src --passWithNoTests"
   },
   "dependencies": {
+    "@composio/core": "^0.14.0",
     "@forge/contracts": "workspace:*",
     "@forge/demo-data": "workspace:*"
   }

@@ -91,19 +91,19 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - Adapters/factories (`createTicketGateway`, `createResearchGateway`, `createNotifier`, `createPullRequestPort`, `integrationStatus`) take env snapshots / `process.env` after that load; no embedded dotenv in integrations/research.
 - Verified status (name + CONFIGURED/UNSET only):
 
-| variable | status |
-| --- | --- |
-| `OPENAI_API_KEY` | CONFIGURED |
-| `CODEX_API_KEY` | CONFIGURED |
-| `OCTEN_API_KEY` | CONFIGURED |
-| `COMPOSIO_API_KEY` | CONFIGURED |
-| `ZENDESK_SUBDOMAIN` | UNSET (Tide owns; local HMAC fixture path) |
-| `ZENDESK_EMAIL` | UNSET |
-| `ZENDESK_API_TOKEN` | UNSET |
-| `ZENDESK_WEBHOOK_SECRET` | UNSET |
-| `RAILWAY_API_TOKEN` | UNSET (not Tide blocker; not Wisp deploy blocker) |
-| `GITHUB_TOKEN` / `GITHUB_PAT` | ABSENT → FakeGitHubPullRequestAdapter |
-| `RESEND_API_KEY` | ABSENT → FakeNotifier unless Composio Gmail linked |
+| variable                      | status                                             |
+| ----------------------------- | -------------------------------------------------- |
+| `OPENAI_API_KEY`              | CONFIGURED                                         |
+| `CODEX_API_KEY`               | CONFIGURED                                         |
+| `OCTEN_API_KEY`               | CONFIGURED                                         |
+| `COMPOSIO_API_KEY`            | CONFIGURED                                         |
+| `ZENDESK_SUBDOMAIN`           | UNSET (Tide owns; local HMAC fixture path)         |
+| `ZENDESK_EMAIL`               | UNSET                                              |
+| `ZENDESK_API_TOKEN`           | UNSET                                              |
+| `ZENDESK_WEBHOOK_SECRET`      | UNSET                                              |
+| `RAILWAY_API_TOKEN`           | UNSET (not Tide blocker; not Wisp deploy blocker)  |
+| `GITHUB_TOKEN` / `GITHUB_PAT` | ABSENT → FakeGitHubPullRequestAdapter              |
+| `RESEND_API_KEY`              | ABSENT → FakeNotifier unless Composio Gmail linked |
 
 - Reporting rule locked: key name + CONFIGURED/UNSET only — never value, prefix, length, or last-4.
 
@@ -144,7 +144,6 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - Non-fast-forward → script exits 3, report Node, hold for central sync gate.
 - TIDE `-Paths`: `packages/integrations,packages/research,demo,docs/changelog/tracks/F.md`
 
-
 ### [2026-07-23 17:58] Gate 1 FREEZE checkpoint (TIDE)
 
 - **Commit invocation (validated):** `powershell -ExecutionPolicy Bypass -File scripts/agent-commit.ps1 -Agent Tide -Paths packages/integrations,packages/research,demo,docs/changelog/tracks/F.md -MessageFile .git/msg-tide.txt` — not `pwsh` (absent on host). Comma-separated paths OK; script splits.
@@ -164,7 +163,6 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - **Verdict:** TRACK F GREEN · TRACK L GREEN
 - **Most fragile (not RED):** live external PR/email need GITHUB_TOKEN + Composio Gmail account link; until then Fake adapters keep Gate 1 honest.
 
-
 ### [2026-07-23 17:58] Birch Gate 1 PREP (TIDE)
 
 - No new feature work. No live adapters. No polish.
@@ -175,4 +173,17 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - Mutex free after this checkpoint commit (if any).
 - **Single most important RED seam (TIDE-owned, not test-red):** `GITHUB_TOKEN`/`GITHUB_PAT` ABSENT → host PR open is Fake-only on the golden path until PAT lands; hand-written patch pipeline itself is green.
 - TRACK F GREEN · TRACK L GREEN for unit/fake Gate 1 surface.
+
+### [2026-07-23] Composio Node engine probe (22.12.0 vs floor 22.22.3)
+
+- Host: Node **v22.12.0** (package engines want >=22.22.3). **Did not upgrade** (Birch-level).
+- `@composio/core@^0.14.0` added under `@forge/integrations` for a live import/init probe (was previously ambient-only / not installed).
+- **Probe result: WORKS on 22.12.0** (from `packages/integrations` cwd):
+  - `import('@composio/core')` → OK (ESM resolves)
+  - `new Composio({ apiKey })` → OK (constructor initialises)
+  - `connectedAccounts.link` present (function); `initiate` still present on object but **we must not call it** (retired 2026-07-03 for managed OAuth)
+- **No import/ESM throw** on this host — version gap is **not** a hard runtime blocker for load/init.
+- Our own `meetsComposioNodeFloor` / `composioLiveReady` still reports 22.12.0 as below floor and **degrades live Gmail to not_configured/fake** until Birch upgrades Node or explicitly relaxes the floor. That is intentional policy, not an SDK crash.
+- Gate 1 stays on deterministic FakeNotifier; live Composio remains optional after Node upgrade + `COMPOSIO_GMAIL_ACCOUNT_ID` link().
+- `COMPOSIO_API_KEY`: CONFIGURED (value never logged).
 

@@ -38,9 +38,7 @@ describe("assertEmailBodyBudget", () => {
 
   it("rejects four sentences", () => {
     expect(() =>
-      assertEmailBodyBudget(
-        "One. Two. Three. Four sentences is too many for the demo email.",
-      ),
+      assertEmailBodyBudget("One. Two. Three. Four sentences is too many for the demo email."),
     ).toThrow(NotifierError);
   });
 
@@ -85,8 +83,8 @@ describe("FakeNotifier", () => {
 
 describe("ResendNotifier", () => {
   it("sends with Idempotency-Key and memoizes", async () => {
-    const fetchFn = vi.fn(async () =>
-      new Response(JSON.stringify({ id: "re_123" }), { status: 200 }),
+    const fetchFn = vi.fn(
+      async () => new Response(JSON.stringify({ id: "re_123" }), { status: 200 }),
     ) as unknown as typeof fetch;
 
     const n = new ResendNotifier({
@@ -113,7 +111,9 @@ describe("ResendNotifier", () => {
   });
 
   it("maps non-OK responses to NotifierError", async () => {
-    const fetchFn = vi.fn(async () => new Response("nope", { status: 429 })) as unknown as typeof fetch;
+    const fetchFn = vi.fn(
+      async () => new Response("nope", { status: 429 }),
+    ) as unknown as typeof fetch;
     const n = new ResendNotifier({
       apiKey: "re_test",
       from: "a@b.test",
