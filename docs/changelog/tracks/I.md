@@ -40,6 +40,49 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] GATE 1 RED response — CUT #1 marketing cut; ready GREEN
+
+**CUT #1 ACTIVE:** marketing/pricing **stopped**. Sub-agent 5 stands down.
+**DECISIONS.md** followed. No marketing resume.
+
+#### 1) Lint — two files only (no repo-wide eslint --fix)
+
+| File | BEFORE errors | AFTER errors | warnings |
+|------|---------------|--------------|----------|
+| `demo-control-panel.tsx` | 1 → fixed earlier via queueMicrotask | **0** | **0** |
+| `hero-preview.tsx` | 1 → fixed earlier via queueMicrotask | **0** | **0** |
+| **TOTAL** | **2 → 0** | **0** | **0** |
+
+```text
+pnpm exec eslint apps/web/src/app/(marketing)/demo/demo-control-panel.tsx apps/web/src/components/marketing/hero-preview.tsx
+→ after_exit=0   AFTER errors=0 warnings=0
+```
+
+Did **not** touch Aria paths (`approval-card`, `trace-group`, press-and-hold, etc.).
+
+#### 2) Railway production path
+
+**Variable KEYS (web service — CONFIGURED/UNSET only, never values):**  
+`DATABASE_URL` CONFIGURED (private `railway.internal` shape) · `S3_*` all CONFIGURED ·  
+`DEMO_ACCESS_CODE` CONFIGURED · `DEMO_MODE` CONFIGURED · `SESSION_SECRET` CONFIGURED
+
+| Step | Command / check | Result |
+|------|-----------------|--------|
+| Migrate | `DATABASE_PUBLIC_URL=CONFIGURED` → `tsx packages/db/src/migrate.ts` | **exit 0** “Database migrations are current.” |
+| Ready | `GET https://web-production-7d71d.up.railway.app/api/health/ready` | **200** `status=ready` all checks up |
+| Live | `GET …/api/health/live` | **200** (already was) |
+| Replay E2E #1 | `POST /api/demo/reset`→`seed`→`replay` | **200** eventCount=**22** REPLAY_E2E_OK=true |
+| Replay E2E #2 | `POST /api/demo/replay` again | **200** REPLAY_SECOND_OK=true |
+| Prod smoke | `node scripts/smoke.mjs https://web-production-7d71d.up.railway.app` | **pass=6 warn=0 fail=0** |
+
+Prior 503 root cause remains **(2) migrations** (schema empty); now current. Not a missing `DATABASE_URL` key.
+
+#### Custom domain handoff (ready when operator has hostname)
+
+- Current service domain: `web-production-7d71d.up.railway.app` (ACTIVE, port 3000)
+- When hostname chosen: `railway domain <hostname> --service web --port 3000`
+- Report back **CNAME target** from CLI DNS records only (no secrets)
+
 ### [2026-07-23] CUT #1 ACTIVE — marketing freeze; lint + migrate + ready + demo smoke
 
 - **Marketing CUT #1:** no new marketing copy/motion/features. Only minimal lint
