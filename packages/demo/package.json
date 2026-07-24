@@ -4,12 +4,16 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts"
   },
   "scripts": {
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run src"
+  },
+  "dependencies": {
+    "server-only": "0.0.1"
   },
   "devDependencies": {
     "@types/node": "^22"

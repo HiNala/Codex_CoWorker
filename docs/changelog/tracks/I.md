@@ -40,6 +40,21 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] fix · @forge/demo client/server split (node:fs web build blocker)
+
+**Root cause:** `packages/demo/src/replay.ts` imported `node:fs` at top level; main
+`@forge/demo` re-exported it → any client import of `@forge/demo` dragged `node:fs`
+into Turbopack (`chunking context does not support external modules`).
+
+**Fix (durable):**
+- `@forge/demo` (`.`) — client-safe only: access, panic, seed, scenarios, timing,
+  pure `replay-types` (parse JSONL, types). **Zero** `node:*` imports.
+- `@forge/demo/server` — `server-only` + `replay-server.ts` (`node:fs` loaders).
+- `apps/web` API: `startReplayFromTranscript` from `@forge/demo/server`.
+
+**Verify:** `pnpm --filter @forge/demo test` → **22 pass** · `pnpm --filter @forge/web build` → **exit 0**.  
+**Deploy:** still **HOLD** until Node GO. LKG rollback: `e0b15478-9b06-461b-b88b-455ce01e6cd1`.
+
 ### [2026-07-23] STAND BY TO DEPLOY — LKG + staged GO (do not ship Aria yet)
 
 **Status:** **STANDING BY.** No GO deploy of uncommitted Aria redesign until Node says GO.  

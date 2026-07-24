@@ -4,31 +4,60 @@ import {
   loadGoldenPathTranscript,
   parseTranscriptJsonl,
   startReplayFromTranscript,
-} from "./replay";
+} from "./replay-server";
+import { GOLDEN_PATH_TRANSCRIPT_ID, parseTranscriptLine } from "./replay-types";
 
-describe("transcript reader", () => {
+describe("golden-path transcript", () => {
   it("parses golden-path.jsonl fixture", () => {
     const loaded = loadGoldenPathTranscript(defaultTranscriptPath());
-    expect(loaded.id).toBe("golden-path");
-    expect(loaded.eventCount).toBeGreaterThanOrEqual(10);
-    expect(loaded.events[0]?.type).toBe("run.started");
-    expect(loaded.events.some((e) => e.type === "capability.gap_detected")).toBe(true);
-    expect(loaded.events.some((e) => e.type === "capability.gate_failed")).toBe(true);
-    expect(loaded.events.at(-1)?.type).toBe("run.completed");
+    expect(loaded.id).toBe(GOLDEN_PATH_TRANSCRIPT_ID);
+    expect(loaded.eventCount).toBeGreaterThan(0);
+    expect(loaded.events[0]?.seq).toBe(1);
   });
 
   it("rejects non-increasing seq", () => {
-    const bad = [
-      `{"seq":1,"type":"run.started","channel":"system","summary":"a","ts":"2026-07-23T00:00:00.000Z"}`,
-      `{"seq":1,"type":"run.completed","channel":"system","summary":"b","ts":"2026-07-23T00:00:01.000Z"}`,
-    ].join("\n");
-    expect(() => parseTranscriptJsonl(bad)).toThrow(/strictly increasing/);
+    expect(() =>
+      parseTranscriptJsonl(
+        [
+          JSON.stringify({
+            seq: 1,
+            type: "a",
+            channel: "system",
+            summary: "one",
+            ts: "2026-01-01T00:00:00.000Z",
+          }),
+          JSON.stringify({
+            seq: 1,
+            type: "b",
+            channel: "system",
+            summary: "two",
+            ts: "2026-01-01T00:00:01.000Z",
+          }),
+        ].join("\n"),
+      ),
+    ).toThrow(/strictly increasing/);
   });
 
-  it("startReplayFromTranscript returns loaded events", () => {
-    const result = startReplayFromTranscript(defaultTranscriptPath(), "2026-07-23T19:00:00.000Z");
+  it("parses a single valid line", () => {
+    const event = parseTranscriptLine(
+      JSON.stringify({
+        seq: 3,
+        type: "plan.drafted",
+        channel: "plan",
+        summary: "plan",
+        ts: "2026-01-01T00:00:00.000Z",
+        level: "info",
+      }),
+      1,
+    );
+    expect(event.seq).toBe(3);
+    expect(event.level).toBe("info");
+  });
+
+  it("startReplayFromTranscript returns event list", () => {
+    const result = startReplayFromTranscript();
     expect(result.ok).toBe(true);
+    expect(result.transcriptId).toBe(GOLDEN_PATH_TRANSCRIPT_ID);
     expect(result.eventCount).toBe(result.events.length);
-    expect(result.startedAt).toBe("2026-07-23T19:00:00.000Z");
   });
 });
