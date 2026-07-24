@@ -247,3 +247,50 @@ Live `GET /api/runs/:id/stream` route still Cael; cockpit is wire-ready via Even
 
 ### Call
 **TRACK D GREEN · TRACK G GREEN** (scoped lint clean; fake SSE wire format proven)
+
+## [Gate1 RED / Cut#1] D/G · exclusive UI lint seam — exact counts
+
+Marketing CUT (do not touch). Wisp owns demo-control-panel / hero-preview — left alone.
+
+### Exclusive files only
+1. `apps/web/src/components/approvals/approval-card.tsx`
+2. `apps/web/src/components/conversation/trace-group.tsx`
+3. `apps/web/src/components/conversation/use-trace-density.ts`
+4. `apps/web/src/hooks/use-run-stream.ts`
+5. `packages/ui/src/components/press-and-hold.tsx`
+
+### FIRST — narrow lint evidence (exact counts)
+
+**BEFORE** (Gate1 RED capture, exclusive files only — same eslint paths):
+- approval-card.tsx: 2 errors (react-hooks/refs — ref read during render @ L78)
+- trace-group.tsx: 1 error (react-hooks/set-state-in-effect @ L34)
+- use-trace-density.ts: 1 error (react-hooks/set-state-in-effect @ L20)
+- use-run-stream.ts: 1 error (react-hooks/refs — ref update during render @ L24)
+- press-and-hold.tsx: 1 error (react-hooks/immutability — tick before declaration @ L58)
+
+**BEFORE total: 6 problems (6 errors, 0 warnings)**
+
+**AFTER** (re-run just now, JSON message counts):
+```
+pnpm --filter @forge/web exec eslint src/components/approvals/approval-card.tsx src/components/conversation/trace-group.tsx src/components/conversation/use-trace-density.ts src/hooks/use-run-stream.ts -f json
+→ errors=0 warnings=0 total=0  exit=0
+
+pnpm --filter @forge/ui exec eslint src/components/press-and-hold.tsx -f json
+→ errors=0 warnings=0 total=0  exit=0
+```
+
+**AFTER total: 0 problems (0 errors, 0 warnings)**
+
+**Exact: 6 problems → 0 problems**
+
+No repo-wide lint. No --fix. Wisp files not opened.
+
+### THEN — cockpit paint half (fake SSE)
+
+- `useRunStream` default demo path encodes events with Cael `@forge/events` `serializeRunEvent`, parses via `parseSseRunEventData`, dispatches into `runReducer` (same path as live `EventSource` `run.event`).
+- `CockpitShell` paints Conversation / MissionControl / Foundry / ArtifactDock from that state; fixture includes `artifact.declared` / `artifact.drafting` so dock cards appear.
+- Proof: `pnpm exec vitest run apps/web/src/hooks/parse-sse-run-event.test.ts apps/web/src/hooks/run-reducer.test.ts` → **6/6 PASS** (full stream → gap_marker + ≥3 artifacts + pending approval + gates).
+- Live HTTP `GET /api/runs/:id/stream` remains Cael; coordinate via Node for seeded live SSE. ARIA paint path is green on wire-format frames.
+
+### Bindings
+Motion event-driven; capability tiles icon+label. No polish. Marketing not touched.
