@@ -70,6 +70,68 @@
   scroll-margin-top: calc(var(--marketing-nav-offset) + 1rem);
 }
 
+/* Shared content rail — one width for every section */
+.marketing-root .marketing-shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 56rem;
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .marketing-root .marketing-shell {
+    padding-inline: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .marketing-root .marketing-shell {
+    max-width: 60rem;
+    padding-inline: 2.5rem;
+  }
+}
+
+/* Vertical step list (how-it-works) — linear, not card grid */
+.marketing-root .marketing-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+}
+
+.marketing-root .marketing-step {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  gap: 1rem 1.25rem;
+  padding-block: 1.75rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+}
+
+@media (min-width: 640px) {
+  .marketing-root .marketing-step {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    gap: 1.25rem 1.75rem;
+    padding-block: 2rem;
+  }
+}
+
+.marketing-root .marketing-step-index {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: rgb(255 255 255 / 0.4);
+  padding-top: 0.2rem;
+}
+
+.marketing-root .marketing-linear {
+  display: block;
+}
+
+
 .marketing-root .marketing-cta {
   height: 3rem;
   padding-inline: 1.35rem;

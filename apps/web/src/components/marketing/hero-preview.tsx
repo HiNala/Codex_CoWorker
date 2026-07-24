@@ -268,12 +268,11 @@ export function HeroPreview({ className }: { className?: string }) {
     <div
       ref={rootRef}
       className={cn(
-        "relative h-[min(520px,70dvh)] w-full min-h-[420px] overflow-hidden rounded-xl border border-white/12 bg-black/35 shadow-lift backdrop-blur-sm",
+        "w-full overflow-hidden rounded-xl border border-white/12 bg-black/35 shadow-lift backdrop-blur-sm",
         className,
       )}
       aria-label="Product preview: a coworker builds a missing capability and finishes the job"
     >
-      {/* Reserved chrome — zero CLS */}
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
@@ -291,18 +290,10 @@ export function HeroPreview({ className }: { className?: string }) {
         </Badge>
       </div>
 
-      <div className="grid h-[calc(100%-3.25rem)] gap-3 p-3 sm:grid-cols-[0.9fr_1.1fr] sm:gap-4 sm:p-4">
-        <div className="flex min-h-0 flex-col gap-3">
-          <ContractCard visible={frame.contractVisible} title={frame.contractTitle} />
-          <ArtifactPreview
-            visible={frame.artifact.visible}
-            ready={frame.artifact.ready}
-            title={frame.artifact.title}
-            metric={frame.artifact.metric}
-          />
-        </div>
-
-        <div className="grid min-h-0 grid-cols-2 content-start gap-2 sm:gap-2.5">
+      {/* Single vertical stack: contract → tools → artifact */}
+      <div className="flex flex-col gap-3 p-3 sm:gap-4 sm:p-4">
+        <ContractCard visible={frame.contractVisible} title={frame.contractTitle} />
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5">
           {frame.capabilities.map((cap) => (
             <CapabilityTile
               key={cap.id}
@@ -316,6 +307,12 @@ export function HeroPreview({ className }: { className?: string }) {
             />
           ))}
         </div>
+        <ArtifactPreview
+          visible={frame.artifact.visible}
+          ready={frame.artifact.ready}
+          title={frame.artifact.title}
+          metric={frame.artifact.metric}
+        />
       </div>
     </div>
   );
@@ -360,7 +357,7 @@ function ArtifactPreview({
   if (!visible) {
     return (
       <div
-        className="flex min-h-[5.5rem] flex-1 items-center justify-center rounded-lg border border-dashed border-white/10 text-xs text-white/35"
+        className="flex min-h-[4.5rem] items-center justify-center rounded-lg border border-dashed border-white/10 text-xs text-white/35"
         aria-hidden
       >
         Artifacts appear when declared
