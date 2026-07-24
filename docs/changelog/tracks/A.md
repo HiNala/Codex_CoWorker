@@ -254,3 +254,11 @@ Terminal counts per run: `run.completed=1`, `artifact.ready=1`, `capability.gate
 - Aria implements against that text only; **no apps/web edits by Cael**.
 - Contract covers: `GET /runs/:runId/stream`, exclusive `after` / `Last-Event-ID`, `run.event` + `heartbeat`, RunEvent JSON fields, no backfill-complete frame, 15s heartbeat, no auto-close on run.completed, **503 `{ status: "not_configured", stream: false }`** for fixture fallback.
 - Worker stream route now returns that 503 when `DATABASE_URL` is unset (unambiguous Aria signal).
+
+### 2026-07-23T18:35Z — CUT #4 ACK (Node, binding)
+
+- **ONLY executable capability:** `checkout-error-log-analyzer`.
+- All other capability cards = **prebuilt inventory / display-only**. No live build, no execute, no second runnable path.
+- Cael work remains: golden-path proof (4→9 repair, attempt-1 `expected 9, received 4`, attempt-2 pass), verifier/foundry fake path for that slug only, worker SSE + same-tx events + Rigel `table.typed` artifact.
+- **STOP** any mid-work on a second executable capability. No fixtures/demo data for a second executable path from this track.
+- Rationale accepted: one rehearsed fail→repair beats five unrehearsed modules.
