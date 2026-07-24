@@ -141,7 +141,10 @@ export function OutputsLibrary({ items }: { items: ArtifactListItem[] }) {
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((item) => (
             <li key={item.id}>
-              <Link href={`/outputs/${item.id}`} className="block h-full focus-visible:outline-none">
+              <Link
+                href={`/outputs/${item.id}`}
+                className="block h-full focus-visible:outline-none"
+              >
                 <Card className="h-full transition-colors hover:bg-muted/25 focus-within:ring-2 focus-within:ring-ring/40">
                   <CardHeader className="border-b border-border/60">
                     <div className="flex items-start justify-between gap-3">

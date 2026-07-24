@@ -101,59 +101,51 @@ export function CockpitShell({
         </div>
       </div>
 
-      {/* Narrow desktop: chat + tabbed rail */}
-      <div className="cockpit-desktop-rail-tabs hidden min-h-0 flex-col lg:hidden min-[901px]:max-[1279px]:flex">
-        <div className="flex min-h-0 flex-1 border-t border-border">
-          <DextworkSidebar runTitle={state.title} runStatus={state.status} />
+      {/*
+        Single DOM tree for ≥1280px is cockpit-grid above.
+        Mid / phone: ONE alternate layout only (never both at once → no phantom columns).
+      */}
+      <div className="hidden min-h-dvh flex-col max-[1279px]:flex">
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <div className="hidden max-[1279px]:min-[901px]:block">
+            <DextworkSidebar runTitle={state.title} runStatus={state.status} />
+          </div>
           <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            <div className="min-h-0 flex-1 overflow-hidden">{conversationNode}</div>
             <Tabs
-              value={railTab}
-              onValueChange={(v) => setRailTab(v as "plan" | "foundry")}
-              className="shrink-0 border-t border-border"
+              value={railTab === "plan" || railTab === "foundry" ? railTab : "chat"}
+              onValueChange={(v) => {
+                if (v === "chat") setRailTab("plan");
+                else setRailTab(v as "plan" | "foundry");
+              }}
+              defaultValue="chat"
+              className="flex min-h-0 flex-1 flex-col"
             >
-              <TabsList className="grid h-10 w-full grid-cols-2 rounded-none">
-                <TabsTrigger value="plan">Tasks</TabsTrigger>
-                <TabsTrigger value="foundry">Capabilities</TabsTrigger>
+              <TabsList className="grid h-11 w-full shrink-0 grid-cols-3 rounded-none border-b border-border">
+                <TabsTrigger value="chat" className="text-xs" onClick={() => setRailTab("plan")}>
+                  Chat
+                  {pendingApprovals > 0 ? (
+                    <span className="ms-1 tabular-nums text-[10px]">{pendingApprovals}</span>
+                  ) : null}
+                </TabsTrigger>
+                <TabsTrigger value="plan" className="text-xs">
+                  Tasks
+                </TabsTrigger>
+                <TabsTrigger value="foundry" className="text-xs">
+                  Caps
+                </TabsTrigger>
               </TabsList>
-              <TabsContent value="plan" className="m-0 h-[40dvh] overflow-hidden">
+              <TabsContent value="chat" className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden">
+                {conversationNode}
+              </TabsContent>
+              <TabsContent value="plan" className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden">
                 {missionNode}
               </TabsContent>
-              <TabsContent value="foundry" className="m-0 h-[40dvh] overflow-hidden">
+              <TabsContent value="foundry" className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden">
                 {foundryNode}
               </TabsContent>
             </Tabs>
           </div>
         </div>
-      </div>
-
-      {/* Phone: tabs only */}
-      <div className="max-[900px]:block hidden min-[901px]:hidden">
-        <Tabs defaultValue="conversation" className="flex min-h-dvh flex-col p-2">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="conversation" className="min-h-10 text-xs">
-              Chat
-              {pendingApprovals > 0 ? (
-                <span className="ms-1 tabular-nums text-[10px]">{pendingApprovals}</span>
-              ) : null}
-            </TabsTrigger>
-            <TabsTrigger value="plan" className="min-h-10 text-xs">
-              Tasks
-            </TabsTrigger>
-            <TabsTrigger value="foundry" className="min-h-10 text-xs">
-              Caps
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="conversation" className="min-h-0 flex-1">
-            {conversationNode}
-          </TabsContent>
-          <TabsContent value="plan" className="min-h-0 flex-1">
-            {missionNode}
-          </TabsContent>
-          <TabsContent value="foundry" className="min-h-0 flex-1">
-            {foundryNode}
-          </TabsContent>
-        </Tabs>
       </div>
     </>
   );

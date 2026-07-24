@@ -116,7 +116,9 @@ export function TypedTableArtifact({ artifact, onEvidenceSelect }: ArtifactRende
                   ))}
                   <td className="px-3 py-2 align-top font-mono text-[0.625rem] text-muted-foreground">
                     {refs.length > 0 ? (
-                      <span className="text-primary">{refs.length} ref{refs.length === 1 ? "" : "s"}</span>
+                      <span className="text-primary">
+                        {refs.length} ref{refs.length === 1 ? "" : "s"}
+                      </span>
                     ) : (
                       <span className="text-status-warning" title="No evidence linked">
                         unsupported

@@ -51,9 +51,7 @@ export function metricsForType(
   versionLabel: string | undefined,
 ): string[] {
   if (chips && chips.length > 0) {
-    return versionLabel && !chips.some((c) => c.startsWith("v"))
-      ? [...chips, versionLabel]
-      : chips;
+    return versionLabel && !chips.some((c) => c.startsWith("v")) ? [...chips, versionLabel] : chips;
   }
   // Sensible empty placeholders by type when metrics have not arrived yet
   switch (type) {

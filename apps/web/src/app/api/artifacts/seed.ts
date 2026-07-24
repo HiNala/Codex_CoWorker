@@ -174,8 +174,7 @@ export const SEED_ARTIFACTS: SeedArtifactDetail[] = [
         label: "Owner approved delivery",
       },
     ],
-    summary:
-      "Historical incident write-up with citations into checkout docs and support tickets.",
+    summary: "Historical incident write-up with citations into checkout docs and support tickets.",
   },
   {
     artifact: artifact({

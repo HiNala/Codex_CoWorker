@@ -23,6 +23,10 @@ const BUILD_STATUS_LABEL: Record<BuildConsoleVM["status"], string> = {
   failed: "Failed",
 };
 
+/**
+ * Single-column build view. NO nested overflow-auto — parent .panel-body scrolls.
+ * Gate timings stay in a fixed grid track on each row (no detached column).
+ */
 export function BuildConsole({ build, capability, className }: BuildConsoleProps) {
   const [outputOpen, setOutputOpen] = useState(false);
   const output = build.output;
@@ -35,25 +39,27 @@ export function BuildConsole({ build, capability, className }: BuildConsoleProps
 
   return (
     <div
-      className={cn("flex min-h-0 flex-1 flex-col gap-4 lg:flex-row", className)}
+      className={cn("flex min-w-0 flex-col gap-3", className)}
       data-build-status={build.status}
       data-build-slug={build.slug}
       data-build-attempt={build.attempt}
     >
-      <aside className="flex w-full shrink-0 flex-col gap-3 lg:w-[11.5rem]">
+      <div className="flex flex-wrap items-start gap-3">
         {capability ? (
-          <CapabilityTile
-            id={capability.id}
-            name={capability.name}
-            kind={capability.kind}
-            state={capability.state}
-            {...(capability.progress ? { progress: capability.progress } : {})}
-            {...(capability.version ? { version: capability.version } : {})}
-            {...(capability.failingGate ? { failingGate: capability.failingGate } : {})}
-          />
+          <div className="w-[9.5rem] shrink-0">
+            <CapabilityTile
+              id={capability.id}
+              name={capability.name}
+              kind={capability.kind}
+              state={capability.state}
+              {...(capability.progress ? { progress: capability.progress } : {})}
+              {...(capability.version ? { version: capability.version } : {})}
+              {...(capability.failingGate ? { failingGate: capability.failingGate } : {})}
+            />
+          </div>
         ) : (
-          <div className="rounded-[var(--radius-md)] border border-dashed border-border p-3.5">
-            <p className="font-mono text-xs text-muted-foreground">{build.slug}</p>
+          <div className="w-[9.5rem] shrink-0 rounded-lg border border-dashed border-border p-3">
+            <p className="ops-mono text-[11px] text-muted-foreground">{build.slug}</p>
             <CapabilityStateBadge
               state={
                 build.status === "awaiting_approval"
@@ -70,83 +76,50 @@ export function BuildConsole({ build, capability, className }: BuildConsoleProps
             />
           </div>
         )}
-        <div className="space-y-1 px-0.5">
-          <p className="truncate font-mono text-[11px] text-muted-foreground">{build.slug}</p>
-          <p className="text-xs text-muted-foreground">
-            Attempt <span className="font-mono tabular-nums text-foreground">{build.attempt}</span>{" "}
-            of <span className="font-mono tabular-nums text-foreground">{build.maxAttempts}</span>
+        <div className="min-w-0 flex-1 space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline">{BUILD_STATUS_LABEL[build.status]}</Badge>
+            <span className="ops-mono text-[11px] tabular-nums text-muted-foreground">
+              {passed} passed
+              {failed > 0 ? ` · ${failed} failed` : ""}
+              {running ? " · running" : ""}
+            </span>
+          </div>
+          <p className="ops-mono break-all text-[11px] text-muted-foreground">{build.slug}</p>
+          <p className="text-[12px] text-muted-foreground">
+            Attempt{" "}
+            <span className="tabular-nums text-foreground">{build.attempt}</span> of{" "}
+            <span className="tabular-nums text-foreground">{build.maxAttempts}</span>
           </p>
-          {build.status === "repairing" ? (
-            <p className="text-xs text-[color:var(--status-repairing)]">
-              ⟳ repairing (attempt {build.attempt} of {build.maxAttempts})…
-            </p>
+        </div>
+      </div>
+
+      {/* Gates — no overflow-auto; parent panel-body is the only scroller */}
+      <ol className="space-y-0.5" aria-label="Verification gates" data-gate-list>
+        {build.gates.length === 0 ? (
+          <li className="px-1 py-3 text-sm text-muted-foreground">Waiting for the first gate…</li>
+        ) : (
+          build.gates.map((gate) => <GateRow key={gate.id} gate={gate} />)
+        )}
+      </ol>
+
+      <Collapsible open={outputOpen} onOpenChange={setOutputOpen} className="border-t border-border pt-2">
+        <div className="flex items-center justify-between gap-2">
+          <CollapsibleTrigger asChild>
+            <Button type="button" variant="ghost" size="sm" className="min-h-8 px-2 text-[12px]">
+              {outputOpen ? "Hide" : "Show"} build output
+            </Button>
+          </CollapsibleTrigger>
+          {showingLast ? (
+            <span className="text-[11px] text-muted-foreground">last 500 lines</span>
           ) : null}
         </div>
-      </aside>
-
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className="font-medium">
-            {BUILD_STATUS_LABEL[build.status]}
-          </Badge>
-          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-            {passed} passed
-            {failed > 0 ? ` · ${failed} failed` : ""}
-            {running ? " · running" : ""}
-            {build.gates.length > 0 ? ` · ${build.gates.length} gates` : ""}
-          </span>
-        </div>
-
-        <ol
-          className="min-h-0 flex-1 space-y-0.5 overflow-auto overscroll-contain pr-1"
-          aria-label="Verification gates"
-          data-gate-list
-        >
-          {build.gates.length === 0 ? (
-            <li className="px-2.5 py-4 text-sm text-muted-foreground">
-              Waiting for the first gate…
-            </li>
-          ) : (
-            build.gates.map((gate) => <GateRow key={gate.id} gate={gate} />)
-          )}
-        </ol>
-
-        <Collapsible
-          open={outputOpen}
-          onOpenChange={setOutputOpen}
-          className="mt-3 border-t border-border/80 pt-3"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <CollapsibleTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="min-h-9 px-2 text-xs"
-                data-build-output-toggle
-              >
-                {outputOpen ? "Hide" : "Show"} build output
-                {output.length > 0 ? (
-                  <span className="ml-1.5 font-mono tabular-nums text-muted-foreground">
-                    ({output.length})
-                  </span>
-                ) : null}
-              </Button>
-            </CollapsibleTrigger>
-          </div>
-          <CollapsibleContent className="mt-2">
-            {showingLast ? (
-              <p className="mb-1.5 text-[11px] text-muted-foreground">Showing last 500 lines</p>
-            ) : null}
-            <pre
-              className="max-h-48 overflow-auto rounded-md border border-border/80 bg-muted/30 p-3 font-mono text-[11px] leading-5 text-muted-foreground"
-              data-build-output
-            >
-              {lines.length === 0 ? "No sanitised Codex output yet." : lines.join("\n")}
-            </pre>
-          </CollapsibleContent>
-        </Collapsible>
-      </div>
+        <CollapsibleContent>
+          <pre className="ops-mono mt-2 max-h-none whitespace-pre-wrap break-words rounded-lg bg-muted/40 p-3 text-[11px] text-muted-foreground">
+            {lines.length === 0 ? "No output yet." : lines.join("\n")}
+          </pre>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }

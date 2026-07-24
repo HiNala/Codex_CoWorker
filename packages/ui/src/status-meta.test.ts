@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  CAPABILITY_STATE_META,
-  PLAN_STEP_STATUS_META,
-  type CapabilityState,
-} from "./status-meta";
+import { CAPABILITY_STATE_META, PLAN_STEP_STATUS_META, type CapabilityState } from "./status-meta";
 
 const ALL_CAPABILITY_STATES: CapabilityState[] = [
   "available",

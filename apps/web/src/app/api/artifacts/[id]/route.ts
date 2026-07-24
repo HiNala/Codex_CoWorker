@@ -8,10 +8,7 @@ export const runtime = "nodejs";
  * GET /api/artifacts/:id — single artifact with versions, evidence, provenance.
  * 404 when missing (cross-tenant ids also 404 once service is wired).
  */
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const session = await getSession(request);
   // Session stub — parent injects ArtifactService.get(session, id).
   if (!session) {

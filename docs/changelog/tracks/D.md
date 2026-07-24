@@ -322,3 +322,17 @@ When DB has Cael's golden path: cockpit `data-last-seq` should reach **24** (gap
 - **postgres** `3.4.9` in `apps/web/package.json` (stream route).
 - **typecheck** EXIT 0 · **build** EXIT 0 (Next 16 Turbopack compiled).
 - Hand Wisp: deploy this commit.
+
+## [FREEZE] D · Wisp GO first deploy
+
+- **Commit freeze** of current Dextwork UI (structurally superior local shell).
+- Web **build green** (prior verify EXIT 0).
+- **Wisp: GO** — deploy this commit immediately; do not wait for polish lanes.
+- Post-deploy: CSS/Foundry/conversation polish as second small deploy only.
+
+### Shipped structure
+- 76px icon sidebar · dominant chat · clamp(480px, 38vw, 720px) rail 50/50
+- No global bottom Outputs dock
+- Foundry: exclusive install | console | toolbelt modes (no overlay stack)
+- Gate rows: fixed duration track; build-console no nested overflow-auto
+- Thin styled scrollbars under `[data-dextwork-shell]`

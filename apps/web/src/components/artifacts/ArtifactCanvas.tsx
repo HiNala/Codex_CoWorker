@@ -70,7 +70,9 @@ export function ArtifactCanvas({
               {formatStatus(artifact.status)}
             </Badge>
             {artifact.versionLabel ? (
-              <span className="font-mono text-xs text-muted-foreground">{artifact.versionLabel}</span>
+              <span className="font-mono text-xs text-muted-foreground">
+                {artifact.versionLabel}
+              </span>
             ) : null}
           </div>
           {artifact.versions && artifact.versions.length > 0 ? (

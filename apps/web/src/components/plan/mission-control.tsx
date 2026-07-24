@@ -44,7 +44,7 @@ export function MissionControl({
   return (
     <section
       aria-label="Mission control"
-      className="flex min-h-0 flex-col bg-[color:var(--ops-panel)]"
+      className="flex h-full min-h-0 flex-col overflow-hidden bg-[color:var(--ops-panel)]"
     >
       <header className="panel-head flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-2.5">
         <h2 className="ops-panel-title text-foreground">Tasks</h2>

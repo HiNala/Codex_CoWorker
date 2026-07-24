@@ -247,7 +247,7 @@
   overflow-x: hidden;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: color-mix(in srgb, var(--border) 90%, var(--foreground)) transparent;
 }
 
 .panel-body::-webkit-scrollbar {
@@ -255,7 +255,48 @@
   height: 8px;
 }
 
+.panel-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .panel-body::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+.panel-body:hover::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--border) 50%, var(--muted-foreground));
+}
+
+/* No nested scrollbars inside a panel-body */
+.panel-body * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.panel-body [class*="overflow-auto"],
+.panel-body [class*="overflow-y-auto"],
+.panel-body [class*="overflow-scroll"] {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+/* Thin scrollbars app-wide under Dextwork shell (operator request) */
+[data-dextwork-shell] {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+[data-dextwork-shell]::-webkit-scrollbar,
+[data-dextwork-shell] *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-dextwork-shell]::-webkit-scrollbar-thumb,
+[data-dextwork-shell] *::-webkit-scrollbar-thumb {
   background-color: var(--border);
   border-radius: 999px;
 }

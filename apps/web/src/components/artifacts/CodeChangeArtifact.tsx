@@ -54,8 +54,7 @@ export function CodeChangeArtifact({ artifact }: ArtifactRendererProps) {
 
   const totalAdd = content.files.reduce((s, f) => s + f.additions, 0);
   const totalDel = content.files.reduce((s, f) => s + f.deletions, 0);
-  const selected =
-    content.files.find((f) => f.path === activePath) ?? content.files[0] ?? null;
+  const selected = content.files.find((f) => f.path === activePath) ?? content.files[0] ?? null;
   const lines = selected ? parsePatch(selected.patch) : [];
 
   return (
@@ -66,9 +65,7 @@ export function CodeChangeArtifact({ artifact }: ArtifactRendererProps) {
           <span className="mx-1.5 text-border">·</span>
           {content.branch}
         </span>
-        <span className="font-mono tabular">
-          base {content.baseRevision.slice(0, 8)}
-        </span>
+        <span className="font-mono tabular">base {content.baseRevision.slice(0, 8)}</span>
         <span className="font-mono tabular">
           {content.files.length} file{content.files.length === 1 ? "" : "s"}
         </span>
@@ -111,8 +108,7 @@ export function CodeChangeArtifact({ artifact }: ArtifactRendererProps) {
                 >
                   <span className="truncate font-mono">{f.path}</span>
                   <span className="shrink-0 font-mono tabular text-[0.625rem]">
-                    <span className="text-status-success">+{f.additions}</span>
-                    {" "}
+                    <span className="text-status-success">+{f.additions}</span>{" "}
                     <span className="text-status-danger">−{f.deletions}</span>
                   </span>
                 </button>

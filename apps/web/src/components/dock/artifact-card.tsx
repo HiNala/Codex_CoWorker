@@ -121,7 +121,8 @@ export function ArtifactCard({ artifact, onOpen, className }: ArtifactCardProps)
           className={cn(
             "capitalize",
             ready && "border-primary/30 text-primary",
-            failed && "border-[color:var(--status-danger,oklch(0.55_0.2_25))]/40 text-[color:var(--status-danger,oklch(0.55_0.2_25))]",
+            failed &&
+              "border-[color:var(--status-danger,oklch(0.55_0.2_25))]/40 text-[color:var(--status-danger,oklch(0.55_0.2_25))]",
           )}
         >
           {statusLabel}

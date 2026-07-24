@@ -24,7 +24,11 @@ function sanitize(source: string): string {
 function isSafeHref(href: string): boolean {
   const lower = href.trim().toLowerCase();
   if (!lower) return false;
-  if (lower.startsWith("javascript:") || lower.startsWith("data:") || lower.startsWith("vbscript:")) {
+  if (
+    lower.startsWith("javascript:") ||
+    lower.startsWith("data:") ||
+    lower.startsWith("vbscript:")
+  ) {
     return false;
   }
   return true;
@@ -41,8 +45,7 @@ type InlineNode =
 function parseInline(text: string): InlineNode[] {
   const nodes: InlineNode[] = [];
   // Order: code, links, citations, bold, italic
-  const re =
-    /(`[^`]+`)|(\[[^\]]+\]\([^)]+\))|(\[\^[^\]]+\])|(\*\*[^*]+\*\*)|(\*[^*]+\*)/g;
+  const re = /(`[^`]+`)|(\[[^\]]+\]\([^)]+\))|(\[\^[^\]]+\])|(\*\*[^*]+\*\*)|(\*[^*]+\*)/g;
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
@@ -74,13 +77,7 @@ function parseInline(text: string): InlineNode[] {
   return nodes;
 }
 
-function Inline({
-  text,
-  onCitation,
-}: {
-  text: string;
-  onCitation?: (id: string) => void;
-}) {
+function Inline({ text, onCitation }: { text: string; onCitation?: (id: string) => void }) {
   const nodes = parseInline(text);
   return (
     <>
@@ -90,10 +87,7 @@ function Inline({
             return <Fragment key={i}>{n.value}</Fragment>;
           case "code":
             return (
-              <code
-                key={i}
-                className="rounded bg-muted px-1 py-0.5 font-mono text-[0.8em]"
-              >
+              <code key={i} className="rounded bg-muted px-1 py-0.5 font-mono text-[0.8em]">
                 {n.value}
               </code>
             );
@@ -291,7 +285,10 @@ export function MarkdownArtifact({ artifact, onEvidenceSelect }: ArtifactRendere
                 key={idx}
                 className="overflow-x-auto rounded-lg border border-border bg-muted/40 p-3 font-mono text-xs leading-5"
               >
-                <code>{/* text content only — already stripped of HTML tags */}{b.code}</code>
+                <code>
+                  {/* text content only — already stripped of HTML tags */}
+                  {b.code}
+                </code>
               </pre>
             );
           case "list": {

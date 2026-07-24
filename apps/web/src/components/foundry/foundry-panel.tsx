@@ -17,8 +17,9 @@ export interface FoundryPanelProps {
 }
 
 /**
- * Column-3 bottom: Capabilities.
- * Install/approval is an INLINE card in the same scroll — never a modal overlay.
+ * Rail bottom: Capabilities. Exactly one scroll (.panel-body).
+ * Install is INLINE document flow — never absolute overlay, never stacked on tiles.
+ * Cut #4: only checkout-error-log-analyzer is executable; inventory tiles are display-only.
  */
 export function FoundryPanel({
   state,
@@ -53,36 +54,45 @@ export function FoundryPanel({
     [state.approvals],
   );
 
-  const showConsole = Boolean(build) && !installApproval;
-
-  const badgeLabel = installApproval
-    ? "Awaiting approval"
+  // Mutually exclusive modes — never install card + console/toolbelt at once
+  const mode: "install" | "console" | "toolbelt" = installApproval
+    ? "install"
     : build
-      ? build.status === "repairing"
-        ? "Repairing"
-        : build.status === "verifying"
-          ? "Verifying"
-          : build.status === "failed"
-            ? "Failed"
-            : "Building"
-      : capabilities.length > 0
-        ? `${capabilities.length} tools`
-        : null;
+      ? "console"
+      : "toolbelt";
+
+  const badgeLabel =
+    mode === "install"
+      ? "Awaiting approval"
+      : mode === "console"
+        ? build!.status === "repairing"
+          ? "Repairing"
+          : build!.status === "verifying"
+            ? "Verifying"
+            : build!.status === "failed"
+              ? "Failed"
+              : "Building"
+        : capabilities.length > 0
+          ? `${capabilities.length} tools`
+          : null;
 
   return (
     <section
       aria-label="The foundry"
-      className={cn("flex min-h-0 flex-col bg-[color:var(--ops-panel)]", className)}
+      className={cn(
+        "flex h-full min-h-0 flex-col overflow-hidden bg-[color:var(--ops-panel)]",
+        className,
+      )}
     >
       <header className="panel-head flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-2.5">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h2 className="ops-panel-title text-foreground">Capabilities</h2>
-          <p className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-muted-foreground">
-            {installApproval
-              ? "Install requires your approval — review the card below."
-              : showConsole
+          <p className="mt-0.5 break-words text-[12px] leading-snug text-muted-foreground">
+            {mode === "install"
+              ? "Install requires your approval — review the card in this panel."
+              : mode === "console"
                 ? `Live build · ${build!.slug}`
-                : "Tools Nala can use on this assignment."}
+                : "Installed inventory (display). One live path: checkout analyzer."}
           </p>
         </div>
         {badgeLabel ? (
@@ -92,15 +102,14 @@ export function FoundryPanel({
         ) : null}
       </header>
 
-      {/* ONE scroll region: toolbelt / console / inline install card */}
-      <div className="panel-body space-y-3 p-3" data-foundry-mode={installApproval ? "approval" : showConsole ? "console" : "toolbelt"}>
+      <div className="panel-body space-y-3 p-3" data-foundry-mode={mode}>
         {state.status === "paused" ? (
           <p className="rounded-lg bg-muted/40 px-3 py-2 text-[12px] text-muted-foreground">
             Run paused — resume from the chat header.
           </p>
         ) : null}
 
-        {installApproval ? (
+        {mode === "install" && installApproval ? (
           <CapabilityInstallApproval
             approval={installApproval}
             capability={
@@ -114,14 +123,16 @@ export function FoundryPanel({
           />
         ) : null}
 
-        {showConsole && build ? (
+        {mode === "console" && build ? (
           <BuildConsole build={build} {...(buildingCap ? { capability: buildingCap } : {})} />
-        ) : (
+        ) : null}
+
+        {mode === "toolbelt" ? (
           <CapabilityToolbelt
             capabilities={capabilities}
             {...(onOpenCapability ? { onOpen: onOpenCapability } : {})}
           />
-        )}
+        ) : null}
       </div>
     </section>
   );

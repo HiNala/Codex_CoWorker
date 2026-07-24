@@ -16,10 +16,10 @@ export type ArtifactDockProps = {
 
 function summarize(artifacts: ArtifactCardViewModel[]): string {
   const total = artifacts.length;
-  const ready = artifacts.filter((a) =>
-    isReadyStatus(a.status),
+  const ready = artifacts.filter((a) => isReadyStatus(a.status)).length;
+  const drafting = artifacts.filter(
+    (a) => a.status === "drafting" || a.status === "declared",
   ).length;
-  const drafting = artifacts.filter((a) => a.status === "drafting" || a.status === "declared").length;
   const parts = [`${total} output${total === 1 ? "" : "s"}`];
   if (ready > 0) parts.push(`${ready} ready`);
   if (drafting > 0) parts.push(`${drafting} drafting`);
@@ -44,34 +44,31 @@ export function ArtifactDock({
 }: ArtifactDockProps) {
   const listRef = useRef<HTMLUListElement>(null);
 
-  const onKeyNav = useCallback(
-    (event: KeyboardEvent<HTMLUListElement>) => {
-      const list = listRef.current;
-      if (!list) return;
-      const items = Array.from(list.querySelectorAll<HTMLElement>("button[data-artifact-card]"));
-      if (items.length === 0) return;
-      const active = document.activeElement as HTMLElement | null;
-      const idx = items.findIndex((el) => el === active || el.contains(active));
-      if (event.key === "ArrowRight") {
-        event.preventDefault();
-        const next = items[Math.min(items.length - 1, Math.max(0, idx) + 1)];
-        next?.focus();
-        next?.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" });
-      } else if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        const prev = items[Math.max(0, (idx < 0 ? 0 : idx) - 1)];
-        prev?.focus();
-        prev?.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" });
-      } else if (event.key === "Home") {
-        event.preventDefault();
-        items[0]?.focus();
-      } else if (event.key === "End") {
-        event.preventDefault();
-        items[items.length - 1]?.focus();
-      }
-    },
-    [],
-  );
+  const onKeyNav = useCallback((event: KeyboardEvent<HTMLUListElement>) => {
+    const list = listRef.current;
+    if (!list) return;
+    const items = Array.from(list.querySelectorAll<HTMLElement>("button[data-artifact-card]"));
+    if (items.length === 0) return;
+    const active = document.activeElement as HTMLElement | null;
+    const idx = items.findIndex((el) => el === active || el.contains(active));
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      const next = items[Math.min(items.length - 1, Math.max(0, idx) + 1)];
+      next?.focus();
+      next?.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" });
+    } else if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      const prev = items[Math.max(0, (idx < 0 ? 0 : idx) - 1)];
+      prev?.focus();
+      prev?.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" });
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      items[0]?.focus();
+    } else if (event.key === "End") {
+      event.preventDefault();
+      items[items.length - 1]?.focus();
+    }
+  }, []);
 
   const summary = summarize(artifacts);
 

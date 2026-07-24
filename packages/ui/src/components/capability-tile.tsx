@@ -132,7 +132,8 @@ export function CapabilityTile({
     state === "failed" && "bg-[color:var(--status-danger)]/5",
     state === "disabled" && "opacity-60",
     desaturated && "saturate-50",
-    interactive && "min-h-11 hover:bg-muted/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    interactive &&
+      "min-h-11 hover:bg-muted/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     className,
   );
 
@@ -198,7 +199,7 @@ function GlyphLattice({
       aria-hidden
     >
       {cells.map((on, i) => {
-        const show = on && !empty && (i / 25) < Math.max(ratio, filled ? 1 : 0.15);
+        const show = on && !empty && i / 25 < Math.max(ratio, filled ? 1 : 0.15);
         return (
           <span
             key={i}

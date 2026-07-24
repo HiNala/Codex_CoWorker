@@ -84,7 +84,10 @@ export function ConversationPanel({
   return (
     <section
       aria-label="Conversation"
-      className={cn("flex min-h-0 flex-1 flex-col bg-[color:var(--ops-panel)]", className)}
+      className={cn(
+        "flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[color:var(--ops-panel)]",
+        className,
+      )}
     >
       {/* Compact incident header — not a second app chrome */}
       <header className="panel-head flex shrink-0 items-start justify-between gap-3 border-b border-border px-5 py-3">

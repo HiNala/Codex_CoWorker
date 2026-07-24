@@ -43,43 +43,46 @@ export function ArtifactDock({
   const reduced = useReducedMotion();
   const summary = summarize(artifacts);
 
-  const onKeyNav = useCallback((event: KeyboardEvent<HTMLUListElement>) => {
-    const list = listRef.current;
-    if (!list) return;
-    const items = Array.from(list.querySelectorAll<HTMLElement>("button[data-artifact-card]"));
-    if (items.length === 0) return;
+  const onKeyNav = useCallback(
+    (event: KeyboardEvent<HTMLUListElement>) => {
+      const list = listRef.current;
+      if (!list) return;
+      const items = Array.from(list.querySelectorAll<HTMLElement>("button[data-artifact-card]"));
+      if (items.length === 0) return;
 
-    const active = document.activeElement as HTMLElement | null;
-    const idx = items.findIndex((el) => el === active || el.contains(active));
+      const active = document.activeElement as HTMLElement | null;
+      const idx = items.findIndex((el) => el === active || el.contains(active));
 
-    const scrollOpts: ScrollIntoViewOptions = {
-      inline: "nearest",
-      block: "nearest",
-      behavior: reduced ? "auto" : "smooth",
-    };
+      const scrollOpts: ScrollIntoViewOptions = {
+        inline: "nearest",
+        block: "nearest",
+        behavior: reduced ? "auto" : "smooth",
+      };
 
-    if (event.key === "ArrowRight") {
-      event.preventDefault();
-      const next = items[Math.min(items.length - 1, Math.max(0, idx) + 1)];
-      next?.focus();
-      next?.scrollIntoView(scrollOpts);
-    } else if (event.key === "ArrowLeft") {
-      event.preventDefault();
-      const prev = items[Math.max(0, (idx < 0 ? 0 : idx) - 1)];
-      prev?.focus();
-      prev?.scrollIntoView(scrollOpts);
-    } else if (event.key === "Home") {
-      event.preventDefault();
-      items[0]?.focus();
-      items[0]?.scrollIntoView(scrollOpts);
-    } else if (event.key === "End") {
-      event.preventDefault();
-      items[items.length - 1]?.focus();
-      items[items.length - 1]?.scrollIntoView(scrollOpts);
-    } else if (event.key === "Enter" && active) {
-      // Card buttons already handle Enter; keep list focusable for arrows
-    }
-  }, [reduced]);
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        const next = items[Math.min(items.length - 1, Math.max(0, idx) + 1)];
+        next?.focus();
+        next?.scrollIntoView(scrollOpts);
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        const prev = items[Math.max(0, (idx < 0 ? 0 : idx) - 1)];
+        prev?.focus();
+        prev?.scrollIntoView(scrollOpts);
+      } else if (event.key === "Home") {
+        event.preventDefault();
+        items[0]?.focus();
+        items[0]?.scrollIntoView(scrollOpts);
+      } else if (event.key === "End") {
+        event.preventDefault();
+        items[items.length - 1]?.focus();
+        items[items.length - 1]?.scrollIntoView(scrollOpts);
+      } else if (event.key === "Enter" && active) {
+        // Card buttons already handle Enter; keep list focusable for arrows
+      }
+    },
+    [reduced],
+  );
 
   return (
     <section

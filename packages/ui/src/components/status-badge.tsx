@@ -16,9 +16,7 @@ export interface StatusBadgeProps {
 
 /** Icon + text label. Never colour alone. */
 export function StatusBadge({ label, icon, token, className }: StatusBadgeProps) {
-  const style = token
-    ? ({ color: `var(--${token})` } as CSSProperties)
-    : undefined;
+  const style = token ? ({ color: `var(--${token})` } as CSSProperties) : undefined;
 
   return (
     <span
@@ -29,7 +27,11 @@ export function StatusBadge({ label, icon, token, className }: StatusBadgeProps)
       style={style}
       data-status-label={label}
     >
-      {icon ? <span aria-hidden className="inline-flex shrink-0">{icon}</span> : null}
+      {icon ? (
+        <span aria-hidden className="inline-flex shrink-0">
+          {icon}
+        </span>
+      ) : null}
       <span>{label}</span>
     </span>
   );
@@ -80,7 +82,12 @@ export function StatusGlyph({ name, className }: { name: string; className?: str
       return (
         <svg viewBox="0 0 16 16" className={common} fill="none" aria-hidden>
           <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M5 8.2 7 10.2 11 5.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path
+            d="M5 8.2 7 10.2 11 5.8"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
         </svg>
       );
     case "x":
@@ -100,14 +107,27 @@ export function StatusGlyph({ name, className }: { name: string; className?: str
     case "lock":
       return (
         <svg viewBox="0 0 16 16" className={common} fill="none" aria-hidden>
-          <rect x="3.5" y="7" width="9" height="6.5" rx="1.2" stroke="currentColor" strokeWidth="1.5" />
+          <rect
+            x="3.5"
+            y="7"
+            width="9"
+            height="6.5"
+            rx="1.2"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
           <path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7" stroke="currentColor" strokeWidth="1.5" />
         </svg>
       );
     case "plus":
       return (
         <svg viewBox="0 0 16 16" className={common} fill="none" aria-hidden>
-          <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path
+            d="M8 3.5v9M3.5 8h9"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
         </svg>
       );
     case "hammer":

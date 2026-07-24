@@ -139,7 +139,7 @@ export function CapabilityInstallApproval({
           <h4 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
             What it does
           </h4>
-          <p className="mt-1.5 max-w-[62ch] leading-6 text-foreground/90">{approval.summary}</p>
+          <p className="mt-1.5 break-words leading-6 text-foreground/90">{approval.summary}</p>
         </section>
 
         <section>

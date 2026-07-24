@@ -19,9 +19,7 @@ function truncateHash(hash: string, head = 8, tail = 6): string {
   return `${hash.slice(0, head)}…${hash.slice(-tail)}`;
 }
 
-function trustVariant(
-  trust: string,
-): "default" | "secondary" | "outline" | "destructive" {
+function trustVariant(trust: string): "default" | "secondary" | "outline" | "destructive" {
   switch (trust) {
     case "official":
       return "default";
@@ -113,10 +111,7 @@ export function EvidencePanel({
   return (
     <aside
       aria-label="Evidence"
-      className={cn(
-        "flex min-h-0 flex-col border-l border-border bg-card/40",
-        className,
-      )}
+      className={cn("flex min-h-0 flex-col border-l border-border bg-card/40", className)}
     >
       <header className="shrink-0 border-b border-border/80 px-4 py-3">
         <h3 className="text-sm font-semibold tracking-tight">Evidence</h3>
@@ -175,10 +170,7 @@ export function EvidencePanel({
                 </div>
 
                 <div className="mt-3 border-t border-border/60 pt-2">
-                  <HighlightedExcerpt
-                    excerpt={item.excerpt}
-                    highlight={item.highlight}
-                  />
+                  <HighlightedExcerpt excerpt={item.excerpt} highlight={item.highlight} />
                 </div>
               </article>
             );

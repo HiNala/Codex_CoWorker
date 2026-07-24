@@ -5,6 +5,7 @@ import type { GateRowVM } from "@/hooks/run-state";
 import { formatDuration } from "@/hooks/run-state";
 import { cn } from "@/lib/utils";
 
+/** Fixed 3-col grid so duration never floats as a detached column. */
 export function GateRow({ gate }: { gate: GateRowVM }) {
   const isFailed = gate.status === "failed";
   const isPassed = gate.status === "passed";
@@ -21,14 +22,14 @@ export function GateRow({ gate }: { gate: GateRowVM }) {
             ? "skip-forward"
             : "circle";
 
-  const counter = gate.passed != null && gate.total != null ? `${gate.passed}/${gate.total}` : null;
+  const counter =
+    gate.passed != null && gate.total != null ? `${gate.passed}/${gate.total}` : null;
 
   return (
     <li
       className={cn(
-        "rounded-md border border-transparent px-2.5 py-2 transition-colors duration-[var(--dur-quick)]",
-        isFailed &&
-          "border-[color:var(--status-repairing)]/40 bg-[color:var(--status-repairing)]/8",
+        "grid grid-cols-[1.25rem_minmax(0,1fr)_3.25rem] items-start gap-x-2 rounded-md px-2 py-2",
+        isFailed && "bg-[color:var(--status-repairing)]/10",
         isPassed && "bg-[color:var(--status-success)]/5",
         isRunning && "bg-muted/40",
       )}
@@ -36,45 +37,42 @@ export function GateRow({ gate }: { gate: GateRowVM }) {
       data-status={gate.status}
       data-gate-name={gate.name}
     >
-      <div className="flex items-start gap-2.5">
-        <span
-          className={cn(
-            "mt-0.5 inline-flex shrink-0",
-            isPassed && "text-[color:var(--status-success)]",
-            isFailed && "text-[color:var(--status-repairing)]",
-            isRunning && "text-[color:var(--status-testing)]",
-            (gate.status === "pending" || gate.status === "skipped") && "text-muted-foreground",
-          )}
-          aria-hidden
-        >
-          <StatusGlyph
-            name={iconName}
-            className={cn("size-3.5", isRunning && "motion-safe:animate-spin")}
-          />
-        </span>
+      <span
+        className={cn(
+          "mt-0.5 inline-flex justify-self-center",
+          isPassed && "text-[color:var(--status-success)]",
+          isFailed && "text-[color:var(--status-repairing)]",
+          isRunning && "text-[color:var(--status-testing)]",
+          (gate.status === "pending" || gate.status === "skipped") && "text-muted-foreground",
+        )}
+        aria-hidden
+      >
+        <StatusGlyph name={iconName} className="size-3.5" />
+      </span>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-            <p className="text-sm font-medium leading-5">{gate.name}</p>
-            <div className="flex items-center gap-2 font-mono text-[11px] tabular-nums text-muted-foreground">
-              {counter ? <span>{counter}</span> : null}
-              {gate.durationMs != null ? (
-                <span>{formatDuration(gate.durationMs)}</span>
-              ) : isRunning ? (
-                <span className="text-[color:var(--status-testing)]">…</span>
-              ) : null}
-            </div>
-          </div>
+      <div className="min-w-0">
+        <p className="truncate text-[13px] font-medium leading-5">{gate.name}</p>
+        {counter ? (
+          <p className="ops-mono text-[11px] tabular-nums text-muted-foreground">{counter}</p>
+        ) : null}
+        {isFailed && gate.message ? (
+          <p
+            className="mt-1 break-words text-[12px] leading-5 text-[color:var(--status-repairing)]"
+            data-gate-message
+          >
+            {gate.message}
+          </p>
+        ) : null}
+      </div>
 
-          {isFailed && gate.message ? (
-            <p
-              className="mt-1.5 whitespace-pre-wrap break-words text-xs leading-5 text-[color:var(--status-repairing)]"
-              data-gate-message
-            >
-              {gate.message}
-            </p>
-          ) : null}
-        </div>
+      <div className="ops-mono w-[3.25rem] shrink-0 self-start text-right text-[11px] tabular-nums text-muted-foreground">
+        {gate.durationMs != null ? (
+          formatDuration(gate.durationMs)
+        ) : isRunning ? (
+          <span className="text-[color:var(--status-testing)]">…</span>
+        ) : (
+          <span className="opacity-40">—</span>
+        )}
       </div>
     </li>
   );

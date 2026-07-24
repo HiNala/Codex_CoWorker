@@ -3,9 +3,7 @@
 export function parseOklch(input: string): { l: number; c: number; h: number; a: number } | null {
   const m = input
     .trim()
-    .match(
-      /^oklch\(\s*([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)(?:\s*\/\s*([0-9.]+%?))?\s*\)$/i,
-    );
+    .match(/^oklch\(\s*([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)(?:\s*\/\s*([0-9.]+%?))?\s*\)$/i);
   if (!m) return null;
   const aRaw = m[4];
   let a = 1;

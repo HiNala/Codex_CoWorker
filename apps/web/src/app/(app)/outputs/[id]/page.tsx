@@ -33,11 +33,7 @@ function truncateHash(hash: string): string {
   return hash.length > 12 ? `${hash.slice(0, 12)}…` : hash;
 }
 
-export default async function OutputDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function OutputDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const detail = getSeedArtifact(id);
   if (!detail) notFound();
