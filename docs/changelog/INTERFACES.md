@@ -518,3 +518,47 @@ Deny: `"decision": "denied"`.
 | `WORKER_URL` or `WORKER_PUBLIC_URL` | Worker origin, default `http://127.0.0.1:3001` |
 | `DEMO_ACCESS_CODE` | Required for `/api/demo/start` (same as reset/seed) |
 
+
+---
+
+## OWNERSHIP GUARD (Node) — Cael vs Aria
+
+| Owner | Paths |
+|-------|--------|
+| **Cael** | `apps/worker/**`, `packages/agent-runtime/**`, `packages/events/**`, `packages/jobs/**`, `packages/foundry/**`, `packages/execution/**`, `docs/changelog/INTERFACES.md` (contracts) |
+| **Aria** | All `apps/web/**` routes, hooks, cockpit UI |
+
+Cael does **not** edit `apps/web`. Mismatches below are one-line notes for Aria only.
+
+### Read-only audit of current Aria proxies (tree as of now)
+
+| Proxy | Method path | Upstream | Match? |
+|-------|-------------|----------|--------|
+| Start | `POST /api/demo/start` | `POST {base}/v1/golden-path/run` | **YES** — correct worker path |
+| Approve/deny | `POST /api/approvals/:approvalId/decide` | `POST {base}/approvals/:id/decide` | **YES** — correct worker path |
+| SSE | `GET /api/runs/:runId/stream` | (web may PG-stream or proxy) | See SSE section |
+
+**Env mismatch (one-line for Aria):**  
+`decide` resolves `WORKER_INTERNAL_URL || WORKER_PUBLIC_URL || WORKER_URL || http://127.0.0.1:3001`; `start` omits `WORKER_INTERNAL_URL`. **Fix:** use the same base resolver as decide so Railway internal networking works for Start.
+
+**Hook (use-run-stream decide):** already `fetch('/api/approvals/…/decide')` with body `{ decision, runId, assignmentId, orgId }` + `Idempotency-Key` — **matches** worker contract. Offline path injects local granted/denied so UI does not hang (worker must still be up on stage for real persist).
+
+### Worker endpoints (Cael — deployable / tested in-process)
+
+`control-smoke.ts` **EXIT 0** (same code paths as worker handlers).  
+Docker image may still 404 until Wisp deploys current worker.
+
+#### POST /v1/golden-path/run
+- Body: `{}`
+- Fixed IDs only: assignment `…005`, run `…006`
+- 200: `{ ok, mode, runId, assignmentId, eventCountInDb, lastSeq, eventTypes, stepStatus, artifactId, artifactTitle, distinctCount, attempt1FailureMessage, runFinished, streamPath }`
+- streamPath (worker): `/runs/…006/stream?after=0` — browser uses `/api/runs/…006/stream?after=0`
+
+#### POST /approvals/:approvalId/decide
+- Body: `{ decision: "approved"|"denied", reason?, runId?, assignmentId?, orgId? }`
+- 200: `{ ok, approvalId, decision, alreadyDecided, runId, events[] }` — **idempotent** same decision
+- 400/404/409/500 as problem-details codes
+
+#### GET /runs/:runId/stream?after=
+- Exclusive resume; `Last-Event-ID` preferred; see SSE section above
+
