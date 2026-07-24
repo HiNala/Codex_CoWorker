@@ -131,5 +131,16 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
   - log fixture: naive=**4**, correct=**9**, failedAttempts=**40**, first 2026-07-16 → last 2026-07-23
   - Bug shape confirmed: `PlanToggle` emits `yearly`; `PRICE_IDS` keyed `annual`
   - Uncommitted work held in tree for mutex: composio polish, github fixtures, acme-store UI/logs, F.md holds
-- **Demo sub-agent DONE:** pricing UI, checkout route, 13 tests, log trap 4/9/40, README/CONTRIBUTING. PR sub-agent still in flight under hold.
+- **Demo sub-agent DONE:** pricing UI, checkout route, 13 tests, log trap 4/9/40, README/CONTRIBUTING.
+- **GitHub PR sub-agent DONE:** host PullRequestPort, hand-written `annual-checkout-fix.patch`, apply --3way fail-loud, Fake default when GITHUB_* absent, 14 tests (incl. local bare-remote e2e). **All 5 exclusive streams complete.**
+- Parent still under Birch git hold: no add/commit/push until Node mutex; polish/tests only.
+
+### [2026-07-23] ACK binding commit mutex (`scripts/agent-commit.ps1`)
+
+- **Only sanctioned commit path:** `pwsh scripts/agent-commit.ps1 -Agent Tide -Paths <owned> -MessageFile <file>`.
+- Mutex serializes add+commit+push; exit 2 if lock busy → keep coding, retry next checkpoint (no wait loop, no raw git).
+- Contamination guard aborts if staged files fall outside `-Paths`.
+- Still forbidden: raw `git add`/`commit`/`push`, pull, rebase, autostash, stash, reset, foreign checkout.
+- Non-fast-forward → script exits 3, report Node, hold for central sync gate.
+- TIDE `-Paths`: `packages/integrations,packages/research,demo,docs/changelog/tracks/F.md`
 
