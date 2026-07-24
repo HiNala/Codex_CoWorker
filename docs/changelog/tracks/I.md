@@ -40,6 +40,63 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] DEXTWORK.COM — domain report for Node / Birch / operator
+
+**Priority reminder:** readiness gate first. Re-check this session:
+
+| Host | live | ready |
+|------|------|-------|
+| `https://web-production-7d71d.up.railway.app` | **200** | **200** `status=ready` |
+| `https://dextwork.com` | **200** | **200** `status=ready` |
+
+Migrations: re-run **exit 0** current. Replay on **dextwork.com**: reset/seed/replay **200**.  
+**Fallback domain NOT removed:** `web-production-7d71d.up.railway.app` remains ACTIVE (demo parachute).
+
+#### Railway registration (forge-codex / production / web :3000)
+
+| Hostname | Railway status | TLS | Primary? |
+|----------|----------------|-----|----------|
+| **dextwork.com** (apex) | ACTIVE, **verified=true**, DNS PROPAGATED | **VALID** (RSA-2048) | **YES — primary public brand** |
+| **www.dextwork.com** | ACTIVE, verified=false (awaiting DNS) | validating ownership | Secondary / registrar fallback |
+| web-production-7d71d.up.railway.app | ACTIVE | Railway managed | **Fallback only — keep attached** |
+
+#### EXACT DNS targets for the registrar (no secrets)
+
+**Apex `dextwork.com` (Railway required record):**
+
+| Field | Exact value |
+|-------|-------------|
+| Type Railway returned | **CNAME** (`DNS_RECORD_TYPE_CNAME`) |
+| Name | `@` |
+| FQDN | `dextwork.com` |
+| **Target** | **`tdr3gof8.up.railway.app`** |
+| Ownership TXT host | `_railway-verify.dextwork.com` |
+| Ownership TXT value | `railway-verify=65fa9e36bdba366f059900a287a686dbd9e62d23c35f1da0a1e99c0c71cac52e` |
+
+**www.dextwork.com (registered for registrars that cannot apex-CNAME):**
+
+| Field | Exact value |
+|-------|-------------|
+| Type | **CNAME** |
+| Name | `www` |
+| FQDN | `www.dextwork.com` |
+| **Target** | **`jdyprkbz.up.railway.app`** |
+| Ownership TXT host | `_railway-verify.www.dextwork.com` |
+| Ownership TXT value | `railway-verify=cc0ae2334f6379ce2e1a8afcc6ce7db035bc5d72f6a59528c5bedc7f24b8dcf0` |
+
+#### Apex ALIAS/ANAME vs CNAME (do not assume)
+
+- Railway’s API returns a **CNAME** target for apex (`tdr3gof8.up.railway.app`), **not** an A-record IP list.
+- **Many registrars cannot place a true CNAME on the zone apex.**
+  - If the registrar supports **ALIAS / ANAME / CNAME flattening** at apex → use target **`tdr3gof8.up.railway.app`** on `@`.
+  - If the registrar does **not** support apex ALIAS/ANAME → **do not invent A records**. Prefer:
+    1. Make **`www.dextwork.com` primary** with CNAME → **`jdyprkbz.up.railway.app`**, and  
+    2. Apex **HTTP redirect** `dextwork.com` → `https://www.dextwork.com` (registrar/URL-forward feature).
+- **Current live state:** apex already answers FORGE with **HTTPS ready 200** and cert **VALID**, so whatever is in place at the registrar for apex is working; still document www as the standard escape hatch.
+
+**Primary for product branding:** **apex `https://dextwork.com`** (Dextwork shell).  
+**Parachute if DNS wobbles:** `https://web-production-7d71d.up.railway.app`.
+
 ### [2026-07-23] DOMAIN OVERRIDE — dextwork.com registered on Railway web
 
 **User-authorized custom domain:** `dextwork.com` (apex) on project `forge-codex`, service **web**, port **3000**.
