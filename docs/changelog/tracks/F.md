@@ -378,3 +378,62 @@ Tide audited exclusive scope and **repointed / locked** demo-facing copy to Brok
 3. Hang on external write → fail step, narrate honest not_configured.  
 4. Never invent a live PR/email success if status was not_configured.
 
+
+### [2026-07-23] FINAL DEMO QA — production rehearsal probe (Tide)
+
+**Hosts:** `https://www.dextwork.com` · fallback `https://web-production-7d71d.up.railway.app`
+
+#### Health / cold-ish web
+
+| Check | Result |
+| --- | --- |
+| `GET /api/health/live` | **200** `service=web` |
+| `GET /api/health/ready` | **200** database/schema/storage/queue **up** |
+| `GET /api/health/status` | **200** all adapters **fake**, all providers **degraded** (honest — not green-lie) |
+
+#### Scenario copy (assignment + home)
+
+| Surface | Result |
+| --- | --- |
+| `GET /a/0198206f-5f53-7000-8000-000000000005` | **200**; **no** Webhook field rename / api-change-impact / Analyse API change |
+| Static HTML hits | `Start assignment`, checkout/annual/Broken language present |
+| Marketing `/` | **no** API-change stale copy |
+
+#### Start-assignment / worker path
+
+| Check | Result |
+| --- | --- |
+| `POST /api/demo/start` unauth | **401** `invalid_access_code` (expected) |
+| `POST /api/demo/start` with **local** `.env.local` `DEMO_ACCESS_CODE` | **401** `invalid_access_code` — **local code ≠ production** |
+| Worker golden-path via Tide | **NOT EXECUTED** — blocked on prod demo auth |
+
+#### LIVE vs FAKE labels (prod `/api/health/status` + Tide env)
+
+| Provider | Prod badge signal | Tide env (names) | Stage narrative |
+| --- | --- | --- | --- |
+| openai/codex/octen/composio/zendesk/sandbox | **fake** / **degraded** | — | Honest red/degraded, not green |
+| GitHub PR | not_configured (no PAT) | GITHUB_* ABSENT | **FAKE** PR adapter |
+| Email | not_configured (no Gmail link/Resend) | Composio incomplete | **FAKE** Notifier |
+| Zendesk | not_configured | ZENDESK_* UNSET | **FAKE** import tickets |
+| Worker start | needs Wisp + matching DEMO_ACCESS_CODE | — | **BLOCKED for Tide until code match + worker live confirm** |
+
+#### First blocking request/response (report immediately)
+
+```
+POST https://www.dextwork.com/api/demo/start
+Authorization: x-demo-access-code from local .env.local
+→ 401 {"ok":false,"code":"invalid_access_code","message":"Invalid or missing demo access code."}
+```
+
+**Impact:** Tide cannot fire live golden-path through deployed worker from this agent. Presenter/Wisp must use **production** `DEMO_ACCESS_CODE` (out-of-band) to unlock `/demo` and click Start once worker is live.
+
+#### Cold reset confirmation (Tide read-only)
+
+- Web ready/live green; no Tide mutations performed (no reset/seed from Tide — lack of valid prod access code).
+- Public surfaces show Broken Checkout shell, not webhook rename.
+- Full cold open state still owned by Wisp/Cael seed after final reset; Tide confirms **public HTML is not stale API-change**.
+
+#### Offline Tide smoke (still green)
+
+`pnpm --filter @forge/integrations run smoke:golden` was green pre-freeze (74 tests). Status honesty tests green (`27b83ca`).
+
