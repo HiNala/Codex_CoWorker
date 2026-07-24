@@ -158,3 +158,36 @@ reclaim step → artifact "Checkout customer impact" (distinctCount **9**) → `
 **REQUEST → Node / Aria / Wisp:** mount `GET /api/runs/:runId/stream` on `@forge/events` `createRunEventStream` + `MemoryEventStore`/`RunEventBus` (or Postgres emit) consuming the same seq; do not re-implement event shapes.
 
 **Status:** TRACK A package+golden-path **GREEN** for fake seam; full IT RUNS still needs D cockpit + E artifact dock + J seed HTTP.
+
+### 2026-07-23T18:18Z — GATE 1 PRIMARY SEAM (Node): Postgres events + SSE + artifact
+
+#### 1) Narrow verification — exact counts
+
+| Command | EXIT | Package results |
+|---------|------|-----------------|
+| `pnpm verify:A` | **0** | jobs: **8 pass / 0 fail** (1 file); events: **6 pass / 0 fail** (2 files); agent-runtime: **166 pass / 0 fail** (6 files) |
+| `pnpm verify:B` | **0** | execution: **27 pass / 0 fail** (6 files); verifier: **7 pass / 0 fail** (1 file); foundry-core: **6 pass / 0 fail** (2 files) |
+
+#### 2) Seeded fake assignment IT RUNS evidence (one run, fakes, Postgres)
+
+```
+pnpm db:seed
+pnpm exec dotenv -e .env.local -- tsx packages/agent-runtime/src/golden-path/prove-it-runs.ts
+# → PASS: eventCountInDb=24 lastSeq=24 distinctCount=9 artifactId set
+#    capability.gate_failed message=expected 9, received 4
+pnpm exec dotenv -e .env.local -- tsx packages/events/src/prove-sse.ts
+# → PASS: runEventFrames=5 ok=true (SSE backfill from Postgres)
+```
+
+| IT RUNS criterion | Result |
+|-------------------|--------|
+| 1. Events persisted to Postgres | **PASS** — 24 rows in `run_events` for run `0198206f-5f53-7000-8000-000000000006`, gapless seq 1..24 |
+| 2. Events delivered over SSE | **PASS** — `createRunEventStream` + `listRunEventsAfter` backfill; worker `GET /runs/:id/stream` |
+| 3. Cockpit rendering | **PARTIAL** — needs Aria `useDemoFixture:false` + live stream. Route file at `apps/web/src/app/api/runs/[runId]/stream/route.ts` (Track A ownership; may need separate mutex Paths) |
+| 4. Artifact produced | **PASS** — `artifacts` + `artifact_versions`; title "Checkout customer impact"; distinctCount **9** |
+
+**Same-tx:** entire `executeRun` inside `sql.begin`; `createPostgresEventStoreTx(tx)` for nextSeq+run_events+outbox; artifact insert in same begin.
+
+**Pushed:** `ef9b8cc` (code); this A.md note follows via mutex.
+
+**TRACK A:** package tests GREEN; criteria 1+2+4 GREEN; criterion 3 needs Aria flip.
