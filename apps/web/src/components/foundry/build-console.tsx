@@ -115,7 +115,7 @@ export function BuildConsole({ build, capability, className }: BuildConsoleProps
           ) : null}
         </div>
         <CollapsibleContent>
-          <pre className="ops-mono mt-2 max-h-none whitespace-pre-wrap break-words rounded-lg bg-muted/40 p-3 text-[11px] text-muted-foreground">
+          <pre className="ops-mono mt-2 whitespace-pre-wrap break-words rounded-lg bg-muted/40 p-3 text-[11px] text-muted-foreground">
             {lines.length === 0 ? "No output yet." : lines.join("\n")}
           </pre>
         </CollapsibleContent>

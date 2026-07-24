@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ComponentProps } from "react";
+import { useMemo, type ComponentProps } from "react";
 import { StatusBadge, StatusGlyph, Odometer, Ring } from "@forge/ui";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ApprovalCard } from "@/components/approvals/approval-card";
 import type { RunState, TimelineItem, TraceDensity } from "@/hooks/run-state";
@@ -43,7 +42,7 @@ function filterTimeline(items: TimelineItem[], density: TraceDensity): TimelineI
 
 /**
  * Dominant chat column: compact header, single scroll thread, pinned composer.
- * Approvals pinned above composer (never modal). Outputs as compact drawer.
+ * Approvals pinned above composer (never modal). Artifacts wrap in-thread (no dock).
  */
 export function ConversationPanel({
   state,
@@ -58,7 +57,6 @@ export function ConversationPanel({
 }: ConversationPanelProps) {
   const { density: storedDensity, setDensity } = useTraceDensity("narrative");
   const density = densityOverride ?? storedDensity;
-  const [outputsOpen, setOutputsOpen] = useState(false);
 
   // Approvals pinned; hide duplicates from scroll list
   const pendingApprovals = useMemo(
@@ -76,7 +74,7 @@ export function ConversationPanel({
 
   const { scrollerRef, newCount, onScroll, jumpToLatest } = usePinScroll(items.length);
 
-  const awaiting = pendingApprovals.length > 0;
+  // Pending approval must NOT lock chat — composer stays usable (binding model).
   const artifacts = Object.values(state.artifacts);
   const spent = state.budget.spent;
   const ceiling = state.budget.ceiling;
@@ -90,10 +88,12 @@ export function ConversationPanel({
       )}
     >
       {/* Compact incident header — not a second app chrome */}
-      <header className="panel-head flex shrink-0 items-start justify-between gap-3 border-b border-border px-5 py-3">
+      <header className="panel-head flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-2">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="ops-title truncate text-foreground">{state.title}</h1>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <h1 className="ops-title truncate text-[15px] leading-tight text-foreground">
+              {state.title}
+            </h1>
             <StatusBadge
               label={state.status.replaceAll("_", " ")}
               token={
@@ -118,25 +118,25 @@ export function ConversationPanel({
               }
             />
           </div>
-          <p className="mt-1 text-[12px] text-muted-foreground">
+          <p className="mt-0.5 truncate text-[11px] leading-tight text-muted-foreground">
             Broken Checkout · Nala
             {assignmentId ? (
               <>
-                <span className="mx-1.5 text-border">·</span>
-                <span className="ops-mono text-[11px]">{assignmentId.slice(0, 8)}</span>
+                <span className="mx-1 text-border">·</span>
+                <span className="ops-mono text-[10px]">{assignmentId.slice(0, 8)}</span>
               </>
             ) : null}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <div className="hidden items-center gap-2 sm:flex">
+        <div className="flex shrink-0 items-center gap-1.5">
+          <div className="hidden items-center gap-1.5 sm:flex">
             <Ring
               value={spent}
               max={ceiling}
-              size={28}
+              size={24}
               label={`Budget ${formatCredits(spent)} of ${formatCredits(ceiling)}`}
             />
-            <span className="ops-mono text-[12px] tabular-nums text-muted-foreground">
+            <span className="ops-mono text-[11px] tabular-nums text-muted-foreground">
               $<Odometer value={formatCredits(spent)} />
             </span>
           </div>
@@ -144,7 +144,7 @@ export function ConversationPanel({
             type="button"
             variant="outline"
             size="sm"
-            className="min-h-9"
+            className="min-h-8 px-2.5 text-[11px]"
             disabled={state.status !== "running"}
             onClick={onPause}
           >
@@ -153,14 +153,14 @@ export function ConversationPanel({
           <div
             role="group"
             aria-label="Detail level"
-            className="flex rounded-lg border border-border p-0.5"
+            className="flex rounded-md border border-border p-0.5"
           >
             {(["narrative", "detailed"] as const).map((d) => (
               <button
                 key={d}
                 type="button"
                 className={cn(
-                  "min-h-8 rounded-md px-2 text-[11px] font-medium capitalize",
+                  "min-h-7 rounded px-2 text-[11px] font-medium capitalize",
                   density === d || (d === "detailed" && density === "everything")
                     ? "bg-muted text-foreground"
                     : "text-muted-foreground",
@@ -179,11 +179,11 @@ export function ConversationPanel({
         </div>
       </header>
 
-      {/* Single vertical scroll for the thread */}
+      {/* Exactly one vertical scroller for the thread */}
       <div
         ref={scrollerRef}
         onScroll={onScroll}
-        className="panel-body space-y-4 px-5 py-4"
+        className="panel-body space-y-5 px-5 py-5 sm:px-6 sm:py-6"
         role="log"
         aria-live="polite"
         aria-relevant="additions"
@@ -204,15 +204,15 @@ export function ConversationPanel({
           })
         )}
 
-        {/* Inline artifact cards in thread (not a bottom dock) */}
+        {/* Wrap/grid artifact attachments in thread — never overflow-x dock */}
         {artifacts.length > 0 ? (
           <div className="rounded-xl border border-border bg-[color:var(--ops-raised)] p-3">
             <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               Attachments · {artifacts.length}
             </p>
-            <ul className="flex flex-wrap gap-2">
+            <ul className="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-2">
               {artifacts.map((a) => (
-                <li key={a.id} className="min-w-[10rem] max-w-[14rem] flex-1">
+                <li key={a.id} className="min-w-0">
                   <ArtifactCard artifact={a} onOpen={() => undefined} />
                 </li>
               ))}
@@ -234,41 +234,14 @@ export function ConversationPanel({
         </div>
       ) : null}
 
-      {/* Compact outputs drawer — not full-width dock */}
-      {artifacts.length > 0 ? (
-        <div className="shrink-0 border-t border-border">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between px-4 py-2 text-left text-[12px] text-muted-foreground hover:bg-muted/30"
-            aria-expanded={outputsOpen}
-            onClick={() => setOutputsOpen((o) => !o)}
-          >
-            <span>
-              Outputs{" "}
-              <Badge variant="outline" className="ms-1 tabular-nums">
-                {artifacts.length}
-              </Badge>
-            </span>
-            <span>{outputsOpen ? "Hide" : "Show"}</span>
-          </button>
-          {outputsOpen ? (
-            <ul className="flex max-h-36 gap-2 overflow-x-auto px-4 pb-3">
-              {artifacts.map((a) => (
-                <li key={a.id} className="w-44 shrink-0">
-                  <ArtifactCard artifact={a} onOpen={() => undefined} />
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      ) : null}
-
-      {/* Pinned approval — compact, never modal overlay */}
+      {/* Exactly ONE actionable approval surface — chat only, never Foundry */}
       {pendingApprovals.map((a) => (
         <div
           key={a.id}
-          className="shrink-0 border-t border-[color:var(--ops-amber)]/40 bg-[color:var(--ops-amber)]/5 px-4 py-3"
+          id={`approval-${a.id}`}
+          className="shrink-0 border-t border-[color:var(--ops-amber)]/40 bg-[color:var(--ops-amber)]/5 px-3 py-2"
           data-pinned-approval
+          data-approval-id={a.id}
         >
           <ApprovalCard
             title={a.title}
@@ -278,17 +251,14 @@ export function ConversationPanel({
             status={a.status}
             onApprove={() => onApprove?.(a.id)}
             onDeny={() => onDeny?.(a.id)}
-            className="border-[color:var(--ops-amber)]/30 bg-[color:var(--ops-panel)] p-3"
+            className="border-[color:var(--ops-amber)]/30 bg-[color:var(--ops-panel)] p-2.5 shadow-none"
           />
         </div>
       ))}
 
+      {/* Composer always available — pending approval does not block chat */}
       <div className="shrink-0">
-        <Composer
-          disabled={awaiting}
-          {...(awaiting ? { disabledReason: "Respond to the pending approval first" } : {})}
-          {...(onSend ? { onSend } : {})}
-        />
+        <Composer {...(onSend ? { onSend } : {})} />
       </div>
     </section>
   );
@@ -296,7 +266,7 @@ export function ConversationPanel({
 
 function EmptyTimeline() {
   return (
-    <div className="flex min-h-[10rem] flex-col items-center justify-center px-4 text-center">
+    <div className="flex min-h-[12rem] flex-col items-center justify-center px-4 text-center">
       <p className="text-sm font-medium text-foreground">Start the assignment</p>
       <p className="mt-1 max-w-[36ch] text-sm text-muted-foreground">
         Messages, evidence, and approvals appear here in order.

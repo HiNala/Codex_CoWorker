@@ -336,3 +336,24 @@ When DB has Cael's golden path: cockpit `data-last-seq` should reach **24** (gap
 - Foundry: exclusive install | console | toolbelt modes (no overlay stack)
 - Gate rows: fixed duration track; build-console no nested overflow-auto
 - Thin styled scrollbars under `[data-dextwork-shell]`
+
+## [COMPLIANCE] D · binding approval + rail clamp
+
+| Clause | Status |
+|--------|--------|
+| 4 Rail `clamp(440px, 35vw, 640px)` + `minmax(0,1fr)` chat | **PASS** tokens.css L181 |
+| 2 Foundry status-only, no Hold/Deny | **PASS** capability-install-approval status-only; foundry-panel status row |
+| 3 Composer never disabled for approval | **PASS** no disabledReason gate |
+| 5 No output dock | **PASS** |
+| 6 Exclusive shells | **PASS** `useShellLayout` mounts exactly one of desktop/tablet/mobile |
+
+### Approve wiring
+- `POST /api/approvals/:approvalId/decide` proxy → worker
+- Client applies `events[]` or local `approval.granted/denied` so card leaves pending
+
+### Clause 6 how
+`useShellLayout()` via `useSyncExternalStore` on `window.innerWidth`:
+- `>=1280` → desktop only
+- `901–1279` → tablet only  
+- `<=900` → mobile only
+Never two shells in the React tree.

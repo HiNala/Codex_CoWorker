@@ -6,18 +6,14 @@ import { cn } from "@/lib/utils";
 
 export interface CapabilityToolbeltProps {
   capabilities: CapabilityTileVM[];
-  onOpen?: (id: string) => void;
   className?: string;
-  /** Dim toolbelt when an approval takeover is active */
-  dimmed?: boolean;
 }
 
-export function CapabilityToolbelt({
-  capabilities,
-  onOpen,
-  className,
-  dimmed,
-}: CapabilityToolbeltProps) {
+/**
+ * Cut #4: inventory tiles are display-only — no onOpen / second executable path UI.
+ * Interactive install/build paths live exclusively in install + console modes.
+ */
+export function CapabilityToolbelt({ capabilities, className }: CapabilityToolbeltProps) {
   if (capabilities.length === 0) {
     return (
       <EmptyState
@@ -31,13 +27,10 @@ export function CapabilityToolbelt({
   return (
     <ul
       role="list"
-      className={cn(
-        "grid gap-3 sm:grid-cols-2",
-        dimmed && "pointer-events-none opacity-40 transition-opacity duration-[var(--dur-base)]",
-        className,
-      )}
+      className={cn("grid gap-3 sm:grid-cols-2", className)}
       data-toolbelt
-      aria-label="Capability toolbelt"
+      data-inventory-display
+      aria-label="Installed capability inventory"
     >
       {capabilities.map((cap) => (
         <li key={cap.id}>
@@ -50,7 +43,6 @@ export function CapabilityToolbelt({
             {...(cap.progress ? { progress: cap.progress } : {})}
             {...(cap.version ? { version: cap.version } : {})}
             {...(cap.failingGate ? { failingGate: cap.failingGate } : {})}
-            {...(onOpen ? { onOpen: () => onOpen(cap.id) } : {})}
           />
         </li>
       ))}

@@ -35,8 +35,8 @@ export function GapMarker({ slug, reason, className }: GapMarkerProps) {
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--status-building)]">
             Capability gap
           </p>
-          <p className="mt-1 font-mono text-sm font-medium text-foreground">{slug}</p>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">{reason}</p>
+          <p className="mt-1 break-words font-mono text-sm font-medium text-foreground">{slug}</p>
+          <p className="mt-1 break-words text-sm leading-6 text-muted-foreground">{reason}</p>
         </div>
       </div>
     </div>

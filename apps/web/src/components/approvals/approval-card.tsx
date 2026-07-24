@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PressAndHold, useReducedMotion } from "@forge/ui";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -91,18 +91,36 @@ export function ApprovalCard({
               ? "Denying…"
               : null;
 
+  // Sync local submit UI when parent resolves status (prevents stuck "Approving…")
+  useEffect(() => {
+    if (status !== "pending") {
+      committed.current = false;
+      setSubmitted(null);
+    }
+  }, [status]);
+
   const handleApprove = useCallback(() => {
     if (status !== "pending" || committed.current) return;
     committed.current = true;
     setSubmitted("approve");
-    onApprove();
+    try {
+      onApprove();
+    } catch {
+      committed.current = false;
+      setSubmitted(null);
+    }
   }, [status, onApprove]);
 
   const handleDeny = useCallback(() => {
     if (status !== "pending" || committed.current) return;
     committed.current = true;
     setSubmitted("deny");
-    onDeny();
+    try {
+      onDeny();
+    } catch {
+      committed.current = false;
+      setSubmitted(null);
+    }
   }, [status, onDeny]);
 
   const customerFacing = risk === "customer_facing";

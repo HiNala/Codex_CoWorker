@@ -5,7 +5,10 @@ import type { GateRowVM } from "@/hooks/run-state";
 import { formatDuration } from "@/hooks/run-state";
 import { cn } from "@/lib/utils";
 
-/** Fixed 3-col grid so duration never floats as a detached column. */
+/**
+ * Fixed 3-col grid: icon | body | duration track.
+ * Timing lives in the last grid column — never a floating/detached column.
+ */
 export function GateRow({ gate }: { gate: GateRowVM }) {
   const isFailed = gate.status === "failed";
   const isPassed = gate.status === "passed";
@@ -51,7 +54,7 @@ export function GateRow({ gate }: { gate: GateRowVM }) {
       </span>
 
       <div className="min-w-0">
-        <p className="truncate text-[13px] font-medium leading-5">{gate.name}</p>
+        <p className="break-words text-[13px] font-medium leading-5">{gate.name}</p>
         {counter ? (
           <p className="ops-mono text-[11px] tabular-nums text-muted-foreground">{counter}</p>
         ) : null}
@@ -65,7 +68,7 @@ export function GateRow({ gate }: { gate: GateRowVM }) {
         ) : null}
       </div>
 
-      <div className="ops-mono w-[3.25rem] shrink-0 self-start text-right text-[11px] tabular-nums text-muted-foreground">
+      <div className="ops-mono justify-self-end self-start text-right text-[11px] tabular-nums text-muted-foreground">
         {gate.durationMs != null ? (
           formatDuration(gate.durationMs)
         ) : isRunning ? (

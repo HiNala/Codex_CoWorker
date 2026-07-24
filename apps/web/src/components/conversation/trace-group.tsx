@@ -23,6 +23,7 @@ export interface TraceGroupProps {
  * Signature interaction: live groups stay open; settled groups collapse to one
  * summary line. Height collapse uses CSS grid-template-rows (not JS timers).
  * Open state is derived from events + optional user override — no setState-in-effect.
+ * No nested scroll: parent .panel-body is the only vertical scroller.
  */
 export function TraceGroup({ item, defaultExpanded = false }: TraceGroupProps) {
   const reduced = useReducedMotion();
@@ -43,7 +44,7 @@ export function TraceGroup({ item, defaultExpanded = false }: TraceGroupProps) {
 
   return (
     <div
-      className="rounded-lg border border-border/60 bg-muted/30"
+      className="min-w-0 rounded-lg border border-border/60 bg-muted/30"
       data-status={item.status}
       data-open={open}
     >
@@ -95,6 +96,7 @@ export function TraceGroup({ item, defaultExpanded = false }: TraceGroupProps) {
         )}
       </button>
 
+      {/* Collapse animation only — overflow-hidden is not a nested scroller */}
       <div
         className={cn(
           "grid",
@@ -106,7 +108,10 @@ export function TraceGroup({ item, defaultExpanded = false }: TraceGroupProps) {
         <div className="min-h-0 overflow-hidden">
           <ul className="space-y-1.5 px-3 pb-3 pl-9">
             {item.traces.map((t) => (
-              <li key={t.id} className="text-sm leading-5 text-muted-foreground">
+              <li
+                key={t.id}
+                className="min-w-0 break-words text-sm leading-5 text-muted-foreground"
+              >
                 <span className="mr-2 font-medium text-foreground/80">{t.verb}</span>
                 {t.text}
               </li>

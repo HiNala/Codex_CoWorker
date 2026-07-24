@@ -5,29 +5,19 @@ import { Badge } from "@/components/ui/badge";
 import type { RunState } from "@/hooks/run-state";
 import { cn } from "@/lib/utils";
 import { BuildConsole } from "./build-console";
-import { CapabilityInstallApproval } from "./capability-install-approval";
 import { CapabilityToolbelt } from "./capability-toolbelt";
 
 export interface FoundryPanelProps {
   state: RunState;
-  onApprove?: (approvalId: string) => void;
-  onDeny?: (approvalId: string) => void;
-  onOpenCapability?: (id: string) => void;
   className?: string;
 }
 
 /**
- * Rail bottom: Capabilities. Exactly one scroll (.panel-body).
- * Install is INLINE document flow — never absolute overlay, never stacked on tiles.
- * Cut #4: only checkout-error-log-analyzer is executable; inventory tiles are display-only.
+ * Rail bottom: Capabilities. ONE panel-body scroller.
+ * Binding model: actionable approval lives ONLY in chat.
+ * Foundry shows a non-interactive status row when install is pending.
  */
-export function FoundryPanel({
-  state,
-  onApprove,
-  onDeny,
-  onOpenCapability,
-  className,
-}: FoundryPanelProps) {
+export function FoundryPanel({ state, className }: FoundryPanelProps) {
   const capabilities = useMemo(() => {
     return Object.values(state.capabilities).sort((a, b) => {
       const rank = (s: string) => {
@@ -54,27 +44,22 @@ export function FoundryPanel({
     [state.approvals],
   );
 
-  // Mutually exclusive modes — never install card + console/toolbelt at once
-  const mode: "install" | "console" | "toolbelt" = installApproval
-    ? "install"
-    : build
-      ? "console"
-      : "toolbelt";
+  // Console only while building; pending install does not own the whole panel
+  const showConsole = Boolean(build) && !installApproval;
 
-  const badgeLabel =
-    mode === "install"
-      ? "Awaiting approval"
-      : mode === "console"
-        ? build!.status === "repairing"
-          ? "Repairing"
-          : build!.status === "verifying"
-            ? "Verifying"
-            : build!.status === "failed"
-              ? "Failed"
-              : "Building"
-        : capabilities.length > 0
-          ? `${capabilities.length} tools`
-          : null;
+  const badgeLabel = installApproval
+    ? "Awaiting approval"
+    : showConsole
+      ? build!.status === "repairing"
+        ? "Repairing"
+        : build!.status === "verifying"
+          ? "Verifying"
+          : build!.status === "failed"
+            ? "Failed"
+            : "Building"
+      : capabilities.length > 0
+        ? `${capabilities.length} tools`
+        : null;
 
   return (
     <section
@@ -88,9 +73,9 @@ export function FoundryPanel({
         <div className="min-w-0 flex-1">
           <h2 className="ops-panel-title text-foreground">Capabilities</h2>
           <p className="mt-0.5 break-words text-[12px] leading-snug text-muted-foreground">
-            {mode === "install"
-              ? "Install requires your approval — review the card in this panel."
-              : mode === "console"
+            {installApproval
+              ? "Awaiting approval · review in chat"
+              : showConsole
                 ? `Live build · ${build!.slug}`
                 : "Installed inventory (display). One live path: checkout analyzer."}
           </p>
@@ -102,37 +87,42 @@ export function FoundryPanel({
         ) : null}
       </header>
 
-      <div className="panel-body space-y-3 p-3" data-foundry-mode={mode}>
+      <div
+        className="panel-body space-y-3 p-3"
+        data-foundry-mode={
+          installApproval ? "awaiting_chat" : showConsole ? "console" : "toolbelt"
+        }
+      >
         {state.status === "paused" ? (
           <p className="rounded-lg bg-muted/40 px-3 py-2 text-[12px] text-muted-foreground">
             Run paused — resume from the chat header.
           </p>
         ) : null}
 
-        {mode === "install" && installApproval ? (
-          <CapabilityInstallApproval
-            approval={installApproval}
-            capability={
-              buildingCap ??
-              Object.values(state.capabilities).find((c) => c.state === "awaiting_approval") ??
-              null
-            }
-            onApprove={() => onApprove?.(installApproval.id)}
-            onDeny={() => onDeny?.(installApproval.id)}
-            className="w-full max-w-none"
-          />
+        {/* Non-interactive status only — never Hold to approve here */}
+        {installApproval ? (
+          <div
+            className="rounded-xl border border-[color:var(--ops-amber)]/40 bg-[color:var(--ops-amber)]/10 px-3 py-2.5"
+            data-awaiting-approval-status
+            data-approval-id={installApproval.id}
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[color:var(--ops-amber)]">
+              Awaiting approval · review in chat
+            </p>
+            <p className="mt-1 break-words text-[13px] font-medium text-foreground">
+              {installApproval.title}
+            </p>
+            <p className="mt-0.5 break-words text-[12px] text-muted-foreground">
+              Use the approval card in Conversation to Hold to approve or Deny.
+            </p>
+          </div>
         ) : null}
 
-        {mode === "console" && build ? (
+        {showConsole && build ? (
           <BuildConsole build={build} {...(buildingCap ? { capability: buildingCap } : {})} />
-        ) : null}
-
-        {mode === "toolbelt" ? (
-          <CapabilityToolbelt
-            capabilities={capabilities}
-            {...(onOpenCapability ? { onOpen: onOpenCapability } : {})}
-          />
-        ) : null}
+        ) : (
+          <CapabilityToolbelt capabilities={capabilities} />
+        )}
       </div>
     </section>
   );

@@ -169,7 +169,8 @@
 
 /*
  * Dextwork desktop shell — three columns, full viewport.
- * 76px rail | dominant chat | right task/capabilities (clamp 480–720).
+ * 76px rail | DOMINANT chat (minmax 620px,1fr) | right rail ~35vw (max 640).
+ * Chat is visibly wider than the right rail (operator screenshots 2967–2969).
  * Body never scrolls. Each content region: exactly one .panel-body scroll.
  * Children of flex/grid tracks MUST have min-height:0 + overflow:hidden
  * or content size becomes the min and panels paint over each other.
@@ -177,7 +178,7 @@
 .cockpit,
 .cockpit-grid {
   display: grid;
-  grid-template-columns: 76px minmax(560px, 1fr) clamp(480px, 38vw, 720px);
+  grid-template-columns: 76px minmax(0, 1fr) clamp(440px, 35vw, 640px);
   grid-template-rows: minmax(0, 1fr);
   grid-template-areas: "sidebar chat rail";
   height: 100dvh;
@@ -240,42 +241,19 @@
   background: var(--ops-panel);
 }
 
+/*
+ * .panel-body is the sole vertical scroller for chat / tasks / capabilities.
+ * Parents (.cockpit-chat > *, .cockpit-rail > *) stay min-height:0 + overflow:hidden.
+ */
 .panel-body {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--border) 90%, var(--foreground)) transparent;
 }
 
-.panel-body::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.panel-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.panel-body::-webkit-scrollbar-thumb {
-  background-color: var(--border);
-  border: 2px solid transparent;
-  background-clip: content-box;
-  border-radius: 999px;
-}
-
-.panel-body:hover::-webkit-scrollbar-thumb {
-  background-color: color-mix(in srgb, var(--border) 50%, var(--muted-foreground));
-}
-
-/* No nested scrollbars inside a panel-body */
-.panel-body * {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-
+/* Defeat nested scroll regions so only .panel-body scrolls */
 .panel-body [class*="overflow-auto"],
 .panel-body [class*="overflow-y-auto"],
 .panel-body [class*="overflow-scroll"] {
@@ -283,8 +261,13 @@
   max-height: none !important;
 }
 
-/* Thin scrollbars app-wide under Dextwork shell (operator request) */
-[data-dextwork-shell] {
+/*
+ * Dextwork scrollbars under [data-dextwork-shell]:
+ * 8px · transparent track · rounded muted thumb · signal-color hover.
+ * Covers .panel-body and any other scroll container in the shell.
+ */
+[data-dextwork-shell],
+[data-dextwork-shell] * {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
@@ -295,10 +278,22 @@
   height: 8px;
 }
 
+[data-dextwork-shell]::-webkit-scrollbar-track,
+[data-dextwork-shell] *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 [data-dextwork-shell]::-webkit-scrollbar-thumb,
 [data-dextwork-shell] *::-webkit-scrollbar-thumb {
   background-color: var(--border);
+  border: 2px solid transparent;
+  background-clip: content-box;
   border-radius: 999px;
+}
+
+[data-dextwork-shell]::-webkit-scrollbar-thumb:hover,
+[data-dextwork-shell] *::-webkit-scrollbar-thumb:hover {
+  background-color: var(--ops-signal);
 }
 
 /* Type hierarchy 24 / 18 / 14 */
@@ -327,37 +322,8 @@
   line-height: 1.45;
 }
 
-@media (max-width: 1279px) {
-  .cockpit,
-  .cockpit-grid {
-    grid-template-columns: 76px minmax(0, 1fr);
-    grid-template-areas: "sidebar chat";
-  }
-
-  .cockpit-rail {
-    display: none;
-  }
-
-  .cockpit-desktop-rail-tabs {
-    display: flex;
-  }
-}
-
-@media (max-width: 900px) {
-  .cockpit,
-  .cockpit-grid {
-    grid-template-columns: 1fr;
-    grid-template-areas: "chat";
-    height: auto;
-    min-height: 100dvh;
-    overflow: visible;
-  }
-
-  .cockpit-sidebar {
-    display: none;
-  }
-
-  .cockpit-desktop {
-    display: none;
-  }
-}
+/*
+ * Layout trees are mounted exclusively in React (useShellLayout):
+ * desktop ≥1280 · tablet 901–1279 · mobile ≤900.
+ * CSS grid below is only for the desktop mount.
+ */

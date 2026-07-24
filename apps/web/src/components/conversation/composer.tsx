@@ -46,9 +46,14 @@ export function Composer({
   };
 
   return (
-    <div className={cn("shrink-0 border-t border-border bg-card/80 p-3 backdrop-blur", className)}>
+    <div
+      className={cn(
+        "shrink-0 border-t border-border bg-card/80 p-3 backdrop-blur sm:px-4 sm:py-3",
+        className,
+      )}
+    >
       <Textarea
-        className="min-h-[88px] resize-none text-[15px]"
+        className="min-h-[96px] resize-none break-words text-[15px] leading-6"
         placeholder={placeholder}
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -64,7 +69,7 @@ export function Composer({
         <span
           id={disabled && disabledReason ? "composer-disabled-reason" : "composer-hints"}
           className={cn(
-            "text-xs",
+            "min-w-0 break-words text-xs",
             disabled && disabledReason
               ? "text-[color:var(--status-warning)]"
               : "text-muted-foreground",
@@ -77,7 +82,7 @@ export function Composer({
         <Button
           type="button"
           size="lg"
-          className="min-h-11 min-w-[5.5rem] px-5"
+          className="min-h-11 min-w-[5.5rem] shrink-0 px-5"
           disabled={!canSend}
           title={disabled ? disabledReason : "Send message (⌘↵)"}
           onClick={submit}

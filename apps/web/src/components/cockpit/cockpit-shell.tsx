@@ -1,28 +1,23 @@
 "use client";
 
-import { useCallback, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { LiveRegion } from "@forge/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConversationPanel } from "@/components/conversation/conversation-panel";
 import { MissionControl } from "@/components/plan/mission-control";
 import { FoundryPanel } from "@/components/foundry/foundry-panel";
 import { useRunStream } from "@/hooks/use-run-stream";
+import { useShellLayout } from "@/hooks/use-shell-layout";
 import type { RunState } from "@/hooks/run-state";
 import { DextworkSidebar } from "./dextwork-sidebar";
 
 export interface CockpitShellProps {
   assignmentId: string;
-  /**
-   * Live SSE is the default (useDemoFixture=false) so the cockpit paints
-   * Cael's persisted run events. Opt into fixture only for offline UI demos.
-   */
   useDemoFixture?: boolean;
-  /** Optional explicit run id; otherwise demo seed maps assignment → run. */
   runId?: string;
   conversation?: ReactNode | ((state: RunState) => ReactNode);
   missionControl?: ReactNode | ((state: RunState) => ReactNode);
   foundry?: ReactNode | ((state: RunState) => ReactNode);
-  /** @deprecated bottom dock removed — outputs live in chat */
   dock?: ReactNode | ((state: RunState) => ReactNode);
   onPause?: () => void;
 }
@@ -37,8 +32,8 @@ function resolveSlot(
 }
 
 /**
- * Dextwork desktop shell: 76px sidebar | dominant chat | task+capabilities rail.
- * One scroll per region; body never scrolls; no full-width output dock.
+ * Dextwork shell — exactly one layout tree:
+ * desktop ≥1280 · tablet 901–1279 · mobile ≤900
  */
 export function CockpitShell({
   assignmentId,
@@ -47,33 +42,36 @@ export function CockpitShell({
   conversation,
   missionControl,
   foundry,
-  onPause,
+  onPause: onPauseProp,
 }: CockpitShellProps) {
-  // IT RUNS criterion 3: paint live SSE (Cael), not the static fixture.
-  const state = useRunStream(assignmentId, {
+  const layout = useShellLayout();
+  const { state, controls, streamMode } = useRunStream(assignmentId, {
     useDemoFixture,
     ...(runId ? { runId } : {}),
   });
-  const [railTab, setRailTab] = useState<"plan" | "foundry">("plan");
 
-  const onApprove = useCallback((approvalId: string) => {
-    void approvalId;
-  }, []);
-  const onDeny = useCallback((approvalId: string) => {
-    void approvalId;
-  }, []);
+  const [mobileTab, setMobileTab] = useState<"chat" | "plan" | "foundry">("chat");
+
+  const onApprove = controls.approve;
+  const onDeny = controls.deny;
+  const onSend = controls.send;
+  const onPause = () => {
+    controls.pause();
+    onPauseProp?.();
+  };
 
   const defaultConversation = (
     <ConversationPanel
       state={state}
       onApprove={onApprove}
       onDeny={onDeny}
+      onSend={onSend}
+      onPause={onPause}
       assignmentId={assignmentId}
-      {...(onPause ? { onPause } : {})}
     />
   );
   const defaultMission = <MissionControl state={state} />;
-  const defaultFoundry = <FoundryPanel state={state} onApprove={onApprove} onDeny={onDeny} />;
+  const defaultFoundry = <FoundryPanel state={state} />;
 
   const conversationNode = resolveSlot(conversation, state, defaultConversation);
   const missionNode = resolveSlot(missionControl, state, defaultMission);
@@ -81,72 +79,113 @@ export function CockpitShell({
 
   const pendingApprovals = state.approvals.filter((a) => a.status === "pending").length;
 
+  const shellAttrs = {
+    "data-dextwork-shell": true,
+    "data-ops-console": true,
+    "data-shell-layout": layout,
+    "data-stream-mode": streamMode,
+    "data-use-demo-fixture": streamMode === "fixture" ? "true" : "false",
+    "data-last-seq": state.lastSeq,
+    "data-connected": state.connected ? "true" : "false",
+    "data-timeline-count": state.timeline.length,
+  } as const;
+
   return (
     <>
       <LiveRegion message={state.announcement} />
-      <div
-        className="cockpit-grid cockpit-desktop"
-        data-dextwork-shell
-        data-ops-console
-        data-use-demo-fixture={useDemoFixture ? "true" : "false"}
-        data-last-seq={state.lastSeq}
-        data-connected={state.connected ? "true" : "false"}
-        data-timeline-count={state.timeline.length}
-      >
-        <DextworkSidebar runTitle={state.title} runStatus={state.status} />
-        <div className="cockpit-chat">{conversationNode}</div>
-        <div className="cockpit-rail">
-          {missionNode}
-          {foundryNode}
-        </div>
-      </div>
 
-      {/*
-        Single DOM tree for ≥1280px is cockpit-grid above.
-        Mid / phone: ONE alternate layout only (never both at once → no phantom columns).
-      */}
-      <div className="hidden min-h-dvh flex-col max-[1279px]:flex">
-        <div className="flex min-h-0 flex-1 overflow-hidden">
-          <div className="hidden max-[1279px]:min-[901px]:block">
-            <DextworkSidebar runTitle={state.title} runStatus={state.status} />
-          </div>
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            <Tabs
-              value={railTab === "plan" || railTab === "foundry" ? railTab : "chat"}
-              onValueChange={(v) => {
-                if (v === "chat") setRailTab("plan");
-                else setRailTab(v as "plan" | "foundry");
-              }}
-              defaultValue="chat"
-              className="flex min-h-0 flex-1 flex-col"
-            >
-              <TabsList className="grid h-11 w-full shrink-0 grid-cols-3 rounded-none border-b border-border">
-                <TabsTrigger value="chat" className="text-xs" onClick={() => setRailTab("plan")}>
-                  Chat
-                  {pendingApprovals > 0 ? (
-                    <span className="ms-1 tabular-nums text-[10px]">{pendingApprovals}</span>
-                  ) : null}
-                </TabsTrigger>
-                <TabsTrigger value="plan" className="text-xs">
-                  Tasks
-                </TabsTrigger>
-                <TabsTrigger value="foundry" className="text-xs">
-                  Caps
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="chat" className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden">
-                {conversationNode}
-              </TabsContent>
-              <TabsContent value="plan" className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden">
-                {missionNode}
-              </TabsContent>
-              <TabsContent value="foundry" className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden">
-                {foundryNode}
-              </TabsContent>
-            </Tabs>
+      {layout === "desktop" ? (
+        <div className="cockpit-grid" {...shellAttrs}>
+          <DextworkSidebar runTitle={state.title} runStatus={state.status} />
+          <div className="cockpit-chat">{conversationNode}</div>
+          <div className="cockpit-rail">
+            {missionNode}
+            {foundryNode}
           </div>
         </div>
-      </div>
+      ) : null}
+
+      {layout === "tablet" ? (
+        <div className="flex h-dvh min-h-0 flex-col overflow-hidden" {...shellAttrs}>
+          <div className="flex min-h-0 flex-1 overflow-hidden">
+            <DextworkSidebar runTitle={state.title} runStatus={state.status} />
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+              <Tabs
+                value={mobileTab}
+                onValueChange={(v) => setMobileTab(v as "chat" | "plan" | "foundry")}
+                className="flex min-h-0 flex-1 flex-col"
+              >
+                <TabsList className="grid h-11 w-full shrink-0 grid-cols-3 rounded-none border-b border-border">
+                  <TabsTrigger value="chat" className="text-xs">
+                    Chat
+                    {pendingApprovals > 0 ? (
+                      <span className="ms-1 tabular-nums text-[10px]">{pendingApprovals}</span>
+                    ) : null}
+                  </TabsTrigger>
+                  <TabsTrigger value="plan" className="text-xs">
+                    Tasks
+                  </TabsTrigger>
+                  <TabsTrigger value="foundry" className="text-xs">
+                    Caps
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent
+                  value="chat"
+                  className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+                >
+                  {conversationNode}
+                </TabsContent>
+                <TabsContent
+                  value="plan"
+                  className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+                >
+                  {missionNode}
+                </TabsContent>
+                <TabsContent
+                  value="foundry"
+                  className="m-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+                >
+                  {foundryNode}
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {layout === "mobile" ? (
+        <div className="flex min-h-dvh flex-col" {...shellAttrs}>
+          <Tabs
+            value={mobileTab}
+            onValueChange={(v) => setMobileTab(v as "chat" | "plan" | "foundry")}
+            className="flex min-h-dvh flex-1 flex-col p-2"
+          >
+            <TabsList className="grid h-11 w-full shrink-0 grid-cols-3">
+              <TabsTrigger value="chat" className="text-xs">
+                Chat
+                {pendingApprovals > 0 ? (
+                  <span className="ms-1 tabular-nums text-[10px]">{pendingApprovals}</span>
+                ) : null}
+              </TabsTrigger>
+              <TabsTrigger value="plan" className="text-xs">
+                Tasks
+              </TabsTrigger>
+              <TabsTrigger value="foundry" className="text-xs">
+                Caps
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="chat" className="m-0 min-h-0 flex-1 overflow-hidden">
+              {conversationNode}
+            </TabsContent>
+            <TabsContent value="plan" className="m-0 min-h-0 flex-1 overflow-hidden">
+              {missionNode}
+            </TabsContent>
+            <TabsContent value="foundry" className="m-0 min-h-0 flex-1 overflow-hidden">
+              {foundryNode}
+            </TabsContent>
+          </Tabs>
+        </div>
+      ) : null}
     </>
   );
 }
