@@ -40,6 +40,22 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23 ~18:03] GATE 1 PREP — narrow verify (no new work)
+
+Exact pass/fail (Wisp only; no live adapters, no polish):
+
+| Check | Result |
+|-------|--------|
+| `pnpm --filter @forge/demo test` | **PASS** 21/21 |
+| `pnpm --filter @forge/demo-data test` | **PASS** 2/2 |
+| `vitest run apps/web/src/components/marketing` | **PASS** 6/6 |
+| `GET …/api/health/live` (web domain) | **PASS** 200 |
+| `GET …/api/health/ready` (web domain) | **PASS** 200 `status=ready` all checks up |
+| Working tree Wisp paths | clean (freeze commit `701ec5c`) |
+
+- **No new feature work started.** Mutex not held.
+- **Single most important red seam (collective golden path):** full Playwright golden path still cannot hard-assert contract → approve → foundry gap → artifact receipt against real cockpit `data-testid`s; e2e soft-stages. That is the swarm seam for IT RUNS, not a deploy-path failure.
+
 ### [2026-07-23 ~18:02] GATE 1 FREEZE checkpoint
 
 - **Commit command:** Windows PowerShell 5.1 only —
