@@ -1,0 +1,34 @@
+{
+  "description": "Full demo window over checkout-errors.ndjson — must report 9 distinct customers (top-level + nested context.customer.id). Naive top-level-only extraction yields 4.",
+  "input": {
+    "lines": [],
+    "window": {
+      "from": "2026-07-16T00:00:00Z",
+      "to": "2026-07-23T23:59:59Z"
+    }
+  },
+  "expectedOutput": {
+    "affectedCustomers": [
+      "cus_AC2",
+      "cus_BR3",
+      "cus_KT4",
+      "cus_LM5",
+      "cus_NW1",
+      "cus_OP6",
+      "cus_QR7",
+      "cus_ST8",
+      "cus_UV9"
+    ],
+    "distinctCount": 9,
+    "taxonomy": {
+      "card_declined": 1,
+      "checkout_failed": 40,
+      "rate_limit": 2,
+      "timeout": 1
+    },
+    "firstSeen": "2026-07-16T09:14:02Z",
+    "lastSeen": "2026-07-23T15:59:41Z"
+  },
+  "_linesSource": "demo/acme-store/logs/checkout-errors.ndjson",
+  "_note": "input.lines is filled at load time from _linesSource so the case file stays small; the verifier must inject the same path."
+}

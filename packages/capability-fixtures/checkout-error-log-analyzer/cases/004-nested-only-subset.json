@@ -1,0 +1,22 @@
+{
+  "description": "Only nested context.customer.id lines — reference finds 2; naive finds 0",
+  "input": {
+    "lines": [
+      "{\"ts\":\"2026-07-21T09:05:11Z\",\"level\":\"error\",\"event\":\"checkout_failed\",\"context\":{\"customer\":{\"id\":\"cus_LM5\"}},\"plan\":\"team\",\"interval\":\"yearly\",\"message\":\"stripe_session_create_failed\"}",
+      "{\"ts\":\"2026-07-21T10:44:33Z\",\"level\":\"error\",\"event\":\"checkout_failed\",\"context\":{\"customer\":{\"id\":\"cus_OP6\"}},\"plan\":\"team\",\"interval\":\"yearly\",\"message\":\"stripe_session_create_failed\"}"
+    ],
+    "window": {
+      "from": "2026-07-16T00:00:00Z",
+      "to": "2026-07-23T23:59:59Z"
+    }
+  },
+  "expectedOutput": {
+    "affectedCustomers": ["cus_LM5", "cus_OP6"],
+    "distinctCount": 2,
+    "taxonomy": {
+      "checkout_failed": 2
+    },
+    "firstSeen": "2026-07-21T09:05:11Z",
+    "lastSeen": "2026-07-21T10:44:33Z"
+  }
+}

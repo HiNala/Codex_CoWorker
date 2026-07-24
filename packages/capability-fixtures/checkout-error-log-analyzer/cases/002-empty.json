@@ -1,0 +1,17 @@
+{
+  "description": "Empty input yields empty output without throw",
+  "input": {
+    "lines": [],
+    "window": {
+      "from": "2026-07-16T00:00:00Z",
+      "to": "2026-07-23T23:59:59Z"
+    }
+  },
+  "expectedOutput": {
+    "affectedCustomers": [],
+    "distinctCount": 0,
+    "taxonomy": {},
+    "firstSeen": "",
+    "lastSeen": ""
+  }
+}

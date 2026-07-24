@@ -26,3 +26,37 @@
 - In-flight file check: all RIGEL paths present (artifacts 31 · fixtures 27 · capabilities 41 · web artifacts/outputs/api · E.md). Nothing missing.
 - Tests: 280 passed across artifacts + capability-sdk + capability-fixtures (incl. naive fails 003, reference passes all 5) + four modules
 - Committing Gate 1 wave now without pull
+
+### [2026-07-23T17:52Z] E · ack · Birch temporary git hold
+
+- No `git add` / commit / push / pull / rebase / stash / reset / checkout until Node broadcasts single-writer commit mutex.
+- Coding continues in exclusive paths only. Prior staged set was cleared by concurrent index use; work remains on disk.
+
+### [2026-07-23T17:53Z] E · birch-override · live-build fixture = checkout-error-log-analyzer
+
+- **Supersedes** Track C nested-rename as the on-stage fail beat. Authority: `23-DEMO-SCENARIO` §6 + Birch.
+- Slug: `checkout-error-log-analyzer`
+- Log: `demo/acme-store/logs/checkout-errors.ndjson` (top-level `customer_id` vs nested `context.customer.id`)
+- Naive: **distinctCount 4** · Correct: **distinctCount 9**
+- Paths under `packages/capability-fixtures/checkout-error-log-analyzer/**`
+- `api-change-impact-analyzer` demoted optional/prebuilt — do not delete, do not build live
+
+### [2026-07-23T18:00Z] E · hand-verified · dual-rule fixture + CAEL HANDOFF (Gate 2 blocker)
+
+- Read: `docs/agent-briefs/RIGEL-fixture-correction.md` (Node/Birch). Prior E.md api-change claim **void**.
+- **Do not author ndjson** — Node-verified file used as-is:
+  - total **44** · top-level-only **26** · nested-only **15** · no-id **3**
+  - line 22 distractor: `level=warn` `event=card_declined` `customer_id=cus_ZZ9` (load-bearing, kept)
+- **Rule 1 (filter):** `level==='error' && event==='checkout_failed'`
+- **Rule 2 (field shape):** `customer_id` **and** `context.customer.id`
+- **Hand-verification (node against real file):**
+  - Rule1 + top-level only → **4** (`cus_AC2`, `cus_BR3`, `cus_KT4`, `cus_NW1`)
+  - Rule1 + both shapes → **9** (adds `cus_LM5`, `cus_OP6`, `cus_QR7`, `cus_ST8`, `cus_UV9`)
+  - Missing Rule1 (top only) → **5** (includes ZZ9) — would break scripted message
+- **Naive misses Rule 2 only** (filter applied correctly). Attempt 1 message exact: `expected 9, received 4`
+- Attempt 2 reference → 9, all cases pass
+- Coordinate: `packages/demo-data` has related scaffolding — **not Rigel scope**, not duplicated
+- **HANDOFF TO CAEL (verifier integration) at 2026-07-23T18:00Z**
+  - Contract: `packages/capability-fixtures/checkout-error-log-analyzer/CONTRACT-for-cael-verifier.md`
+  - Exports: `loadCheckoutErrorLogCases`, `naiveAnalyzeCheckoutErrors`, `referenceAnalyzeCheckoutErrors`, `DEMO_SEED_EXPECTED`, `ATTEMPT_1_FAILURE_MESSAGE`
+  - **Gate 2 blocker** — Cael must wire before T+70; do not slip to T+69
