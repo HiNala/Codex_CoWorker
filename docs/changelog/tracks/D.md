@@ -189,3 +189,25 @@ ARIA will not run raw `git add` / `git commit` / `git push` again.
 Most residual seam (not D-owned): live SSE + seed when `useDemoFixture=false` depends on Cael runtime; cockpit already renders persisted-shape events from fakes.
 
 Mutex: released after this commit (script finally). No new feature work after freeze.
+
+## [Gate1 prep 17:58] D/G · stop new work · evidence
+
+### Narrow verification (this pane)
+| command | result |
+|---|---|
+| `pnpm exec vitest run packages/ui/src apps/web/src/hooks` | **PASS** 4 files / **21 tests** |
+| `pnpm exec vitest run apps/web/src/hooks/run-reducer.test.ts` | **PASS** 4 tests (fixture projects timeline/steps/caps/artifacts/approvals; seq idempotent) |
+| ARIA dirty tree (ui/styles/cockpit/conversation/plan/foundry/dock/approvals/hooks/D.md) | **clean** |
+| agent-commit.lock | **FREE** |
+
+### Fake golden path (D/G slice)
+- **PASS** cockpit hydrates from demo fixture (`useDemoFixture` default true)
+- **PASS** reducer projects RunEvent log → conversation + mission control + foundry + dock VMs
+- **PASS** artifact cards declared/drafting from fixture; no live adapter work
+- **N/A owned** live SSE persist/stream (Track A) when fixture off
+
+### Single most important red seam (workspace, not D-owned)
+**Live golden path SSE**: cockpit EventSource path exists but demo path is fixture-first; end-to-end "seeded assignment → persisted events → SSE → cockpit" requires Cael stream green at IT RUNS.
+
+### Call
+**TRACK D GREEN · TRACK G GREEN** — most important red seam: live SSE/seed seam (Cael), not D/G panel render of fakes.
