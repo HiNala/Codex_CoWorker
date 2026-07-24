@@ -105,3 +105,15 @@ If push is non-fast-forward: **STOP**, report Node, hold. No force.
 - `cockpit-shell.tsx` now defaults to ConversationPanel, MissionControl, FoundryPanel, ArtifactDock (demo fixture hydrate).
 - Slot overrides remain for Track J/presenter injection.
 - Git sequence: add own paths → commit → push only (no pull).
+
+## [T+panels] D · status · four of five exclusive surfaces landed
+
+| # | Surface | Commit / note |
+|---|---------|----------------|
+| 2 | Conversation | `9619eaa` + `ca21d5d` (shared ApprovalCard) |
+| 4 | Foundry | `9f2039c` |
+| 5 | Dock + approvals | `5887ce7` |
+| 3 | Mission Control | in flight |
+| 1 | Foundation polish | in flight (core already on main as `2160e5e`) |
+
+Cockpit shell integration: `b4a1eb9`.
