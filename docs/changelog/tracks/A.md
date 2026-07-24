@@ -305,3 +305,31 @@ pnpm exec dotenv -e .env.local -- tsx packages/agent-runtime/src/golden-path/pro
    - runId=`0198206f-5f53-7000-8000-000000000006`
    - approvalId=`0198206f-5f53-7000-8000-0000000000e1`
    - **Production needs reseed** (`pnpm db:seed` on deployed DB) — Wisp.
+
+### 2026-07-23T19:00Z — Wisp production rehearsal support (read-only after final reset)
+
+**Local full path (once) then final seed — PASS:**
+```
+pnpm exec dotenv -e .env.local -- tsx packages/agent-runtime/src/golden-path/verify-rehearsal.ts
+# phase full_path ok: 26 events, gate_failed expected 9 received 4, table.typed, distinctCount 9
+# phase sse_backfill ok: 26 frames plan.drafted…run.completed
+# final seedDatabase (last mutation)
+# opening_state ok: run queued, event_seq 0, eventCount 0, contract Broken Checkout,
+#   milestones checkout-*, step "Analyse checkout error logs" ready,
+#   inventory 4 prebuilt only (no checkout-error-log-analyzer installed)
+```
+
+**Opening state after final reset (do not mutate further):**
+| Field | Value |
+|-------|--------|
+| assignmentId | `0198206f-5f53-7000-8000-000000000005` |
+| runId | `0198206f-5f53-7000-8000-000000000006` |
+| assignmentStatus | `approved` |
+| contractTitle | `The broken annual checkout` |
+| runStatus | `queued` |
+| eventSeq / eventCount | `0` / `0` |
+| noActivePartialRun | **true** |
+
+**Deployed worker still 404 on SSE/golden-path** until Wisp redeploys image with stream routes. In-process path verified green.
+
+**Post–Wisp final reset:** only `--opening-only` recheck; no prove-it-runs / no second seed from Cael.
