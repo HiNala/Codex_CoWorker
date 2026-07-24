@@ -1,0 +1,26 @@
+{
+  "description": "Composes a markdown incident report with citation anchors",
+  "input": {
+    "title": "Checkout breakage after customer_ref rename",
+    "clusters": [],
+    "impactRows": [],
+    "evidence": [
+      {
+        "id": "e1",
+        "kind": "ticket",
+        "summary": "Northwind reports missing customer_ref"
+      }
+    ],
+    "timeline": [
+      { "ts": "2026-07-01T00:00:00Z", "event": "API version 2026-07-01 released" },
+      { "ts": "2026-07-02T10:00:00Z", "event": "First customer ticket" }
+    ],
+    "changeSummary": "payment_intent.metadata.customer_ref renamed to customer_id"
+  },
+  "expectedOutput": {
+    "markdown": "",
+    "sections": [],
+    "citations": [],
+    "warnings": []
+  }
+}

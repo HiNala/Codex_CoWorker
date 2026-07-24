@@ -1,0 +1,49 @@
+{
+  "description": "Related tickets about customer_ref and reconciliation form candidate clusters",
+  "input": {
+    "tickets": [
+      {
+        "id": "t-1",
+        "subject": "customer_ref missing on webhook",
+        "body": "payment_intent.metadata.customer_ref is undefined after July release",
+        "createdAt": "2026-07-02T10:00:00Z",
+        "requesterId": "req-1",
+        "tags": ["webhook", "payments"]
+      },
+      {
+        "id": "t-2",
+        "subject": "webhook field customer_ref gone",
+        "body": "Our handler reads metadata.customer_ref and it is missing",
+        "createdAt": "2026-07-02T11:00:00Z",
+        "requesterId": "req-2",
+        "tags": ["webhook"]
+      },
+      {
+        "id": "t-3",
+        "subject": "reconciliation timeout",
+        "body": "intermittent timeouts on the reconciliation endpoint",
+        "createdAt": "2026-07-03T09:00:00Z",
+        "requesterId": "req-3",
+        "tags": ["reconciliation"]
+      },
+      {
+        "id": "t-4",
+        "subject": "recon endpoint slow",
+        "body": "reconciliation endpoint timing out under load",
+        "createdAt": "2026-07-03T10:00:00Z",
+        "requesterId": "req-4",
+        "tags": ["reconciliation"]
+      }
+    ],
+    "minClusterSize": 2
+  },
+  "expectedOutput": {
+    "clusters": [],
+    "unclustered": ["t-1", "t-2", "t-3", "t-4"],
+    "summary": {
+      "totalTickets": 4,
+      "clusteredTickets": 0,
+      "clusterCount": 0
+    }
+  }
+}

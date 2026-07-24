@@ -9,6 +9,6 @@
   "scripts": {
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run src --passWithNoTests"
+    "test": "vitest run --root ../.. packages/capability-fixtures"
   }
 }

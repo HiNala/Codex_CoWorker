@@ -1,0 +1,49 @@
+{
+  "description": "Exact dotted path access is detected as a match",
+  "input": {
+    "apiChange": {
+      "kind": "field_rename",
+      "path": "payment_intent.amount_received",
+      "newPath": "payment_intent.amount_captured",
+      "version": "2026-07-01"
+    },
+    "consumers": [
+      {
+        "id": "c-200",
+        "name": "Contoso Billing",
+        "usageSamples": [
+          {
+            "file": "src/ledger.ts",
+            "line": 10,
+            "snippet": "const received = payment_intent.amount_received;"
+          }
+        ]
+      }
+    ]
+  },
+  "expectedOutput": {
+    "affected": [
+      {
+        "consumerId": "c-200",
+        "consumerName": "Contoso Billing",
+        "matches": [
+          {
+            "file": "src/ledger.ts",
+            "line": 10,
+            "snippet": "const received = payment_intent.amount_received;",
+            "matchKind": "exact",
+            "confidence": 1
+          }
+        ],
+        "breakingLikelihood": "certain",
+        "suggestedFix": "Update access of amount_received to amount_captured"
+      }
+    ],
+    "unaffected": [],
+    "summary": {
+      "consumersScanned": 1,
+      "consumersAffected": 1,
+      "totalMatches": 1
+    }
+  }
+}

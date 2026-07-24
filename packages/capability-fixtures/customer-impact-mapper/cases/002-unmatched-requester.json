@@ -1,0 +1,23 @@
+{
+  "description": "Ticket requester matching no account must not throw",
+  "input": {
+    "clusters": [
+      {
+        "clusterId": "cl-1",
+        "label": "orphan",
+        "rootCauseHypothesis": "unknown",
+        "ticketIds": ["t-orphan"],
+        "confidence": 0.5,
+        "representativeQuotes": []
+      }
+    ],
+    "accounts": [],
+    "ticketRequesterIndex": {
+      "t-orphan": "req-unknown"
+    }
+  },
+  "expectedOutput": {
+    "rows": [],
+    "totals": { "accounts": 0, "tickets": 0, "mrrAtRiskMicrodollars": 0 }
+  }
+}

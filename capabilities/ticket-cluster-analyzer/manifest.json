@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "slug": "ticket-cluster-analyzer",
+  "name": "Ticket Cluster Analyzer",
+  "version": "1.2.0",
+  "kind": "skill",
+  "description": "Groups support tickets by root cause using deterministic lexical clustering (n-grams + Jaccard).",
+  "runtime": "node22",
+  "entrypoint": "dist/index.js",
+  "inputSchema": {
+    "type": "object",
+    "required": ["tickets"],
+    "properties": {
+      "tickets": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["id", "subject", "body", "createdAt", "requesterId", "tags"],
+          "properties": {
+            "id": { "type": "string" },
+            "subject": { "type": "string" },
+            "body": { "type": "string" },
+            "createdAt": { "type": "string" },
+            "requesterId": { "type": "string" },
+            "tags": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "minClusterSize": { "type": "integer", "minimum": 1 }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "required": ["clusters", "unclustered", "summary"],
+    "properties": {
+      "clusters": { "type": "array" },
+      "unclustered": { "type": "array", "items": { "type": "string" } },
+      "summary": {
+        "type": "object",
+        "required": ["totalTickets", "clusteredTickets", "clusterCount"],
+        "properties": {
+          "totalTickets": { "type": "integer" },
+          "clusteredTickets": { "type": "integer" },
+          "clusterCount": { "type": "integer" }
+        }
+      }
+    }
+  },
+  "permissions": {
+    "network": false,
+    "filesystem": "none",
+    "evidenceRead": true,
+    "maxDurationMs": 10000,
+    "maxMemoryMb": 256,
+    "maxOutputBytes": 500000
+  },
+  "dependencies": [],
+  "knownLimitations": [
+    "Lexical clustering only — no embeddings or semantic model",
+    "English stopword list; other languages may under-cluster",
+    "Does not de-duplicate identical requesters across clusters"
+  ],
+  "authoredBy": "human"
+}

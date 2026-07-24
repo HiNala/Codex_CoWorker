@@ -1,0 +1,16 @@
+{
+  "description": "Empty ticket list yields empty clusters without throwing",
+  "input": {
+    "tickets": [],
+    "minClusterSize": 2
+  },
+  "expectedOutput": {
+    "clusters": [],
+    "unclustered": [],
+    "summary": {
+      "totalTickets": 0,
+      "clusteredTickets": 0,
+      "clusterCount": 0
+    }
+  }
+}

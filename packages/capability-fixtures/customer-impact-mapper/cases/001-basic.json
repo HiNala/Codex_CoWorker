@@ -1,0 +1,33 @@
+{
+  "description": "Maps one cluster to an enterprise account with three tickets",
+  "input": {
+    "clusters": [
+      {
+        "clusterId": "cl-customer-ref",
+        "label": "customer_ref missing",
+        "rootCauseHypothesis": "July API rename broke metadata.customer_ref",
+        "ticketIds": ["t-1", "t-2", "t-5"],
+        "confidence": 0.92,
+        "representativeQuotes": []
+      }
+    ],
+    "accounts": [
+      {
+        "id": "acct-nw",
+        "name": "Northwind Retail",
+        "plan": "enterprise",
+        "mrrMicrodollars": 2500000000,
+        "contacts": [{ "id": "c1", "email": "ops@northwind.example" }]
+      }
+    ],
+    "ticketRequesterIndex": {
+      "t-1": "req-nw-1",
+      "t-2": "req-nw-2",
+      "t-5": "req-nw-3"
+    }
+  },
+  "expectedOutput": {
+    "rows": [],
+    "totals": { "accounts": 0, "tickets": 0, "mrrAtRiskMicrodollars": 0 }
+  }
+}

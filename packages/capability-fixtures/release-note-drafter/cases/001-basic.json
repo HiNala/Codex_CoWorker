@@ -1,0 +1,38 @@
+{
+  "description": "Groups conventional commits for a customer audience",
+  "input": {
+    "commits": [
+      {
+        "sha": "abc1234",
+        "message": "feat: add retry on webhook delivery",
+        "author": "nala",
+        "files": ["src/webhooks.ts"]
+      },
+      {
+        "sha": "def5678",
+        "message": "fix: handle missing customer_id in metadata",
+        "author": "nala",
+        "files": ["src/handlers/metadata.ts"]
+      },
+      {
+        "sha": "aaa9999",
+        "message": "chore: refactor internal logger",
+        "author": "bot",
+        "files": ["src/log.ts"]
+      }
+    ],
+    "previousTag": "v1.0.0",
+    "newTag": "v1.1.0",
+    "audience": "customer"
+  },
+  "expectedOutput": {
+    "markdown": "",
+    "grouped": {
+      "breaking": [],
+      "features": [],
+      "fixes": [],
+      "internal": []
+    },
+    "breakingChangeCount": 0
+  }
+}

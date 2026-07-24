@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "slug": "release-note-drafter",
+  "name": "Release Note Drafter",
+  "version": "1.0.0",
+  "kind": "skill",
+  "description": "Drafts release notes from conventional commits for internal or customer audiences.",
+  "runtime": "node22",
+  "entrypoint": "dist/index.js",
+  "inputSchema": {
+    "type": "object",
+    "required": ["commits", "previousTag", "newTag", "audience"],
+    "properties": {
+      "commits": { "type": "array" },
+      "previousTag": { "type": "string" },
+      "newTag": { "type": "string" },
+      "audience": { "type": "string", "enum": ["internal", "customer"] }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "required": ["markdown", "grouped", "breakingChangeCount"],
+    "properties": {
+      "markdown": { "type": "string" },
+      "grouped": { "type": "object" },
+      "breakingChangeCount": { "type": "integer" }
+    }
+  },
+  "permissions": {
+    "network": false,
+    "filesystem": "none",
+    "evidenceRead": true,
+    "maxDurationMs": 10000,
+    "maxMemoryMb": 256,
+    "maxOutputBytes": 500000
+  },
+  "dependencies": [],
+  "knownLimitations": [
+    "Heuristic conventional-commit parser; nonstandard messages fall back to internal/features",
+    "Customer audience rewrites are template-based, not LLM-authored"
+  ],
+  "authoredBy": "codex"
+}

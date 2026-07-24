@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "slug": "incident-report-composer",
+  "name": "Incident Report Composer",
+  "version": "2.0.0",
+  "kind": "skill",
+  "description": "Composes a cited markdown incident report from clusters, impact rows, evidence, and timeline.",
+  "runtime": "node22",
+  "entrypoint": "dist/index.js",
+  "inputSchema": {
+    "type": "object",
+    "required": ["title", "clusters", "impactRows", "evidence", "timeline"],
+    "properties": {
+      "title": { "type": "string" },
+      "clusters": { "type": "array" },
+      "impactRows": { "type": "array" },
+      "evidence": { "type": "array" },
+      "timeline": { "type": "array" },
+      "changeSummary": { "type": "string" }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "required": ["markdown", "sections", "citations", "warnings"],
+    "properties": {
+      "markdown": { "type": "string" },
+      "sections": { "type": "array" },
+      "citations": { "type": "array" },
+      "warnings": { "type": "array", "items": { "type": "string" } }
+    }
+  },
+  "permissions": {
+    "network": false,
+    "filesystem": "none",
+    "evidenceRead": true,
+    "maxDurationMs": 10000,
+    "maxMemoryMb": 256,
+    "maxOutputBytes": 500000
+  },
+  "dependencies": [],
+  "knownLimitations": [
+    "Never fabricates citations; unsupported claims become warnings",
+    "Escapes HTML but does not run a full markdown sanitizer",
+    "Recommended actions are template-based heuristics"
+  ],
+  "authoredBy": "codex"
+}

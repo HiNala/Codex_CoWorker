@@ -1,0 +1,33 @@
+{
+  "description": "Consumers that never touch the changed field are unaffected",
+  "input": {
+    "apiChange": {
+      "kind": "field_rename",
+      "path": "payment_intent.metadata.customer_ref",
+      "newPath": "payment_intent.metadata.customer_id",
+      "version": "2026-07-01"
+    },
+    "consumers": [
+      {
+        "id": "c-050",
+        "name": "Globex Analytics",
+        "usageSamples": [
+          {
+            "file": "src/stats.ts",
+            "line": 5,
+            "snippet": "return payment_intent.currency;"
+          }
+        ]
+      }
+    ]
+  },
+  "expectedOutput": {
+    "affected": [],
+    "unaffected": ["c-050"],
+    "summary": {
+      "consumersScanned": 1,
+      "consumersAffected": 0,
+      "totalMatches": 0
+    }
+  }
+}

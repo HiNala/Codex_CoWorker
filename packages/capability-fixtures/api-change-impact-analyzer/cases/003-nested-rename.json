@@ -1,0 +1,49 @@
+{
+  "description": "Nested field rename must be detected when accessed through an intermediate object",
+  "input": {
+    "apiChange": {
+      "kind": "field_rename",
+      "path": "payment_intent.metadata.customer_ref",
+      "newPath": "payment_intent.metadata.customer_id",
+      "version": "2026-07-01"
+    },
+    "consumers": [
+      {
+        "id": "c-114",
+        "name": "Northwind Retail",
+        "usageSamples": [
+          {
+            "file": "src/webhooks.ts",
+            "line": 42,
+            "snippet": "const meta = event.data.object.metadata;\nreturn meta.customer_ref;"
+          }
+        ]
+      }
+    ]
+  },
+  "expectedOutput": {
+    "affected": [
+      {
+        "consumerId": "c-114",
+        "consumerName": "Northwind Retail",
+        "matches": [
+          {
+            "file": "src/webhooks.ts",
+            "line": 43,
+            "snippet": "return meta.customer_ref;",
+            "matchKind": "nested",
+            "confidence": 0.9
+          }
+        ],
+        "breakingLikelihood": "certain",
+        "suggestedFix": "Update access of customer_ref to customer_id (via metadata alias)"
+      }
+    ],
+    "unaffected": [],
+    "summary": {
+      "consumersScanned": 1,
+      "consumersAffected": 1,
+      "totalMatches": 1
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "slug": "customer-impact-mapper",
+  "name": "Customer Impact Mapper",
+  "version": "1.0.1",
+  "kind": "skill",
+  "description": "Joins ticket clusters to customer accounts and produces a severity-ranked impact table with evidence refs.",
+  "runtime": "node22",
+  "entrypoint": "dist/index.js",
+  "inputSchema": {
+    "type": "object",
+    "required": ["clusters", "accounts", "ticketRequesterIndex"],
+    "properties": {
+      "clusters": { "type": "array" },
+      "accounts": { "type": "array" },
+      "ticketRequesterIndex": { "type": "object" }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "required": ["rows", "totals"],
+    "properties": {
+      "rows": { "type": "array" },
+      "totals": {
+        "type": "object",
+        "required": ["accounts", "tickets", "mrrAtRiskMicrodollars"],
+        "properties": {
+          "accounts": { "type": "integer" },
+          "tickets": { "type": "integer" },
+          "mrrAtRiskMicrodollars": { "type": "integer" }
+        }
+      }
+    }
+  },
+  "permissions": {
+    "network": false,
+    "filesystem": "none",
+    "evidenceRead": true,
+    "maxDurationMs": 10000,
+    "maxMemoryMb": 256,
+    "maxOutputBytes": 500000
+  },
+  "dependencies": [],
+  "knownLimitations": [
+    "Severity is rule-based, not model-scored",
+    "Unmatched requesters are skipped (no row) rather than inventing accounts",
+    "MRR at risk uses full account MRR when any ticket matches"
+  ],
+  "authoredBy": "human"
+}

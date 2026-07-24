@@ -1,0 +1,19 @@
+{
+  "name": "@forge-cap/incident-report-composer",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run tests",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "vitest": "4.1.10",
+    "typescript": "5.9.3",
+    "@forge/capability-sdk": "workspace:*",
+    "@forge/contracts": "workspace:*"
+  }
+}

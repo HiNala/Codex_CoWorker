@@ -1,0 +1,20 @@
+{
+  "description": "Empty consumer list yields empty result without throwing",
+  "input": {
+    "apiChange": {
+      "kind": "field_removal",
+      "path": "charge.receipt_email",
+      "version": "2026-07-01"
+    },
+    "consumers": []
+  },
+  "expectedOutput": {
+    "affected": [],
+    "unaffected": [],
+    "summary": {
+      "consumersScanned": 0,
+      "consumersAffected": 0,
+      "totalMatches": 0
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "description": "Endpoint removal is detected when the path appears in a snippet",
+  "input": {
+    "apiChange": {
+      "kind": "endpoint_removal",
+      "path": "/v1/payment_intents/confirm",
+      "version": "2026-07-01"
+    },
+    "consumers": [
+      {
+        "id": "c-301",
+        "name": "Initech Checkout",
+        "usageSamples": [
+          {
+            "file": "src/api/client.ts",
+            "line": 88,
+            "snippet": "await fetch('/v1/payment_intents/confirm', { method: 'POST', body });"
+          }
+        ]
+      }
+    ]
+  },
+  "expectedOutput": {
+    "affected": [
+      {
+        "consumerId": "c-301",
+        "consumerName": "Initech Checkout",
+        "matches": [
+          {
+            "file": "src/api/client.ts",
+            "line": 88,
+            "snippet": "await fetch('/v1/payment_intents/confirm', { method: 'POST', body });",
+            "matchKind": "exact",
+            "confidence": 1
+          }
+        ],
+        "breakingLikelihood": "certain",
+        "suggestedFix": "Remove or replace calls to removed endpoint /v1/payment_intents/confirm"
+      }
+    ],
+    "unaffected": [],
+    "summary": {
+      "consumersScanned": 1,
+      "consumersAffected": 1,
+      "totalMatches": 1
+    }
+  }
+}
