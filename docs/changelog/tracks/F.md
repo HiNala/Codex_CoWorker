@@ -164,3 +164,15 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - **Verdict:** TRACK F GREEN · TRACK L GREEN
 - **Most fragile (not RED):** live external PR/email need GITHUB_TOKEN + Composio Gmail account link; until then Fake adapters keep Gate 1 honest.
 
+
+### [2026-07-23 17:58] Birch Gate 1 PREP (TIDE)
+
+- No new feature work. No live adapters. No polish.
+- Narrow verify PASS:
+  - `pnpm exec vitest run packages/integrations packages/research` → **7/7 files, 78/78 tests PASS**
+  - `demo/acme-store` vitest → **3/3 files, 13/13 tests PASS**
+- Exclusive scope clean (nothing uncommitted after last mutex commit `53d9a0a`).
+- Mutex free after this checkpoint commit (if any).
+- **Single most important RED seam (TIDE-owned, not test-red):** `GITHUB_TOKEN`/`GITHUB_PAT` ABSENT → host PR open is Fake-only on the golden path until PAT lands; hand-written patch pipeline itself is green.
+- TRACK F GREEN · TRACK L GREEN for unit/fake Gate 1 surface.
+
