@@ -143,3 +143,27 @@ Cockpit shell integration: `b4a1eb9`.
 - Unit tests (ui + hooks): **21 passed**.
 - Mission Control sub-agent reported complete (`1c0fe06`).
 - Pending uncommitted polish (CapabilityTile optional props for exactOptionalPropertyTypes) waits for mutex.
+
+## [T+5/5] D/G · all five exclusive sub-agents complete
+
+| # | Surface | Note |
+|---|---------|------|
+| 1 | Foundation | done (`42b6896` polish; core earlier) |
+| 2 | Conversation | done |
+| 3 | Mission Control | done |
+| 4 | Foundry | done |
+| 5 | Dock + approvals | done |
+
+Shell wired; demo fixture hydrates full cockpit.
+
+## [T+mutex] D/G · ack · binding commit mutex via agent-commit.ps1
+
+Node supersedes raw git add/commit/push.
+
+- **Only:** `pwsh scripts/agent-commit.ps1 -Agent Aria -Paths <owned> -MessageFile <msg>`
+- Mutex serializes add+commit+push; rejects staged files outside `-Paths`
+- Exit 2 = lock busy → keep coding, retry later (no wait loop, no raw git)
+- Still forbidden: pull, rebase, autostash, stash, reset, foreign checkout
+- Non-fast-forward push: stop, report Node, hold (commit local-safe)
+
+ARIA will not run raw `git add` / `git commit` / `git push` again.
