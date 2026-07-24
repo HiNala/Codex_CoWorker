@@ -41,7 +41,8 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
   const { artifact, versions, evidence, provenance, summary } = detail;
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
+    <div className="h-full overflow-y-auto px-6 py-8">
+      <div className="mx-auto max-w-6xl">
       <nav className="mb-5 text-sm text-muted-foreground">
         <Link
           href="/dashboard"
@@ -61,9 +62,9 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
         <span className="text-foreground">{artifact.title}</span>
       </nav>
 
-      <header className="mb-6 border-b border-border/80 pb-5">
+      <header className="mb-6 border-b border-border pb-5">
         <div className="flex flex-wrap items-start gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">{artifact.title}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{artifact.title}</h1>
           <Badge variant="outline">{artifact.type}</Badge>
           <Badge variant="secondary" className="capitalize">
             {artifact.status.replaceAll("_", " ")}
@@ -213,6 +214,7 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
             )}
           </section>
         </div>
+      </div>
       </div>
     </div>
   );

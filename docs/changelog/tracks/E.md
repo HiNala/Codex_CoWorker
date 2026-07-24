@@ -223,3 +223,11 @@
 - Added `renderers/semantic-styles.ts` — token-only class maps for typed-table, code-diff add/del (`--status-success`/`--status-danger`, **never blue**), evidence, provenance, fallback for Aria consumers.
 - Guard test scans package TS for forbidden colour utilities.
 - Evidence/provenance rely on `--foreground` / `--muted-foreground` / `--card` / `--border` so they track Aria’s true-black neutrals.
+
+### [2026-07-23T19:05Z] E · FINAL OUTPUTS QA — one universal sidebar
+
+- **Bug fixed:** `outputs/layout.tsx` had mounted a **second** `DextworkSidebar` on top of `(app)/layout.tsx` → double rail. Now **passthrough only**.
+- `/outputs` + `/outputs/[id]`: content-only pages, `h-full overflow-y-auto` single scroll (matches dashboard), **no** nested `overflow-auto` on version pre, **Back → `/dashboard`**
+- Home in rail: Aria’s `DextworkSidebar` already `href="/dashboard"`
+- Tokens: `text-foreground` / `text-muted-foreground` / `bg-card` / `border-border` (B&W readable)
+- `tsc -p apps/web` **PASS**
