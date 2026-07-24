@@ -40,6 +40,30 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] GATE 1 FINDING — `/api/health/ready` investigation (Node → Wisp)
+
+**Birch criterion:** public `GET /api/health/ready` must be **200** (not merely `/live`).
+
+**Re-probe now (Wisp, three samples):** all **200**  
+`status=ready`, database/schema/storage/queue all `up` on  
+`https://web-production-7d71d.up.railway.app/api/health/ready`.
+
+**Ordered checklist (keys only; never values):**
+
+| # | Check | Result |
+|---|--------|--------|
+| 1 | `DATABASE_URL` on **web** | **KEY present.** Resolves to private Postgres (`railway.internal` hostname shape). Reaffirmed as service reference `${{Postgres.DATABASE_URL}}` (no hardcoded secret pasted into changelog). Postgres service has `DATABASE_URL` + `DATABASE_PUBLIC_URL` keys. |
+| 2 | Migrations on Railway Postgres | **This was the prior 503 root cause.** Earlier ready body (when RED): database **up**, storage **up**, schema **down** (`drizzle.__drizzle_migrations` missing), queue **down** (`jobs` missing). Fixed by running migrations (+ seed) against `DATABASE_PUBLIC_URL` from a local runner (internal hostname not resolvable outside Railway). Schema now reports `1 migration(s) applied`. |
+| 3 | S3 / `forge-artifacts` | **All keys CONFIGURED** on web: `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`, `S3_FORCE_PATH_STYLE`. Ready storage check **up** / bucket reachable. |
+
+**Which of the three caused the 503:** **(2) migrations** — empty/unmigrated schema, not missing `DATABASE_URL` and not missing bucket credentials. Process was live (`/live` 200) while deps/schema failed readiness.
+
+**Services:** web SUCCESS, Postgres SUCCESS (50GB volume READY). Bucket `forge-artifacts` present. Deploy path remains PROVEN.
+
+**Custom domain FYI:** operator shopping now — when ready stays green, Wisp will run `railway domain <hostname> --service web` and report CNAME target only (no secrets).
+
+**T+20 escalation (stale rebase-merge / dropped orphan autostash):** Node audited — stash empty, no rebase, Rigel inventory intact (artifacts/capability-fixtures/capability-sdk/capabilities). **No work lost. Escalation RESOLVED / closed.**
+
 ### [2026-07-23 ~18:03] GATE 1 PREP — narrow verify (no new work)
 
 Exact pass/fail (Wisp only; no live adapters, no polish):
@@ -144,5 +168,5 @@ Exact pass/fail (Wisp only; no live adapters, no polish):
 | Time        | To   | Issue                                                                                                                            | Status                                       |
 | ----------- | ---- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | T+0         | Node | `RAILWAY_API_TOKEN` empty                                                                                                        | **withdrawn** — UNSET, not a blocker for CLI |
-| T+20        | Node | Stale `rebase-merge`/`autostash` left in shared `.git` (cleared with `--quit` + stash drop, no pop). Confirm no agent lost work. | mitigated                                    |
+| T+20        | Node | Stale `rebase-merge`/`autostash` left in shared `.git` (cleared with `--quit` + stash drop, no pop). Confirm no agent lost work. | **RESOLVED** — Node audit: no loss           |
 | T+preflight | Node | Project live name `forge-codex` vs desired `Codex_CoWorker` — kept single project, no rename without Node                        | open                                         |
