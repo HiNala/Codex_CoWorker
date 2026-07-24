@@ -1,0 +1,16 @@
+# Hello-world service — proves deploy path in under 10 minutes.
+# Link service with:
+#   railway link -p forge-codex -e production -s hello
+# Then:
+#   railway up --service hello --detach --path infra/hello
+#   railway domain --service hello --port 3000
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "infra/hello/Dockerfile"
+
+[deploy]
+healthcheckPath = "/api/health/live"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
