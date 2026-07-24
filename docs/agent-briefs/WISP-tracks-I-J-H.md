@@ -36,7 +36,7 @@ Nothing else. The rest of `apps/web/app` belongs to **Aria** — stay out of it.
 
 **Deploy path → demo safety net → marketing.**
 
-If you have not *proven* you can deploy by **T+30**, stop everything else and fix
+If you have not _proven_ you can deploy by **T+30**, stop everything else and fix
 that. A beautiful undeployed app scores zero.
 
 ## The thing every team forgets

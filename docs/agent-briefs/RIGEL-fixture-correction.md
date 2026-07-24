@@ -22,17 +22,17 @@ demo/acme-store/logs/checkout-errors.ndjson
 
 The log file spans a schema migration. Both shapes are present:
 
-| era | customer identity field |
-|---|---|
-| **older** records | `customer_id` — **top-level** |
+| era               | customer identity field            |
+| ----------------- | ---------------------------------- |
+| **older** records | `customer_id` — **top-level**      |
 | **newer** records | `context.customer.id` — **nested** |
 
 A naive implementation reads only one shape and silently undercounts.
 
-| implementation | distinct affected customers |
-|---|---|
-| naive (reads one shape) | **4** |
-| correct (reads both) | **9** |
+| implementation          | distinct affected customers |
+| ----------------------- | --------------------------- |
+| naive (reads one shape) | **4**                       |
+| correct (reads both)    | **9**                       |
 
 ## The two-attempt beat — this is the whole point
 
@@ -41,7 +41,7 @@ The trusted test must produce **exactly** this sequence:
 - **Attempt 1 — FAILS.** Trusted test reports `expected 9, received 4`.
 - **Attempt 2 — PASSES.** After the repair reads both field shapes, 9.
 
-The failure must be *real* — a competent engineer would also miss nested access
+The failure must be _real_ — a competent engineer would also miss nested access
 behind a migration. Not a contrived typo, not a thrown exception.
 
 > **Verify by hand that the naive implementation returns 4 before you hand this
@@ -60,14 +60,19 @@ rule right still gives the wrong numbers:
 **Rule 1 — filter.** Count only records where:
 
 ```js
-r.level === 'error' && r.event === 'checkout_failed'
+r.level === "error" && r.event === "checkout_failed";
 ```
 
 The file contains a deliberate distractor at **line 22**:
 
 ```json
-{"ts":"2026-07-19T21:40:11Z","level":"warn","event":"card_declined",
- "customer_id":"cus_ZZ9","message":"card_declined"}
+{
+  "ts": "2026-07-19T21:40:11Z",
+  "level": "warn",
+  "event": "card_declined",
+  "customer_id": "cus_ZZ9",
+  "message": "card_declined"
+}
 ```
 
 `cus_ZZ9` is `warn` / `card_declined`, appears exactly once, and is the **only**

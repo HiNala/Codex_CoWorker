@@ -45,8 +45,8 @@ T+70.
      - **Match found** → `railway link --project Codex_CoWorker`
      - **No match** → and only then → `railway init --name Codex_CoWorker`
 
-**Naming:** the *project* is `Codex_CoWorker` — the repo name. Things like
-`web`, `worker`, `foundry`, `hello` are *service* names inside it. Do not create
+**Naming:** the _project_ is `Codex_CoWorker` — the repo name. Things like
+`web`, `worker`, `foundry`, `hello` are _service_ names inside it. Do not create
 a project named after a service.
 
 ## Build context
@@ -82,7 +82,7 @@ through the generated public domain. Report the domain and the response.
 
 **Do not print variable values or credentials** to your pane, your changelog,
 your commit messages, or your final report. `railway variable list` prints
-values — if you need to confirm a variable exists, confirm the *key* only.
+values — if you need to confirm a variable exists, confirm the _key_ only.
 Never paste a Railway token, an S3 secret, or a database URL anywhere.
 
 ## Report

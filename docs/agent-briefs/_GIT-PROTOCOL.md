@@ -115,7 +115,7 @@ resume.
 
 ## Commit message format
 
-Conventional prefix, then a **detailed body** explaining what changed and *why* —
+Conventional prefix, then a **detailed body** explaining what changed and _why_ —
 not just what. Reference your track and step.
 
 ```
@@ -133,16 +133,55 @@ Prefixes: `feat` `fix` `refactor` `test` `docs` `chore` `perf` `build`
 
 ## Secrets — the repo is PUBLIC
 
-- Live provider keys are in `.env` at the repo root. It is git-ignored via
-  `.gitignore:7` (`.env`) and `.gitignore:8` (`.env.*`). **Verified absent from
-  the pushed tree.**
-- **Never** `git add -f .env`. Never paste a key into a source file, a test
+> ### ⚠️ THE AUTHORITATIVE ENV FILE IS `.env.local`, **NOT** `.env`
+>
+> All 9 root `package.json` scripts load `.env.local` explicitly
+> (`dotenv -e .env.local`). **Zero of them load `.env`.** Next.js auto-loads both
+> but gives `.env.local` precedence, so `.env.local` is the only file every
+> consumer actually sees.
+>
+> Keys were briefly placed in `.env` during ignition and were **invisible to the
+> worker, foundry, and db scripts** as a result. They now live in `.env.local`
+> only. **Do not re-add them to `.env`** — one credential in two files is how you
+> rotate one and leave a dead key in the other.
+>
+> _(This correction has been reverted once by a formatting pass. If you are
+> reading `.env` as authoritative anywhere, that text is stale — this block
+> wins.)_
+
+- Live provider keys are in **`.env.local`** at the repo root. Both `.env` and
+  `.env.*` are git-ignored via `.gitignore:7` and `.gitignore:8`. **Verified
+  absent from the pushed tree.**
+- **Never** `git add -f .env.local`. Never paste a key into a source file, a test
   fixture, a changelog entry, a Dockerfile, a GitHub Actions workflow, or a
   commit message.
-- Read configuration through `packages/config`. Never hardcode. Never log a key.
-- Populated: `OPENAI_API_KEY`, `CODEX_API_KEY`, `OCTEN_API_KEY`,
-  `COMPOSIO_API_KEY`
-- Empty, needs provisioning: `ZENDESK_*` (Tide), `RAILWAY_API_TOKEN` (Wisp)
+- Read configuration through `packages/config`. It reads `process.env` and does
+  **not** call dotenv itself, so it depends entirely on the wrapper loading
+  `.env.local`. Never hardcode. Never log a key.
+
+Status — **configured/unconfigured only, never values**:
+
+| variable                                                          | status                     | owner |
+| ----------------------------------------------------------------- | -------------------------- | ----- |
+| `OPENAI_API_KEY`                                                  | CONFIGURED                 | —     |
+| `CODEX_API_KEY`                                                   | CONFIGURED                 | —     |
+| `OCTEN_API_KEY`                                                   | CONFIGURED                 | —     |
+| `COMPOSIO_API_KEY`                                                | CONFIGURED                 | —     |
+| `ZENDESK_SUBDOMAIN` / `_EMAIL` / `_API_TOKEN` / `_WEBHOOK_SECRET` | **UNSET**                  | Tide  |
+| `RAILWAY_API_TOKEN`                                               | **UNSET — not a blocker**  | Wisp  |
+
+`RAILWAY_API_TOKEN` is unset by design. Railway CLI 5.27.0 is already
+interactively authenticated to workspace `HiNala's Projects`, so CLI operations
+do not need it. **Wisp must not block on this token.**
+
+Zendesk is genuinely unprovisioned. Tide builds the ingress against a locally
+generated HMAC secret and a fixture payload so the verification path is fully
+testable, then swaps the real secret in when it arrives. **Do not sit blocked.**
+
+When reporting credential state anywhere — pane, changelog, commit message —
+report the **key name and CONFIGURED/UNSET only**. Never a value, never a
+prefix, never "just the last 4". `railway variable list` prints values; do not
+paste its output.
 
 ## Changelog
 

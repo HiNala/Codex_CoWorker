@@ -34,7 +34,7 @@ Nothing else.
 3. **Octen research gateway** with evidence records and content hashes. Discard
    any result where `page_structure.primary` is `'No Main Content'`.
 4. **GitHub PR pipeline.** The sandbox holds **ZERO** credentials. It emits a
-   patch; the *host* applies that patch to a clean clone and pushes.
+   patch; the _host_ applies that patch to a clean clone and pushes.
    Fine-grained PAT, scoped to one repo.
 5. **The demo repository itself** — small enough that Codex can read it fast.
 
