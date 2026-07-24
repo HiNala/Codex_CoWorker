@@ -215,3 +215,11 @@
 - `/outputs` and `/outputs/[id]`: back/home → **`/dashboard`**; removed `min-h-dvh` self-shell; version pre no longer `overflow-auto`
 - Cards: solid `bg-card` surface; library grid clean
 - `tsc -p apps/web` PASS
+
+### [2026-07-23T18:55Z] E · T+6 palette audit — no hardcoded colours in Rigel packages
+
+- Grep `packages/artifacts`, `capability-sdk`, `capability-fixtures`: **zero** hex/rgb/oklch/blue-*/slate-*/indigo hardcodes in runtime source (ticket `#4412` false positives only).
+- Packages are pure logic; no navy-tinted surfaces of our own.
+- Added `renderers/semantic-styles.ts` — token-only class maps for typed-table, code-diff add/del (`--status-success`/`--status-danger`, **never blue**), evidence, provenance, fallback for Aria consumers.
+- Guard test scans package TS for forbidden colour utilities.
+- Evidence/provenance rely on `--foreground` / `--muted-foreground` / `--card` / `--border` so they track Aria’s true-black neutrals.

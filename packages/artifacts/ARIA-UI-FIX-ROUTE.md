@@ -63,7 +63,7 @@ Toolbelt stays visible under/alongside the install card → looks like stacked c
 
 3. Root install card: `className` should be flow layout only:
    ```tsx
-   "w-full rounded-xl border border-border bg-[color:var(--ops-raised)] p-4"
+   "w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--card)] p-4"
    ```
    Avoid `min-h-0` + nested scroll traps unless needed for flex footers; prefer natural height inside `.panel-body`.
 

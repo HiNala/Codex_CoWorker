@@ -66,3 +66,12 @@ export {
   normalizeArtifactType,
   type KnownArtifactType,
 } from "./dock-type";
+
+export {
+  diffLineClass,
+  typedTableClass,
+  evidenceClass,
+  provenanceClass,
+  fallbackClass,
+  type DiffLineClassKey,
+} from "./semantic-styles";
