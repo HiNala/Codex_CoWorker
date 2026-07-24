@@ -40,6 +40,35 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] PRODUCTION DATA FIX — Broken Checkout seed (CUT #4)
+
+**Problem:** UI showed stale “Webhook field rename / api-change-impact-analyzer” story.  
+**Cause:** DB seed rows, not fixtures (Tide demo-data already Broken Checkout).
+
+**Reset safety (confirmed before run):**
+- `POST /api/demo/reset` → `seedDatabase` only — **no** schema drop, **no** full truncate (`db-reset.ts` not used).
+- Upserts fixed `DEMO_IDS` assignment/run; **deletes only** `run_events` / plan for **active demo run** `…0006`.
+- Other orgs/history not wiped.
+
+**Action:** Ran current `packages/db/src/seed.ts` against prod Postgres (`DATABASE_PUBLIC_URL=CONFIGURED`) + API reset/seed/replay with presenter auth.
+
+| Check | Result |
+|-------|--------|
+| assignmentId | **`0198206f-5f53-7000-8000-000000000005`** |
+| runId | `0198206f-5f53-7000-8000-000000000006` |
+| `raw_request` | annual plan / Priya / Broken Checkout — **no** webhook rename |
+| plan step | “Analyse checkout error logs” (checkout-error-log-analyzer) |
+| capabilities | ticket-clusterer, customer-impact-mapper, release-note-drafter, repository-change-proposer only — **no** api-change-impact-analyzer installed |
+| cockpit URL | **https://dextwork.com/a/0198206f-5f53-7000-8000-000000000005** |
+| UI body | **Broken Checkout · Nala** — `UI_HAS_CHECKOUT_ANALYZER=true` · `UI_HAS_API_CHANGE=false` |
+| rail | **76px** `aria-label=Dextwork` · shell attrs present |
+| screenshots | `infra/qa/screenshots/bc-cockpit-2026-07-24T01-44-17-1920x1080.png` · `…-1440x900.png` |
+
+**Operator URL (correct story):**  
+`https://dextwork.com/a/0198206f-5f53-7000-8000-000000000005`
+
+**LKG still staged:** `e0b15478-9b06-461b-b88b-455ce01e6cd1` (Aria second deploy pending). No deploy #2.
+
 ### [2026-07-23] fix · @forge/demo client/server split (node:fs web build blocker)
 
 **Root cause:** `packages/demo/src/replay.ts` imported `node:fs` at top level; main
