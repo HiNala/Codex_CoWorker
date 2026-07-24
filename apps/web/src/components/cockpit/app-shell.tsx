@@ -37,10 +37,7 @@ export function AppShell({
         </div>
         <div className="border-b border-border px-4 py-3">
           <div className="flex min-h-11 items-center gap-2 rounded-md border border-border bg-muted/30 px-3">
-            <span
-              className="size-2 rounded-full bg-[color:var(--status-active)]"
-              aria-hidden
-            />
+            <span className="size-2 rounded-full bg-[color:var(--status-active)]" aria-hidden />
             <span className="text-sm font-medium">{coworkerName}</span>
             <span className="ms-auto text-xs text-muted-foreground">{coworkerStatus}</span>
           </div>

@@ -46,12 +46,7 @@ export function Composer({
   };
 
   return (
-    <div
-      className={cn(
-        "shrink-0 border-t border-border bg-card/80 p-3 backdrop-blur",
-        className,
-      )}
-    >
+    <div className={cn("shrink-0 border-t border-border bg-card/80 p-3 backdrop-blur", className)}>
       <Textarea
         className="min-h-[88px] resize-none text-[15px]"
         placeholder={placeholder}
@@ -61,14 +56,18 @@ export function Composer({
         disabled={disabled}
         aria-label="Message composer"
         aria-disabled={disabled || undefined}
-        aria-describedby={disabled && disabledReason ? "composer-disabled-reason" : "composer-hints"}
+        aria-describedby={
+          disabled && disabledReason ? "composer-disabled-reason" : "composer-hints"
+        }
       />
       <div className="mt-2 flex items-center justify-between gap-3">
         <span
           id={disabled && disabledReason ? "composer-disabled-reason" : "composer-hints"}
           className={cn(
             "text-xs",
-            disabled && disabledReason ? "text-[color:var(--status-warning)]" : "text-muted-foreground",
+            disabled && disabledReason
+              ? "text-[color:var(--status-warning)]"
+              : "text-muted-foreground",
           )}
         >
           {disabled && disabledReason

@@ -18,26 +18,18 @@ export function StepStatusIcon({
   size?: "sm" | "md" | "lg";
 }) {
   const meta = PLAN_STEP_STATUS_META[status];
-  const iconSize =
-    size === "lg" ? "size-5" : size === "sm" ? "size-3.5" : "size-4";
+  const iconSize = size === "lg" ? "size-5" : size === "sm" ? "size-3.5" : "size-4";
 
   return (
     <span
-      className={cn(
-        "inline-flex shrink-0 items-center gap-1.5",
-        showLabel && "min-w-0",
-        className,
-      )}
+      className={cn("inline-flex shrink-0 items-center gap-1.5", showLabel && "min-w-0", className)}
       style={{ color: `var(--${meta.token})` }}
       data-status={status}
       title={meta.label}
     >
       <StatusGlyph
         name={meta.icon}
-        className={cn(
-          iconSize,
-          status === "running" && "motion-safe:animate-pulse",
-        )}
+        className={cn(iconSize, status === "running" && "motion-safe:animate-pulse")}
       />
       {showLabel ? (
         <span className="truncate text-xs font-medium">{meta.label}</span>

@@ -27,10 +27,7 @@ export function useStepDisclosure(
     [controlled],
   );
 
-  const isExpanded = useCallback(
-    (id: string) => expandedIds.has(id),
-    [expandedIds],
-  );
+  const isExpanded = useCallback((id: string) => expandedIds.has(id), [expandedIds]);
 
   const toggle = useCallback(
     (id: string) => {

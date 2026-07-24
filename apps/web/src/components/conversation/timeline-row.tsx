@@ -53,12 +53,7 @@ export function TimelineRow({
       );
 
     case "trace_group":
-      return (
-        <TraceGroup
-          item={item}
-          defaultExpanded={density === "everything"}
-        />
-      );
+      return <TraceGroup item={item} defaultExpanded={density === "everything"} />;
 
     case "evidence": {
       const chipProps = {

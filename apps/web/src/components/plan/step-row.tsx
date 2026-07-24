@@ -5,8 +5,7 @@ import { cn } from "@/lib/utils";
 import { StepStatusIcon } from "./step-status-icon";
 
 /**
- * Single plan step. Status is props-only — never transitions itself.
- * Blocked/failed reasons render inline (not tooltip-only).
+ * Single plan step. Timing column is a fixed track so values align with rows.
  */
 export function StepRow({
   step,
@@ -26,75 +25,49 @@ export function StepRow({
   return (
     <li
       className={cn(
-        "grid grid-cols-[28px_1fr_auto] items-start gap-3 border-l-2 px-5 py-3.5 transition-colors duration-[var(--dur-quick)]",
+        "grid grid-cols-[1.25rem_minmax(0,1fr)_4.5rem] items-center gap-x-2 border-l-2 py-2.5 pr-3",
         active
-          ? "border-l-[color:var(--status-active)] bg-[color:var(--status-active)]/5"
+          ? "border-l-[color:var(--ops-signal)] bg-[color:var(--ops-signal)]/8"
           : "border-l-transparent",
-        step.status === "blocked" &&
-          !active &&
-          "border-l-[color:var(--status-warning)]",
-        step.status === "failed" &&
-          !active &&
-          "border-l-[color:var(--status-danger)]",
+        step.status === "blocked" && !active && "border-l-[color:var(--ops-amber)]",
+        step.status === "failed" && !active && "border-l-[color:var(--status-danger)]",
       )}
-      style={depth > 0 ? { paddingLeft: `${20 + depth * 16}px` } : undefined}
+      style={{ paddingLeft: depth > 0 ? 12 + depth * 12 : 12 }}
       data-step-id={step.id}
       data-step-status={step.status}
       data-active={active ? "true" : "false"}
       onMouseEnter={() => onHover?.(step.id)}
       onMouseLeave={() => onHover?.(null)}
     >
-      <StepStatusIcon status={step.status} className="mt-0.5" />
+      <StepStatusIcon status={step.status} className="justify-self-center" />
       <div className="min-w-0">
         <p
           className={cn(
-            "text-sm font-medium leading-5",
-            step.status === "completed" && "text-muted-foreground",
-            step.status === "skipped" && "text-muted-foreground",
+            "truncate text-[13px] font-medium leading-5",
+            (step.status === "completed" || step.status === "skipped") &&
+              "text-muted-foreground",
             step.status === "cancelled" && "text-muted-foreground line-through",
           )}
         >
           {step.title}
         </p>
-        <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+        <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground">
           <span className="font-medium" style={{ color: `var(--${meta.token})` }}>
             {meta.label}
           </span>
-          {step.changedAfterApproval ? (
-            <span className="rounded border border-border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-foreground">
-              Plan updated
-            </span>
-          ) : null}
-          {step.status === "needs_capability" ? (
-            <span className="text-[10px] uppercase tracking-wide text-[color:var(--status-building)]">
-              needs ✓
-            </span>
+          {showReason ? (
+            <span className="truncate text-[color:var(--ops-amber)]">{step.blockedReason}</span>
           ) : null}
         </p>
-        {showReason ? (
-          <p
-            className="mt-1 text-xs leading-5"
-            style={{
-              color:
-                step.status === "failed"
-                  ? "var(--status-danger)"
-                  : "var(--status-warning)",
-            }}
-          >
-            {step.blockedReason}
-          </p>
-        ) : null}
-        {step.artifactIds.length > 0 ? (
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            ⇢ {step.artifactIds.length} output
-            {step.artifactIds.length === 1 ? "" : "s"}
-          </p>
-        ) : null}
       </div>
-      <div className="text-end font-mono text-[11px] tabular-nums text-muted-foreground">
-        {step.durationMs != null ? <div>{formatDuration(step.durationMs)}</div> : null}
+      <div className="w-[4.5rem] shrink-0 self-center text-right ops-mono text-[11px] tabular-nums text-muted-foreground">
+        {step.durationMs != null ? (
+          <div className="leading-4">{formatDuration(step.durationMs)}</div>
+        ) : (
+          <div className="leading-4 opacity-40">—</div>
+        )}
         {step.costMicrocredits ? (
-          <div>${formatCredits(step.costMicrocredits)}</div>
+          <div className="leading-4">${formatCredits(step.costMicrocredits)}</div>
         ) : null}
       </div>
     </li>

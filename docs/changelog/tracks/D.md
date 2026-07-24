@@ -294,3 +294,23 @@ No repo-wide lint. No --fix. Wisp files not opened.
 
 ### Bindings
 Motion event-driven; capability tiles icon+label. No polish. Marketing not touched.
+
+## [IT RUNS crit 3] D · LIVE SSE cockpit — useDemoFixture=false
+
+### Highest priority seam
+- `CockpitShell` default `useDemoFixture={false}` — paints Cael's live stream.
+- `useRunStream` default flipped to live; opens `GET /api/runs/:runId/stream?after=`.
+- `resolveStreamRunId`: demo assignment `…0005` → run `…0006` (DEMO_SEED_IDS).
+- **Did not edit** `apps/web/src/app/api/runs/[runId]/stream/route.ts` (Cael owns contents).
+- Client path: EventSource → `parseSseRunEventData` → `runReducer` → panels.
+- Shell exposes `data-last-seq`, `data-connected`, `data-timeline-count`, `data-use-demo-fixture=false` for gate evidence.
+
+### Layout (Dextwork)
+- Grid: `76px | minmax(560px,1fr) | clamp(480px,38vw,720px)` — dominant chat, no bottom dock.
+- Icon rail (tooltips only). Rail: tasks top / capabilities bottom. Containment `min-height:0` kept.
+
+### Tests
+- `pnpm exec vitest run apps/web/src/hooks` → **16 passed** (incl. resolve-stream-run-id, cockpit-event-paint).
+
+### Expected rendered event count
+When DB has Cael's golden path: cockpit `data-last-seq` should reach **24** (gapless seq 1..24). Offline without DATABASE_URL: stream 503 / disconnected — fixture still available via `useDemoFixture`.

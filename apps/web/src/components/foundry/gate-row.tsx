@@ -21,10 +21,7 @@ export function GateRow({ gate }: { gate: GateRowVM }) {
             ? "skip-forward"
             : "circle";
 
-  const counter =
-    gate.passed != null && gate.total != null
-      ? `${gate.passed}/${gate.total}`
-      : null;
+  const counter = gate.passed != null && gate.total != null ? `${gate.passed}/${gate.total}` : null;
 
   return (
     <li
@@ -46,8 +43,7 @@ export function GateRow({ gate }: { gate: GateRowVM }) {
             isPassed && "text-[color:var(--status-success)]",
             isFailed && "text-[color:var(--status-repairing)]",
             isRunning && "text-[color:var(--status-testing)]",
-            (gate.status === "pending" || gate.status === "skipped") &&
-              "text-muted-foreground",
+            (gate.status === "pending" || gate.status === "skipped") && "text-muted-foreground",
           )}
           aria-hidden
         >

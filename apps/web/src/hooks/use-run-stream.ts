@@ -4,24 +4,32 @@ import { useEffect, useReducer, useRef } from "react";
 import { serializeRunEvent } from "@forge/events";
 import { buildDemoEvents } from "./demo-run-fixture";
 import { extractSseDataPayload, parseSseRunEventData } from "./parse-sse-run-event";
+import { resolveStreamRunId } from "./resolve-stream-run-id";
 import { runReducer } from "./run-reducer";
 import { initialRunState, type RunState } from "./run-state";
 
 export interface UseRunStreamOptions {
   /**
-   * When true (default), feed the scripted golden-path events through the same
-   * SSE parse → reducer path as a live EventSource (Cael wire format via
-   * @forge/events serializeRunEvent). When false, open GET /api/runs/:id/stream.
+   * When true, feed scripted demo events (same parse path as live SSE).
+   * When false (default for IT RUNS / production cockpit), open
+   * GET /api/runs/:runId/stream?after= (Cael).
    */
   useDemoFixture?: boolean;
+  /** Explicit run id when the URL only carries assignmentId. */
+  runId?: string | null;
 }
 
 /**
  * Event stream hook. Reducer is the single source of UI truth.
- * No setTimeout drives visible status — only events and connection state.
+ * Visible status comes only from events and connection state — no timers.
  */
-export function useRunStream(runId: string, options: UseRunStreamOptions = {}): RunState {
-  const useDemo = options.useDemoFixture ?? true;
+export function useRunStream(
+  assignmentId: string,
+  options: UseRunStreamOptions = {},
+): RunState {
+  // Live SSE is the default; tests/demos may opt into fixture.
+  const useDemo = options.useDemoFixture ?? false;
+  const streamRunId = resolveStreamRunId(assignmentId, options.runId);
   const [state, dispatch] = useReducer(runReducer, initialRunState);
   const lastSeqRef = useRef(0);
 
@@ -41,10 +49,10 @@ export function useRunStream(runId: string, options: UseRunStreamOptions = {}): 
       return;
     }
 
-    if (!runId) return;
+    if (!streamRunId) return;
 
     const after = lastSeqRef.current;
-    const es = new EventSource(`/api/runs/${runId}/stream?after=${after}`);
+    const es = new EventSource(`/api/runs/${streamRunId}/stream?after=${after}`);
 
     const onRunEvent = (e: Event) => {
       const me = e as MessageEvent;
@@ -59,15 +67,12 @@ export function useRunStream(runId: string, options: UseRunStreamOptions = {}): 
       es.removeEventListener("run.event", onRunEvent);
       es.close();
     };
-  }, [runId, useDemo]);
+  }, [streamRunId, useDemo]);
 
   return state;
 }
 
-/**
- * Fake SSE feeder: encode demo events with Cael's serializeRunEvent, then parse
- * through the same handler used by browser EventSource `run.event` frames.
- */
+/** Demo feeder only — used when useDemoFixture is true. */
 function ingestDemoAsSseFrames(onFrameData: (data: string) => void): void {
   const decoder = new TextDecoder();
   for (const event of buildDemoEvents()) {
@@ -79,4 +84,5 @@ function ingestDemoAsSseFrames(onFrameData: (data: string) => void): void {
 
 export { runReducer } from "./run-reducer";
 export { buildDemoRunState, buildDemoEvents } from "./demo-run-fixture";
+export { resolveStreamRunId } from "./resolve-stream-run-id";
 export type { RunState } from "./run-state";

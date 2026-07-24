@@ -74,10 +74,7 @@ export function StepSpotlight({ step }: { step: PlanStepVM }) {
             <p className="truncate text-sm font-semibold">{step.title}</p>
           </div>
           <p className="mt-1 truncate text-xs text-muted-foreground">
-            <span
-              className="font-medium"
-              style={{ color: `var(--${meta.token})` }}
-            >
+            <span className="font-medium" style={{ color: `var(--${meta.token})` }}>
               {meta.label}
             </span>
             <span className="text-muted-foreground"> · {statusDetail(step)}</span>
@@ -86,10 +83,7 @@ export function StepSpotlight({ step }: { step: PlanStepVM }) {
             <p
               className="mt-1 text-xs leading-5"
               style={{
-                color:
-                  step.status === "failed"
-                    ? "var(--status-danger)"
-                    : "var(--status-warning)",
+                color: step.status === "failed" ? "var(--status-danger)" : "var(--status-warning)",
               }}
             >
               {reason}
@@ -98,9 +92,7 @@ export function StepSpotlight({ step }: { step: PlanStepVM }) {
         </div>
         <span
           className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground"
-          aria-label={
-            elapsed != null ? `Elapsed ${formatDuration(elapsed)}` : undefined
-          }
+          aria-label={elapsed != null ? `Elapsed ${formatDuration(elapsed)}` : undefined}
         >
           {formatDuration(elapsed)}
         </span>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { WorkspacePanel } from "@/components/cockpit/workspace-panel";
 import { Badge } from "@/components/ui/badge";
 import type { RunState } from "@/hooks/run-state";
 import { cn } from "@/lib/utils";
@@ -18,9 +17,8 @@ export interface FoundryPanelProps {
 }
 
 /**
- * The Foundry panel — toolbelt grid of CapabilityTiles, live build console
- * when a capability is building/verifying/repairing, and capability-install
- * approval takeover when risk === capability_install.
+ * Column-3 bottom: Capabilities.
+ * Install/approval is an INLINE card in the same scroll — never a modal overlay.
  */
 export function FoundryPanel({
   state,
@@ -32,13 +30,7 @@ export function FoundryPanel({
   const capabilities = useMemo(() => {
     return Object.values(state.capabilities).sort((a, b) => {
       const rank = (s: string) => {
-        if (
-          s === "building" ||
-          s === "testing" ||
-          s === "repairing" ||
-          s === "specifying"
-        )
-          return 0;
+        if (["building", "testing", "repairing", "specifying"].includes(s)) return 0;
         if (s === "awaiting_approval") return 1;
         if (s === "missing" || s === "failed") return 2;
         if (s === "active") return 3;
@@ -56,32 +48,14 @@ export function FoundryPanel({
 
   const installApproval = useMemo(
     () =>
-      state.approvals.find(
-        (a) => a.status === "pending" && a.risk === "capability_install",
-      ) ?? null,
+      state.approvals.find((a) => a.status === "pending" && a.risk === "capability_install") ??
+      null,
     [state.approvals],
   );
 
-  const showConsole = Boolean(build);
-  const showApproval = Boolean(installApproval);
+  const showConsole = Boolean(build) && !installApproval;
 
-  const liveCount = capabilities.filter((c) =>
-    [
-      "building",
-      "testing",
-      "repairing",
-      "specifying",
-      "awaiting_approval",
-    ].includes(c.state),
-  ).length;
-
-  const description = showApproval
-    ? "Capability install requires your approval"
-    : showConsole
-      ? `Live build · ${build!.slug}`
-      : "Capability gap, build, verify, approve";
-
-  const badgeLabel = showApproval
+  const badgeLabel = installApproval
     ? "Awaiting approval"
     : build
       ? build.status === "repairing"
@@ -91,51 +65,57 @@ export function FoundryPanel({
           : build.status === "failed"
             ? "Failed"
             : "Building"
-      : liveCount > 0
-        ? `${liveCount} live`
-        : capabilities.length > 0
-          ? `${capabilities.length} tools`
-          : null;
+      : capabilities.length > 0
+        ? `${capabilities.length} tools`
+        : null;
 
   return (
-    <WorkspacePanel
-      title="The foundry"
-      description={description}
-      badge={
-        badgeLabel ? (
-          <Badge variant="outline" data-foundry-badge>
+    <section
+      aria-label="The foundry"
+      className={cn("flex min-h-0 flex-col bg-[color:var(--ops-panel)]", className)}
+    >
+      <header className="panel-head flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-2.5">
+        <div className="min-w-0">
+          <h2 className="ops-panel-title text-foreground">Capabilities</h2>
+          <p className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-muted-foreground">
+            {installApproval
+              ? "Install requires your approval — review the card below."
+              : showConsole
+                ? `Live build · ${build!.slug}`
+                : "Tools Nala can use on this assignment."}
+          </p>
+        </div>
+        {badgeLabel ? (
+          <Badge variant="outline" data-foundry-badge className="shrink-0">
             {badgeLabel}
           </Badge>
-        ) : null
-      }
-      className={cn("h-full", className)}
-      bodyClassName="relative flex flex-col p-0"
-    >
-      {state.status === "paused" ? (
-        <div
-          className="border-b border-border/80 bg-muted/30 px-5 py-2 text-xs text-muted-foreground"
-          data-foundry-paused
-        >
-          Run paused — resume from the assignment bar.
-        </div>
-      ) : null}
+        ) : null}
+      </header>
 
-      <div
-        className={cn(
-          "relative flex min-h-0 flex-1 flex-col p-5 transition-[filter,opacity] duration-[var(--dur-base)] ease-[var(--ease-out)]",
-          showApproval && "pointer-events-none opacity-40",
-          state.status === "paused" && !showApproval && "opacity-70 saturate-[0.7]",
-        )}
-        data-foundry-mode={
-          showApproval ? "approval" : showConsole ? "console" : "toolbelt"
-        }
-        aria-hidden={showApproval || undefined}
-      >
-        {showConsole && build ? (
-          <BuildConsole
-            build={build}
-            {...(buildingCap ? { capability: buildingCap } : {})}
+      {/* ONE scroll region: toolbelt / console / inline install card */}
+      <div className="panel-body space-y-3 p-3" data-foundry-mode={installApproval ? "approval" : showConsole ? "console" : "toolbelt"}>
+        {state.status === "paused" ? (
+          <p className="rounded-lg bg-muted/40 px-3 py-2 text-[12px] text-muted-foreground">
+            Run paused — resume from the chat header.
+          </p>
+        ) : null}
+
+        {installApproval ? (
+          <CapabilityInstallApproval
+            approval={installApproval}
+            capability={
+              buildingCap ??
+              Object.values(state.capabilities).find((c) => c.state === "awaiting_approval") ??
+              null
+            }
+            onApprove={() => onApprove?.(installApproval.id)}
+            onDeny={() => onDeny?.(installApproval.id)}
+            className="w-full max-w-none"
           />
+        ) : null}
+
+        {showConsole && build ? (
+          <BuildConsole build={build} {...(buildingCap ? { capability: buildingCap } : {})} />
         ) : (
           <CapabilityToolbelt
             capabilities={capabilities}
@@ -143,27 +123,6 @@ export function FoundryPanel({
           />
         )}
       </div>
-
-      {showApproval && installApproval ? (
-        <div
-          className="absolute inset-0 z-20 flex flex-col overflow-auto bg-background/10 p-4 sm:p-5"
-          data-foundry-approval-layer
-        >
-          <CapabilityInstallApproval
-            approval={installApproval}
-            capability={
-              buildingCap ??
-              Object.values(state.capabilities).find(
-                (c) => c.state === "awaiting_approval",
-              ) ??
-              null
-            }
-            onApprove={() => onApprove?.(installApproval.id)}
-            onDeny={() => onDeny?.(installApproval.id)}
-            className="mx-auto my-auto w-full max-w-xl scale-100 opacity-100 transition-[opacity,transform] duration-[var(--dur-base)] ease-[var(--ease-out)] motion-reduce:transition-none"
-          />
-        </div>
-      ) : null}
-    </WorkspacePanel>
+    </section>
   );
 }

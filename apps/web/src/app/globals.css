@@ -19,10 +19,12 @@
     min-width: 320px;
     min-height: 100dvh;
     overflow-x: hidden;
-    background-image:
-      linear-gradient(oklch(0.72 0.15 255 / 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(0.72 0.15 255 / 0.035) 1px, transparent 1px);
-    background-size: 48px 48px;
+  }
+
+  /* Dextwork shell owns the viewport — body must not scroll under the grid */
+  html:has([data-dextwork-shell]) body {
+    overflow: hidden;
+    height: 100dvh;
   }
 
   ::selection {
@@ -65,47 +67,19 @@
     background-repeat: repeat-y, no-repeat;
   }
 
-  .cockpit-grid {
-    display: grid;
-    grid-template-columns: minmax(380px, 0.62fr) minmax(560px, 1fr);
-    grid-template-rows: 64px minmax(0, 1fr) auto;
-    grid-template-areas:
-      "bar bar"
-      "conversation right"
-      "dock dock";
-    min-height: 100dvh;
-    overflow: hidden;
-  }
-
-  .cockpit-bar {
-    grid-area: bar;
-  }
-
-  .cockpit-conversation {
-    grid-area: conversation;
-    min-height: 0;
-  }
-
-  .cockpit-right {
-    grid-area: right;
-    display: grid;
-    grid-template-rows: minmax(240px, 0.46fr) minmax(280px, 0.54fr);
-    min-height: 0;
-  }
-
-  .cockpit-dock {
-    grid-area: dock;
-  }
-
-  @media (max-width: 1023px) {
-    .cockpit-grid {
-      display: block;
-      min-height: 100dvh;
-      overflow: visible;
-    }
-
-    .cockpit-desktop {
-      display: none;
-    }
-  }
+  /* ---------------------------------------------------------------------
+   * The cockpit grid used to be duplicated here, inside `@layer utilities`.
+   * It was DEAD CODE that merely looked authoritative: unlayered
+   * declarations beat layered ones, so the copy in styles/tokens.css always
+   * won and edits made here silently did nothing.
+   *
+   * Worse, the two copies had drifted — this one omitted `overflow: hidden`
+   * on .cockpit-conversation / .cockpit-right and used `min-height` where
+   * tokens.css used `height`. Anyone debugging the panel-overlap bug would
+   * have read this block, "fixed" it, and seen no change.
+   *
+   * The cockpit grid now lives in exactly ONE place:
+   *     apps/web/src/styles/tokens.css
+   * imported at the top of this file. Do not redefine it here.
+   * ------------------------------------------------------------------- */
 }

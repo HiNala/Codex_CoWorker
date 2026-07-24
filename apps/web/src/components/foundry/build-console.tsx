@@ -5,11 +5,7 @@ import { CapabilityStateBadge, CapabilityTile } from "@forge/ui";
 import type { BuildConsoleVM, CapabilityTileVM } from "@/hooks/run-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { GateRow } from "./gate-row";
 
@@ -53,9 +49,7 @@ export function BuildConsole({ build, capability, className }: BuildConsoleProps
             state={capability.state}
             {...(capability.progress ? { progress: capability.progress } : {})}
             {...(capability.version ? { version: capability.version } : {})}
-            {...(capability.failingGate
-              ? { failingGate: capability.failingGate }
-              : {})}
+            {...(capability.failingGate ? { failingGate: capability.failingGate } : {})}
           />
         ) : (
           <div className="rounded-[var(--radius-md)] border border-dashed border-border p-3.5">
@@ -79,14 +73,8 @@ export function BuildConsole({ build, capability, className }: BuildConsoleProps
         <div className="space-y-1 px-0.5">
           <p className="truncate font-mono text-[11px] text-muted-foreground">{build.slug}</p>
           <p className="text-xs text-muted-foreground">
-            Attempt{" "}
-            <span className="font-mono tabular-nums text-foreground">
-              {build.attempt}
-            </span>{" "}
-            of{" "}
-            <span className="font-mono tabular-nums text-foreground">
-              {build.maxAttempts}
-            </span>
+            Attempt <span className="font-mono tabular-nums text-foreground">{build.attempt}</span>{" "}
+            of <span className="font-mono tabular-nums text-foreground">{build.maxAttempts}</span>
           </p>
           {build.status === "repairing" ? (
             <p className="text-xs text-[color:var(--status-repairing)]">
@@ -148,17 +136,13 @@ export function BuildConsole({ build, capability, className }: BuildConsoleProps
           </div>
           <CollapsibleContent className="mt-2">
             {showingLast ? (
-              <p className="mb-1.5 text-[11px] text-muted-foreground">
-                Showing last 500 lines
-              </p>
+              <p className="mb-1.5 text-[11px] text-muted-foreground">Showing last 500 lines</p>
             ) : null}
             <pre
               className="max-h-48 overflow-auto rounded-md border border-border/80 bg-muted/30 p-3 font-mono text-[11px] leading-5 text-muted-foreground"
               data-build-output
             >
-              {lines.length === 0
-                ? "No sanitised Codex output yet."
-                : lines.join("\n")}
+              {lines.length === 0 ? "No sanitised Codex output yet." : lines.join("\n")}
             </pre>
           </CollapsibleContent>
         </Collapsible>

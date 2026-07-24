@@ -39,54 +39,64 @@
   --color-evidence-secondary: var(--evidence-secondary);
   --color-evidence-untrusted: var(--evidence-untrusted);
 
-  --radius-sm: 0.625rem;
-  --radius-md: 0.875rem;
-  --radius-lg: 1.125rem;
-  --radius-xl: 1.5rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
 
-  --shadow-panel: 0 1px 0 0 var(--border), 0 8px 32px -12px oklch(0 0 0 / 0.5);
-  --shadow-lift: 0 2px 8px -2px oklch(0 0 0 / 0.4), 0 12px 40px -12px oklch(0 0 0 / 0.55);
+  --shadow-panel: 0 1px 0 0 var(--border);
+  --shadow-lift: 0 2px 8px -2px rgb(0 0 0 / 0.45);
 }
 
+/* Light retained for toggle completeness; ops console ships dark. */
 :root {
-  --background: oklch(0.985 0.004 100);
-  --foreground: oklch(0.14 0.006 270);
-  --card: oklch(1 0 0);
-  --card-foreground: var(--foreground);
-  --popover: var(--card);
-  --popover-foreground: var(--foreground);
-  --primary: oklch(0.48 0.19 285);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0.006 270);
-  --secondary-foreground: var(--foreground);
-  --muted: oklch(0.95 0.006 270);
-  /* 0.42 meets WCAG AA on --background (verified by packages/ui contrast tests) */
-  --muted-foreground: oklch(0.42 0.01 270);
-  --accent: oklch(0.93 0.03 285);
-  --accent-foreground: oklch(0.28 0.12 285);
-  --destructive: oklch(0.58 0.2 25);
-  --border: oklch(0.89 0.006 270);
-  --input: var(--border);
-  --ring: oklch(0.52 0.16 255);
+  --background: #f3f6fa;
+  --foreground: #090c11;
+  --card: #ffffff;
+  --card-foreground: #090c11;
+  --popover: #ffffff;
+  --popover-foreground: #090c11;
+  --primary: #2563eb;
+  --primary-foreground: #f3f6fa;
+  --secondary: #e8edf4;
+  --secondary-foreground: #090c11;
+  --muted: #e8edf4;
+  --muted-foreground: #5a6573;
+  --accent: #dbeafe;
+  --accent-foreground: #0c1a2e;
+  --destructive: #dc2626;
+  --border: #d0d7e2;
+  --input: #d0d7e2;
+  --ring: #64a8ff;
 
-  --status-idle: oklch(0.5 0.01 270);
-  --status-active: oklch(0.52 0.16 255);
-  --status-building: oklch(0.54 0.18 285);
-  --status-testing: oklch(0.5 0.13 195);
-  --status-repairing: oklch(0.57 0.14 75);
-  --status-success: oklch(0.5 0.14 150);
-  --status-warning: oklch(0.58 0.14 85);
-  --status-danger: oklch(0.58 0.19 25);
+  --status-idle: #5a6573;
+  --status-active: #2563eb;
+  --status-building: #6366f1;
+  --status-testing: #0891b2;
+  --status-repairing: #d97706;
+  --status-success: #16a34a;
+  --status-warning: #d97706;
+  --status-danger: #dc2626;
 
-  --capability-connection: oklch(0.52 0.13 220);
-  --capability-skill: oklch(0.5 0.16 285);
-  --capability-workflow: oklch(0.48 0.13 160);
+  --capability-connection: #0284c7;
+  --capability-skill: #6366f1;
+  --capability-workflow: #059669;
 
-  --evidence-official: oklch(0.48 0.14 150);
-  --evidence-secondary: oklch(0.48 0.08 250);
-  --evidence-untrusted: oklch(0.52 0.13 60);
+  --evidence-official: #16a34a;
+  --evidence-secondary: #64748b;
+  --evidence-untrusted: #ca8a04;
 
-  /* Motion — 19-PACK */
+  --ops-ink: #090c11;
+  --ops-panel: #ffffff;
+  --ops-raised: #e8edf4;
+  --ops-signal: #2563eb;
+  --ops-amber: #d97706;
+  --ops-success: #16a34a;
+
+  --type-title: 1.5rem; /* 24 */
+  --type-panel: 1.125rem; /* 18 */
+  --type-body: 0.875rem; /* 14 */
+
   --dur-instant: 90ms;
   --dur-quick: 160ms;
   --dur-base: 240ms;
@@ -95,44 +105,56 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
   --ease-soft: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --header-h: 64px;
+  --dock-h: 210px;
+  --phase-h: 40px;
 }
 
+/* Precision operations console — deep ink default */
 .dark {
-  --background: oklch(0.095 0.004 270);
-  --foreground: oklch(0.975 0.003 100);
-  --card: oklch(0.135 0.006 270);
-  --card-foreground: var(--foreground);
-  --popover: oklch(0.155 0.008 270);
-  --popover-foreground: var(--foreground);
-  --primary: oklch(0.72 0.15 255);
-  --primary-foreground: oklch(0.11 0.02 265);
-  --secondary: oklch(0.18 0.006 270);
-  --secondary-foreground: var(--foreground);
-  --muted: oklch(0.18 0.006 270);
-  --muted-foreground: oklch(0.7 0.008 270);
-  --accent: oklch(0.68 0.19 285);
-  --accent-foreground: oklch(0.99 0 0);
-  --destructive: oklch(0.68 0.19 25);
-  --border: oklch(0.24 0.008 270);
-  --input: oklch(0.21 0.008 270);
-  --ring: oklch(0.72 0.15 255);
+  --background: #090c11;
+  --foreground: #f3f6fa;
+  --card: #111722;
+  --card-foreground: #f3f6fa;
+  --popover: #182131;
+  --popover-foreground: #f3f6fa;
+  --primary: #64a8ff;
+  --primary-foreground: #090c11;
+  --secondary: #182131;
+  --secondary-foreground: #f3f6fa;
+  --muted: #182131;
+  --muted-foreground: #9aa7b8;
+  --accent: #1a2740;
+  --accent-foreground: #f3f6fa;
+  --destructive: #f87171;
+  --border: #243044;
+  --input: #243044;
+  --ring: #64a8ff;
 
-  --status-idle: oklch(0.62 0.01 270);
-  --status-active: oklch(0.72 0.15 255);
-  --status-building: oklch(0.76 0.15 285);
-  --status-testing: oklch(0.8 0.14 195);
-  --status-repairing: oklch(0.78 0.15 75);
-  --status-success: oklch(0.76 0.16 150);
-  --status-warning: oklch(0.8 0.15 85);
-  --status-danger: oklch(0.68 0.19 25);
+  --status-idle: #9aa7b8;
+  --status-active: #64a8ff;
+  --status-building: #8b9cff;
+  --status-testing: #5ec8e0;
+  --status-repairing: #f4b740;
+  --status-success: #52d38b;
+  --status-warning: #f4b740;
+  --status-danger: #f87171;
 
-  --capability-connection: oklch(0.72 0.13 220);
-  --capability-skill: oklch(0.74 0.15 285);
-  --capability-workflow: oklch(0.76 0.14 160);
+  --capability-connection: #64a8ff;
+  --capability-skill: #8b9cff;
+  --capability-workflow: #52d38b;
 
-  --evidence-official: oklch(0.76 0.15 150);
-  --evidence-secondary: oklch(0.72 0.08 250);
-  --evidence-untrusted: oklch(0.76 0.14 60);
+  --evidence-official: #52d38b;
+  --evidence-secondary: #9aa7b8;
+  --evidence-untrusted: #f4b740;
+
+  --ops-ink: #090c11;
+  --ops-panel: #111722;
+  --ops-raised: #182131;
+  --ops-signal: #64a8ff;
+  --ops-amber: #f4b740;
+  --ops-success: #52d38b;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -145,55 +167,153 @@
   }
 }
 
-/* Cockpit grid — Track D foundation. min-height:0 on every scroll child. */
+/*
+ * Dextwork desktop shell — three columns, full viewport.
+ * 76px rail | dominant chat | right task/capabilities (clamp 480–720).
+ * Body never scrolls. Each content region: exactly one .panel-body scroll.
+ * Children of flex/grid tracks MUST have min-height:0 + overflow:hidden
+ * or content size becomes the min and panels paint over each other.
+ */
 .cockpit,
 .cockpit-grid {
   display: grid;
-  grid-template-columns: minmax(380px, 0.62fr) minmax(560px, 1fr);
-  grid-template-rows: 64px minmax(0, 1fr) auto;
-  grid-template-areas:
-    "bar bar"
-    "conversation right"
-    "dock dock";
+  grid-template-columns: 76px minmax(560px, 1fr) clamp(480px, 38vw, 720px);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "sidebar chat rail";
   height: 100dvh;
+  max-height: 100dvh;
+  width: 100%;
   overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
 }
 
-.cockpit-bar {
-  grid-area: bar;
+.cockpit-sidebar {
+  grid-area: sidebar;
   min-height: 0;
-}
-
-.cockpit-conversation {
-  grid-area: conversation;
-  min-height: 0;
+  min-width: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: var(--ops-ink);
 }
 
-.cockpit-right {
-  grid-area: right;
+.cockpit-chat {
+  grid-area: chat;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--ops-panel);
+  border-right: 1px solid var(--border);
+}
+
+.cockpit-rail {
+  grid-area: rail;
   display: grid;
-  grid-template-rows: minmax(240px, 0.46fr) minmax(280px, 0.54fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   min-height: 0;
+  min-width: 0;
   overflow: hidden;
+  background: var(--ops-panel);
 }
 
-.cockpit-dock {
-  grid-area: dock;
+/* Defeat content-size auto-min so tracks scroll instead of overflow. */
+.cockpit-chat > *,
+.cockpit-rail > * {
   min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-@media (max-width: 1023px) {
+.cockpit-rail > * + * {
+  border-top: 1px solid var(--border);
+}
+
+.panel-head {
+  flex: 0 0 auto;
+  z-index: 2;
+  background: var(--ops-panel);
+}
+
+.panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.panel-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.panel-body::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 999px;
+}
+
+/* Type hierarchy 24 / 18 / 14 */
+.ops-title {
+  font-size: var(--type-title);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.ops-panel-title {
+  font-size: var(--type-panel);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.ops-body {
+  font-size: var(--type-body);
+  line-height: 1.5;
+}
+
+.ops-mono {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 1279px) {
+  .cockpit,
+  .cockpit-grid {
+    grid-template-columns: 76px minmax(0, 1fr);
+    grid-template-areas: "sidebar chat";
+  }
+
+  .cockpit-rail {
+    display: none;
+  }
+
+  .cockpit-desktop-rail-tabs {
+    display: flex;
+  }
+}
+
+@media (max-width: 900px) {
   .cockpit,
   .cockpit-grid {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
-    grid-template-areas:
-      "bar"
-      "panel";
+    grid-template-areas: "chat";
     height: auto;
     min-height: 100dvh;
     overflow: visible;
+  }
+
+  .cockpit-sidebar {
+    display: none;
   }
 
   .cockpit-desktop {

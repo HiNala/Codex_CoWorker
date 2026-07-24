@@ -31,8 +31,7 @@ export function MilestoneHeader({
   const ordered = [...milestones].sort((a, b) => a.ordinal - b.ordinal);
   const activeIdx = ordered.findIndex((m) => m.status === "active");
   const pendingIdx = ordered.findIndex((m) => m.status === "pending");
-  const displayIdx =
-    activeIdx >= 0 ? activeIdx : pendingIdx >= 0 ? pendingIdx : ordered.length - 1;
+  const displayIdx = activeIdx >= 0 ? activeIdx : pendingIdx >= 0 ? pendingIdx : ordered.length - 1;
   const current = ordered[displayIdx] ?? ordered[0];
   const total = ordered.length;
 
@@ -45,9 +44,7 @@ export function MilestoneHeader({
               <>
                 Milestone {current.ordinal} of {total || "—"}
                 {" · "}
-                <span className="text-foreground">
-                  {activeTitle ?? current.title}
-                </span>
+                <span className="text-foreground">{activeTitle ?? current.title}</span>
               </>
             ) : (
               "No milestones yet"
@@ -57,11 +54,7 @@ export function MilestoneHeader({
       </div>
 
       {ordered.length > 0 ? (
-        <div
-          className="mt-2.5 flex h-1.5 gap-1"
-          role="list"
-          aria-label="Milestone progress"
-        >
+        <div className="mt-2.5 flex h-1.5 gap-1" role="list" aria-label="Milestone progress">
           {ordered.map((m) => (
             <span
               key={m.id}

@@ -44,11 +44,11 @@ function ev(
   };
 }
 
-/** Scripted golden-path events for the broken checkout demo (static fixture). */
+/** Scripted golden-path events — Broken Checkout (default demo, not webhook rename). */
 export function buildDemoEvents(): RunEvent[] {
   return [
     ev(1, "run.started", "system", "Run started", {
-      detail: { title: "Webhook field rename incident" },
+      detail: { title: "Broken Checkout" },
     }),
     ev(2, "cost.reserved", "cost", "Reserved work ceiling", {
       detail: { ceiling: 8_000_000, microcredits: 8_000_000 },
@@ -56,26 +56,26 @@ export function buildDemoEvents(): RunEvent[] {
     }),
     ev(3, "user.message", "narrative", "User assignment", {
       detail: {
-        text: "Find out why customers cannot buy the annual plan and prepare a verified fix.",
+        text: "Customers cannot complete annual plan checkout. Find the root cause, measure impact, and prepare a verified fix.",
       },
     }),
     ev(4, "coworker.message", "narrative", "Contract drafted", {
       detail: {
-        text: "I drafted a bounded contract: cluster tickets, map customer impact, build an API-change impact analyzer if needed, and produce a verified code change with an incident report.",
+        text: "I drafted a bounded contract: cluster support tickets, reproduce the annual checkout failure, map affected customers, and deliver a verified code change with an incident report.",
       },
     }),
     ev(5, "plan.approved", "plan", "Plan approved", {
       detail: {
-        title: "Webhook field rename incident",
+        title: "Broken Checkout",
         milestones: [
           { id: M1, ordinal: 1, title: "Establish root cause", status: "completed" },
-          { id: M2, ordinal: 2, title: "Determine customer impact", status: "active" },
+          { id: M2, ordinal: 2, title: "Measure impact and fix", status: "active" },
         ],
         steps: [
           {
             id: S1,
             milestoneId: M1,
-            title: "Retrieve current webhook documentation",
+            title: "Collect support evidence",
             status: "completed",
             dependsOn: [],
             capabilityRefs: [],
@@ -86,7 +86,7 @@ export function buildDemoEvents(): RunEvent[] {
           {
             id: S2,
             milestoneId: M1,
-            title: "Cluster 47 tickets by root cause",
+            title: "Reproduce annual checkout failure",
             status: "completed",
             dependsOn: [S1],
             capabilityRefs: [],
@@ -97,7 +97,7 @@ export function buildDemoEvents(): RunEvent[] {
           {
             id: S3,
             milestoneId: M2,
-            title: "Analyse API change against consumer code",
+            title: "Analyse checkout error logs",
             status: "running",
             dependsOn: [S2],
             capabilityRefs: [CAP],
@@ -111,16 +111,16 @@ export function buildDemoEvents(): RunEvent[] {
             status: "pending",
             dependsOn: [S3],
             capabilityRefs: [],
-            artifactIds: [],
+            artifactIds: [ART2],
           },
           {
             id: S5,
             milestoneId: M2,
-            title: "Draft incident report",
+            title: "Prepare and verify the fix",
             status: "pending",
             dependsOn: [S4],
             capabilityRefs: [],
-            artifactIds: [ART1],
+            artifactIds: [ART1, ART3],
           },
         ],
       },
@@ -137,51 +137,51 @@ export function buildDemoEvents(): RunEvent[] {
       refs: { artifactId: ART3 },
       detail: { title: "Code change", type: "code.diff" },
     }),
-    ev(9, "step.started", "plan", "Analyse API change", {
+    ev(9, "step.started", "plan", "Analyse checkout error logs", {
       refs: { stepId: S3, milestoneId: M2 },
     }),
     ev(10, "trace.observed", "trace", "Ticket pattern", {
       refs: { stepId: S3 },
       detail: {
-        text: "47 of 61 tickets mention payment_intent.metadata.customer_ref after the rename.",
+        text: "12 of 18 recent tickets fail on annual plan with the same checkout signature.",
       },
     }),
-    ev(11, "trace.decided", "trace", "Cluster first", {
+    ev(11, "trace.decided", "trace", "Reproduce first", {
       refs: { stepId: S3 },
       detail: {
-        text: "Cluster before mapping — the mapper needs stable cluster ids.",
+        text: "Reproduce in staging before mapping customers — need a stable error code.",
       },
     }),
-    ev(12, "trace.considered", "trace", "Rejected direct search", {
+    ev(12, "trace.considered", "trace", "Rejected generic retry", {
       refs: { stepId: S3 },
       detail: {
-        text: "Direct string search, rejected: misses aliased access paths.",
+        text: "Client-side retry alone rejected: failure is server-side on plan period validation.",
       },
     }),
-    ev(13, "research.evidence", "trace", "Webhook docs", {
+    ev(13, "research.evidence", "trace", "Checkout docs", {
       detail: {
-        domain: "developer.zendesk.com",
-        title: "Webhook payload reference — 2026-07-01",
+        domain: "docs.stripe.com",
+        title: "Subscription period and proration — 2026-07",
         trust: "official",
       },
     }),
-    ev(14, "capability.gap_detected", "capability", "Gap: impact analyzer", {
+    ev(14, "capability.gap_detected", "capability", "Gap: checkout log analyzer", {
       refs: { capabilityId: CAP },
       detail: {
-        name: "API change impact analyzer",
-        slug: "api-change-impact-analyzer",
+        name: "Checkout error log analyzer",
+        slug: "checkout-error-log-analyzer",
         kind: "skill",
         reason:
-          "No installed skill can resolve nested/aliased field renames across consumer call sites.",
+          "No installed skill can correlate checkout error codes with annual-plan period edge cases.",
       },
     }),
     ev(15, "capability.spec_written", "capability", "Spec written", {
       refs: { capabilityId: CAP },
-      detail: { name: "API change impact analyzer", slug: "api-change-impact-analyzer" },
+      detail: { name: "Checkout error log analyzer", slug: "checkout-error-log-analyzer" },
     }),
     ev(16, "capability.build_started", "capability", "Build started", {
       refs: { capabilityId: CAP },
-      detail: { attempt: 1, maxAttempts: 2, slug: "api-change-impact-analyzer" },
+      detail: { attempt: 1, maxAttempts: 2, slug: "checkout-error-log-analyzer" },
     }),
     ev(17, "capability.gate_started", "capability", "manifest", {
       refs: { capabilityId: CAP },
@@ -212,7 +212,7 @@ export function buildDemoEvents(): RunEvent[] {
         durationMs: 1800,
         passed: 7,
         total: 8,
-        message: "nested field rename not detected in payment_intent.metadata.customer_ref",
+        message: "annual plan period edge case not detected in checkout.session.completed handler",
       },
     }),
     ev(23, "capability.repair_started", "capability", "Repair attempt 1", {
@@ -230,20 +230,20 @@ export function buildDemoEvents(): RunEvent[] {
     ev(26, "capability.approval_requested", "capability", "Install approval", {
       refs: { capabilityId: CAP, approvalId: APPROVAL },
       detail: {
-        name: "API change impact analyzer",
-        version: "1.1.0",
-        slug: "api-change-impact-analyzer",
+        name: "Checkout error log analyzer",
+        version: "1.0.0",
+        slug: "checkout-error-log-analyzer",
       },
     }),
     ev(27, "approval.requested", "approval", "Approve capability install", {
       refs: { approvalId: APPROVAL, capabilityId: CAP },
       detail: {
-        title: "Install API change impact analyzer",
+        title: "Install checkout error log analyzer",
         summary:
-          "Given an API change and consumer samples, finds every call site that breaks, including aliased and nested access.",
+          "Given checkout error logs and plan metadata, finds annual-plan period failures and groups them by root cause.",
         risk: "capability_install",
         payloadPreview:
-          "permissions: no network · no filesystem · no credentials\nfiles: src/index.ts +148, src/lib/resolve.ts +72, tests/unit.test.ts +94\nverification: 12/12 gates · 14/14 tests · 1 repair",
+          "permissions: no network · no filesystem · no credentials\nfiles: src/index.ts +120, src/lib/period.ts +64, tests/unit.test.ts +80\nverification: 12/12 gates · 14/14 tests · 1 repair",
       },
     }),
     ev(28, "cost.consumed", "cost", "Build cost", {
@@ -260,12 +260,11 @@ export function buildDemoRunState(): RunState {
   let state: RunState = {
     ...initialRunState,
     connected: true,
-    title: "Webhook field rename incident",
+    title: "Broken Checkout",
   };
   for (const event of buildDemoEvents()) {
     state = runReducer(state, { type: "event", event } satisfies RunAction);
   }
-  // Seed a few installed toolbelt tiles for idle contrast
   state = {
     ...state,
     capabilities: {
@@ -279,7 +278,7 @@ export function buildDemoRunState(): RunState {
       },
       "01900000-0000-7000-8000-000000000052": {
         id: "01900000-0000-7000-8000-000000000052",
-        name: "Zendesk connection",
+        name: "Support connection",
         kind: "connection",
         state: "active",
         version: "2.0.0",

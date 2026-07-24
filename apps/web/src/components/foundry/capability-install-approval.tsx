@@ -39,14 +39,20 @@ function parseInstallPreview(raw: string): ParsedInstallPreview {
     const lower = line.toLowerCase();
     if (lower.startsWith("permissions:")) {
       const rest = line.slice("permissions:".length).trim();
-      for (const part of rest.split(/[·•|,]/).map((p) => p.trim()).filter(Boolean)) {
+      for (const part of rest
+        .split(/[·•|,]/)
+        .map((p) => p.trim())
+        .filter(Boolean)) {
         permissions.push(part);
       }
       continue;
     }
     if (lower.startsWith("files:")) {
       const rest = line.slice("files:".length).trim();
-      for (const part of rest.split(",").map((p) => p.trim()).filter(Boolean)) {
+      for (const part of rest
+        .split(",")
+        .map((p) => p.trim())
+        .filter(Boolean)) {
         const m = part.match(/^(\S+)\s+\+(\d+)(?:\s+−(\d+)|\s+-(\d+))?$/u);
         if (m?.[1] != null && m[2] != null) {
           files.push({
@@ -86,9 +92,8 @@ function parseInstallPreview(raw: string): ParsedInstallPreview {
 }
 
 /**
- * Takes over the foundry panel for capability_install approvals.
- * Uses PressAndHold (600ms ring) for mouse; keyboard is two-step confirm.
- * Pattern mirrors ApprovalCard: purpose, permissions, changes, verification, hold-to-approve.
+ * Inline capability install card (never a modal overlay).
+ * PressAndHold for pointer; keyboard two-step confirm.
  */
 export function CapabilityInstallApproval({
   approval,
@@ -103,27 +108,23 @@ export function CapabilityInstallApproval({
 
   return (
     <div
-      role="dialog"
-      aria-modal="true"
+      role="region"
       aria-labelledby="capability-install-title"
       className={cn(
-        "relative z-10 flex min-h-0 flex-1 flex-col overflow-auto rounded-[var(--radius-md)] border border-border bg-card p-5 shadow-lg",
-        "origin-center scale-100 opacity-100 transition-[opacity,transform] duration-[var(--dur-base)] ease-[var(--ease-out)] motion-reduce:transition-none",
+        "flex min-h-0 w-full flex-col rounded-xl border border-border bg-[color:var(--ops-raised)] p-4",
         className,
       )}
       data-approval-id={approval.id}
       data-approval-risk={approval.risk}
       data-capability-install
+      data-inline-install
     >
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border/80 pb-4">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             Install a new capability
           </p>
-          <h3
-            id="capability-install-title"
-            className="mt-1 text-base font-semibold tracking-tight"
-          >
+          <h3 id="capability-install-title" className="mt-1 text-base font-semibold tracking-tight">
             {approval.title}
           </h3>
         </div>
@@ -167,10 +168,7 @@ export function CapabilityInstallApproval({
             </h4>
             <ul className="mt-2 space-y-1 font-mono text-xs tabular-nums" data-file-changes>
               {parsed.files.map((f) => (
-                <li
-                  key={f.path}
-                  className="grid grid-cols-[1fr_auto] gap-3 text-muted-foreground"
-                >
+                <li key={f.path} className="grid grid-cols-[1fr_auto] gap-3 text-muted-foreground">
                   <span className="truncate text-foreground/80">{f.path}</span>
                   <span>
                     {f.additions != null ? (
@@ -232,9 +230,7 @@ export function CapabilityInstallApproval({
           )}
         </dl>
 
-        {approval.payloadPreview &&
-        !parsed.verification &&
-        parsed.files.length === 0 ? (
+        {approval.payloadPreview && !parsed.verification && parsed.files.length === 0 ? (
           <pre className="overflow-auto rounded-md border border-border/80 bg-muted/30 p-3 font-mono text-[11px] leading-5 text-muted-foreground whitespace-pre-wrap">
             {approval.payloadPreview}
           </pre>

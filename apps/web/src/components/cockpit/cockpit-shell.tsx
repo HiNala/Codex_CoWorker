@@ -6,19 +6,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConversationPanel } from "@/components/conversation/conversation-panel";
 import { MissionControl } from "@/components/plan/mission-control";
 import { FoundryPanel } from "@/components/foundry/foundry-panel";
-import { ArtifactDock } from "@/components/dock/artifact-dock";
 import { useRunStream } from "@/hooks/use-run-stream";
 import type { RunState } from "@/hooks/run-state";
-import { AssignmentBar } from "./assignment-bar";
+import { DextworkSidebar } from "./dextwork-sidebar";
 
 export interface CockpitShellProps {
   assignmentId: string;
-  /** When true (default), hydrate from demo fixture — no live SSE required. */
+  /**
+   * Live SSE is the default (useDemoFixture=false) so the cockpit paints
+   * Cael's persisted run events. Opt into fixture only for offline UI demos.
+   */
   useDemoFixture?: boolean;
-  /** Override panels if a track needs a custom slot. */
+  /** Optional explicit run id; otherwise demo seed maps assignment → run. */
+  runId?: string;
   conversation?: ReactNode | ((state: RunState) => ReactNode);
   missionControl?: ReactNode | ((state: RunState) => ReactNode);
   foundry?: ReactNode | ((state: RunState) => ReactNode);
+  /** @deprecated bottom dock removed — outputs live in chat */
   dock?: ReactNode | ((state: RunState) => ReactNode);
   onPause?: () => void;
 }
@@ -33,122 +37,121 @@ function resolveSlot(
 }
 
 /**
- * Cockpit layout shell. Owns the grid, assignment bar, run-stream hydrate,
- * and wires Track D panel surfaces (conversation, plan, foundry, dock).
+ * Dextwork desktop shell: 76px sidebar | dominant chat | task+capabilities rail.
+ * One scroll per region; body never scrolls; no full-width output dock.
  */
 export function CockpitShell({
   assignmentId,
-  useDemoFixture = true,
+  useDemoFixture = false,
+  runId,
   conversation,
   missionControl,
   foundry,
-  dock,
   onPause,
 }: CockpitShellProps) {
-  const state = useRunStream(assignmentId, { useDemoFixture });
-  const [dockCollapsed, setDockCollapsed] = useState(false);
-  const [hoveredStepId, setHoveredStepId] = useState<string | null>(null);
+  // IT RUNS criterion 3: paint live SSE (Cael), not the static fixture.
+  const state = useRunStream(assignmentId, {
+    useDemoFixture,
+    ...(runId ? { runId } : {}),
+  });
+  const [railTab, setRailTab] = useState<"plan" | "foundry">("plan");
 
   const onApprove = useCallback((approvalId: string) => {
-    // Live path: POST approval via Track A. Demo stream is static.
     void approvalId;
   }, []);
   const onDeny = useCallback((approvalId: string) => {
-    // Live path: POST denial via Track A.
     void approvalId;
   }, []);
 
   const defaultConversation = (
-    <ConversationPanel state={state} onApprove={onApprove} onDeny={onDeny} />
-  );
-  const defaultMission = <MissionControl state={state} onStepHover={setHoveredStepId} />;
-  const defaultFoundry = <FoundryPanel state={state} onApprove={onApprove} onDeny={onDeny} />;
-  const artifacts = Object.values(state.artifacts);
-  const dockHighlightClass = hoveredStepId
-    ? "[&_[data-artifact-card]]:opacity-50 data-[related=true]:opacity-100"
-    : undefined;
-  const defaultDock = (
-    <ArtifactDock
-      artifacts={artifacts}
-      collapsed={dockCollapsed}
-      onCollapsedChange={setDockCollapsed}
-      onOpenArtifact={() => {
-        /* Track E canvas owns open */
-      }}
-      {...(dockHighlightClass ? { className: dockHighlightClass } : {})}
+    <ConversationPanel
+      state={state}
+      onApprove={onApprove}
+      onDeny={onDeny}
+      assignmentId={assignmentId}
+      onPause={onPause}
     />
   );
+  const defaultMission = <MissionControl state={state} />;
+  const defaultFoundry = <FoundryPanel state={state} onApprove={onApprove} onDeny={onDeny} />;
 
   const conversationNode = resolveSlot(conversation, state, defaultConversation);
   const missionNode = resolveSlot(missionControl, state, defaultMission);
   const foundryNode = resolveSlot(foundry, state, defaultFoundry);
-  const dockNode = resolveSlot(dock, state, defaultDock);
-
-  const tabBadge = (count: number) =>
-    count > 0 ? (
-      <span className="ms-1 inline-flex min-w-4 justify-center rounded-full bg-muted px-1 text-[10px] tabular-nums">
-        {count}
-      </span>
-    ) : null;
 
   const pendingApprovals = state.approvals.filter((a) => a.status === "pending").length;
-  const readyArtifacts = artifacts.filter(
-    (a) => a.status === "ready" || a.status === "published",
-  ).length;
 
   return (
     <>
       <LiveRegion message={state.announcement} />
-      <div className="cockpit-grid cockpit-desktop">
-        <AssignmentBar
-          assignmentId={assignmentId}
-          state={state}
-          {...(onPause ? { onPause } : {})}
-        />
-        <div className="cockpit-conversation min-h-0 border-e border-border">
-          {conversationNode}
-        </div>
-        <div className="cockpit-right min-h-0">
+      <div
+        className="cockpit-grid cockpit-desktop"
+        data-dextwork-shell
+        data-ops-console
+        data-use-demo-fixture={useDemoFixture ? "true" : "false"}
+        data-last-seq={state.lastSeq}
+        data-connected={state.connected ? "true" : "false"}
+        data-timeline-count={state.timeline.length}
+      >
+        <DextworkSidebar runTitle={state.title} runStatus={state.status} />
+        <div className="cockpit-chat">{conversationNode}</div>
+        <div className="cockpit-rail">
           {missionNode}
           {foundryNode}
         </div>
-        <div className="cockpit-dock">{dockNode}</div>
       </div>
 
-      <div className="lg:hidden">
-        <AssignmentBar
-          assignmentId={assignmentId}
-          state={state}
-          {...(onPause ? { onPause } : {})}
-        />
-        <Tabs defaultValue="conversation" className="p-3">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="conversation" className="min-h-11">
+      {/* Narrow desktop: chat + tabbed rail */}
+      <div className="cockpit-desktop-rail-tabs hidden min-h-0 flex-col lg:hidden min-[901px]:max-[1279px]:flex">
+        <div className="flex min-h-0 flex-1 border-t border-border">
+          <DextworkSidebar runTitle={state.title} runStatus={state.status} />
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+            <div className="min-h-0 flex-1 overflow-hidden">{conversationNode}</div>
+            <Tabs
+              value={railTab}
+              onValueChange={(v) => setRailTab(v as "plan" | "foundry")}
+              className="shrink-0 border-t border-border"
+            >
+              <TabsList className="grid h-10 w-full grid-cols-2 rounded-none">
+                <TabsTrigger value="plan">Tasks</TabsTrigger>
+                <TabsTrigger value="foundry">Capabilities</TabsTrigger>
+              </TabsList>
+              <TabsContent value="plan" className="m-0 h-[40dvh] overflow-hidden">
+                {missionNode}
+              </TabsContent>
+              <TabsContent value="foundry" className="m-0 h-[40dvh] overflow-hidden">
+                {foundryNode}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </div>
+
+      {/* Phone: tabs only */}
+      <div className="max-[900px]:block hidden min-[901px]:hidden">
+        <Tabs defaultValue="conversation" className="flex min-h-dvh flex-col p-2">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="conversation" className="min-h-10 text-xs">
               Chat
-              {tabBadge(pendingApprovals)}
+              {pendingApprovals > 0 ? (
+                <span className="ms-1 tabular-nums text-[10px]">{pendingApprovals}</span>
+              ) : null}
             </TabsTrigger>
-            <TabsTrigger value="plan" className="min-h-11">
-              Plan
+            <TabsTrigger value="plan" className="min-h-10 text-xs">
+              Tasks
             </TabsTrigger>
-            <TabsTrigger value="foundry" className="min-h-11">
-              Foundry
-            </TabsTrigger>
-            <TabsTrigger value="outputs" className="min-h-11">
-              Outputs
-              {tabBadge(readyArtifacts)}
+            <TabsTrigger value="foundry" className="min-h-10 text-xs">
+              Caps
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="conversation" className="min-h-0">
+          <TabsContent value="conversation" className="min-h-0 flex-1">
             {conversationNode}
           </TabsContent>
-          <TabsContent value="plan" className="min-h-0">
+          <TabsContent value="plan" className="min-h-0 flex-1">
             {missionNode}
           </TabsContent>
-          <TabsContent value="foundry" className="min-h-0">
+          <TabsContent value="foundry" className="min-h-0 flex-1">
             {foundryNode}
-          </TabsContent>
-          <TabsContent value="outputs" className="min-h-0">
-            {dockNode}
           </TabsContent>
         </Tabs>
       </div>
