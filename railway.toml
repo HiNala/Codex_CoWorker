@@ -1,16 +1,17 @@
-# Default Railway config when the linked service is `web`.
-# Per-service copies live under infra/railway/*.railway.toml
+# Monorepo Railway defaults — do NOT pin a service Dockerfile here.
+# Each service sets RAILWAY_DOCKERFILE_PATH:
+#   web    → infra/docker/web.Dockerfile
+#   worker → infra/docker/worker.Dockerfile
+#   hello  → infra/docker (infra/hello/Dockerfile via path)
 #
 # CRITICAL: railway up does NOT assign a public domain.
-# After the first successful web deploy:
+# After first successful web deploy:
 #   railway domain --service web --port 3000
+# Worker is INTERNAL ONLY — do not run railway domain for worker.
 
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "infra/docker/web.Dockerfile"
 
 [deploy]
-healthcheckPath = "/api/health/live"
-healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 3
+restartPolicyMaxRetries = 5

@@ -40,6 +40,37 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] URGENT — worker service created + internal networking
+
+**Gate T+8:** web **and** worker required. Worker was missing; now present.
+
+| Item | Value |
+|------|--------|
+| Service name | **`worker`** (`c1656709-4050-40a5-a116-0ad7a121f865`) |
+| Deploy | **SUCCESS** `2552fa46-52d7-4584-8526-fd40719480dc` · RUNNING |
+| Dockerfile | `infra/docker/worker.Dockerfile` (root `railway.toml` no longer forces web Dockerfile) |
+| Public domain | **none** (correct — internal only) |
+| Private hostname | **`worker.railway.internal`** |
+| Health port | **3001** |
+| Internal base URL | `http://worker.railway.internal:3001` |
+| `DATABASE_URL` | **CONFIGURED** as `${{Postgres.DATABASE_URL}}` reference |
+| S3 keys | CONFIGURED (same matrix as web) |
+| Worker live probe | `GET /health/live` on 127.0.0.1:3001 → **200** `status=live` |
+
+**Web → worker env (no secrets printed):**
+
+| Env var on **web** | Purpose |
+|--------------------|---------|
+| **`WORKER_INTERNAL_URL`** | Approvals proxy prefers this (`…/approvals/:id/decide`) |
+| **`WORKER_URL`** | Fallback / shared |
+| **`WORKER_PUBLIC_URL`** | `POST /api/demo/start` proxy (`workerBase()`) |
+
+All three set to `http://worker.railway.internal:3001`. Web redeployed **SUCCESS** `44eeb2d7-…` after env set.
+
+**Note:** `railway run` from laptop cannot resolve private DNS; production web container is on the same private network as worker. Cross-container probe via SSH hung; worker process logs show golden-path route ready.
+
+**Services now:** hello, web, Postgres, **worker**.
+
 ### [2026-07-23] PRODUCTION DATA FIX — Broken Checkout seed (CUT #4)
 
 **Problem:** UI showed stale “Webhook field rename / api-change-impact-analyzer” story.  
