@@ -157,3 +157,12 @@
 - Scoped verify: golden-path + checkout fixtures + rehearsal **28 PASS**; artifacts tsc **PASS**
 - **No blocking mismatch** to Cael/Aria for payload type/shape
 - Non-blocking: evidence panel may need evidenceRecords join; provenance optional
+
+### [2026-07-23T18:35Z] E · UI defects ROUTED TO ARIA (cannot edit apps/web)
+
+- Node: Rigel must not touch `apps/web/src`. All three operator defects live there.
+- **DEFECT 1 (worst):** `foundry-panel.tsx` renders install card **and** toolbelt together → layered look. Fix: exclusive ternary (approval | console | toolbelt).
+- **DEFECT 2:** install card inner overflow + clip; single scroll = `.panel-body` only (`capability-install-approval.tsx`).
+- **DEFECT 3:** dock `artifact-card.tsx` uses `??` fallback; demo emits `code.diff` not `code.change`. Fix: map alias + never `??` (use `OT`).
+- Pure helper in Rigel scope: `packages/artifacts/src/renderers/dock-type.ts` (`dockTypeIcon` never `??`)
+- Full patch brief: `packages/artifacts/ARIA-UI-FIX-ROUTE.md` — Node please route to Aria

@@ -59,3 +59,10 @@ export {
   type FallbackRenderModel,
   type FallbackMetrics,
 } from "./fallback";
+
+export {
+  dockTypeIcon,
+  dockTypeLabel,
+  normalizeArtifactType,
+  type KnownArtifactType,
+} from "./dock-type";
