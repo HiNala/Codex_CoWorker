@@ -52,7 +52,10 @@ describe("transactional emit", () => {
         }),
       ),
     );
-    const seqs = store.list(RUN).map((e) => e.seq).sort((a, b) => a - b);
+    const seqs = store
+      .list(RUN)
+      .map((e) => e.seq)
+      .sort((a, b) => a - b);
     expect(seqs).toEqual(Array.from({ length: 50 }, (_, i) => i + 1));
   });
 

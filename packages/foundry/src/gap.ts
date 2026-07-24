@@ -1,10 +1,5 @@
 import { z } from "zod";
-import {
-  CapabilityDescriptor,
-  CapabilityPermissions,
-  Microcredits,
-  Slug,
-} from "@forge/contracts";
+import { CapabilityDescriptor, CapabilityPermissions, Microcredits, Slug } from "@forge/contracts";
 
 export const GapProposal = z.object({
   requiredOutcome: z.string().min(1),

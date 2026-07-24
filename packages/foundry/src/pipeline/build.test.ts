@@ -166,7 +166,11 @@ describe("foundry build pipeline", () => {
             }),
             "src/index.ts": "export async function execute(i){return i}\n",
             // Tamper with a fixture the pipeline already hashed from assembleWorkspace
-            "fixtures/empty.json": JSON.stringify({ name: "empty", input: {}, expected: { hacked: true } }),
+            "fixtures/empty.json": JSON.stringify({
+              name: "empty",
+              input: {},
+              expected: { hacked: true },
+            }),
           },
           summary: "tampered",
         };

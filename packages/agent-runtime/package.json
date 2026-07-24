@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@forge/contracts": "workspace:*",
+    "@forge/db": "workspace:*",
     "@forge/events": "workspace:*",
+    "postgres": "3.4.9",
     "zod": "4.4.3"
   }
 }

@@ -36,8 +36,7 @@ export class FakeExecutionBackend implements ExecutionBackend {
   private readonly forceTimeout: boolean;
   private readonly outputFiles: Record<string, string>;
   private readonly transformFiles:
-    | ((files: Record<string, string>, spec: ExecSpec) => Record<string, string>)
-    | undefined;
+    ((files: Record<string, string>, spec: ExecSpec) => Record<string, string>) | undefined;
   private readonly stdout: string | ((spec: ExecSpec) => string) | undefined;
   private readonly stderr: string | ((spec: ExecSpec) => string) | undefined;
   private readonly enforceCredentialFree: boolean;
@@ -62,8 +61,7 @@ export class FakeExecutionBackend implements ExecutionBackend {
     }
 
     const started = performance.now();
-    const timedOut =
-      this.forceTimeout || this.delayMs > spec.timeoutMs || spec.timeoutMs <= 0;
+    const timedOut = this.forceTimeout || this.delayMs > spec.timeoutMs || spec.timeoutMs <= 0;
 
     const effectiveDelay = timedOut
       ? Math.min(this.delayMs, Math.max(0, spec.timeoutMs))
@@ -78,11 +76,8 @@ export class FakeExecutionBackend implements ExecutionBackend {
       ? `fake sandbox timed out after ${spec.timeoutMs}ms: ${commandLine}`
       : `fake sandbox: ${commandLine}`;
     const stdoutText =
-      typeof this.stdout === "function"
-        ? this.stdout(spec)
-        : (this.stdout ?? defaultStdout);
-    const stderrText =
-      typeof this.stderr === "function" ? this.stderr(spec) : (this.stderr ?? "");
+      typeof this.stdout === "function" ? this.stdout(spec) : (this.stdout ?? defaultStdout);
+    const stderrText = typeof this.stderr === "function" ? this.stderr(spec) : (this.stderr ?? "");
 
     // Progressive chunks so stream consumers (build console) exercise onOutput.
     if (onOutput) {
@@ -98,8 +93,7 @@ export class FakeExecutionBackend implements ExecutionBackend {
     }
     files = { ...files, ...this.outputFiles };
 
-    const exitCode =
-      this.exitCode !== undefined ? this.exitCode : timedOut ? 124 : 0;
+    const exitCode = this.exitCode !== undefined ? this.exitCode : timedOut ? 124 : 0;
 
     return {
       exitCode,

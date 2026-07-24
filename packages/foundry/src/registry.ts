@@ -1,8 +1,4 @@
-import type {
-  CapabilityDescriptor,
-  CapabilityRef,
-  CapabilitySpec,
-} from "@forge/contracts";
+import type { CapabilityDescriptor, CapabilityRef, CapabilitySpec } from "@forge/contracts";
 
 export interface StoredCapabilityVersion {
   ref: CapabilityRef;

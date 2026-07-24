@@ -126,14 +126,10 @@ export class DockerExecutionBackend implements ExecutionBackend {
         try {
           const result = await new Promise<{ exitCode: number; stdout: string; stderr: string }>(
             (resolveResult, reject) => {
-              const child = spawn(
-                "docker",
-                dockerRunArguments(spec, containerName, jobDirectory),
-                {
-                  windowsHide: true,
-                  signal: controller.signal,
-                },
-              );
+              const child = spawn("docker", dockerRunArguments(spec, containerName, jobDirectory), {
+                windowsHide: true,
+                signal: controller.signal,
+              });
               const stdout: Buffer[] = [];
               const stderr: Buffer[] = [];
               let outputBytes = 0;

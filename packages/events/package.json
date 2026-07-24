@@ -12,6 +12,7 @@
     "test": "vitest run src"
   },
   "dependencies": {
-    "@forge/contracts": "workspace:*"
+    "@forge/contracts": "workspace:*",
+    "postgres": "3.4.9"
   }
 }

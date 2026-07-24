@@ -19,7 +19,11 @@ export type FoundryEvent =
   | { type: "capability.repair_succeeded"; summary: string }
   | { type: "capability.repair_exhausted"; summary: string }
   | { type: "capability.approval_requested"; summary: string; detail: ApprovalCard }
-  | { type: "capability.installed"; summary: string; detail: { versionId: string; sha256: string } };
+  | {
+      type: "capability.installed";
+      summary: string;
+      detail: { versionId: string; sha256: string };
+    };
 
 export interface ApprovalCard {
   purpose: string;

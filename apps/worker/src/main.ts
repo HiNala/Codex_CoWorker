@@ -3,9 +3,10 @@ import { hostname } from "node:os";
 import { getFlags, log, parseWorkerEnv } from "@forge/config";
 import { PostgresJobQueue } from "@forge/jobs";
 import { S3ObjectStore } from "@forge/object-store";
-import { dispatchJob } from "./handlers";
+import { dispatchJob, runExecuteRun } from "./handlers";
+import { matchRunStream, openSse } from "./stream";
 
-// Config comes from process.env — root scripts inject via dotenv -e .env.local.
+// Config from process.env — root scripts inject via dotenv -e .env.local.
 const environment = parseWorkerEnv();
 const flags = getFlags();
 const workerId = `${hostname()}-${process.pid}`;
@@ -38,20 +39,21 @@ async function readiness(): Promise<Record<string, unknown>> {
     queueDepth: depth,
     objectStore: storageMarker ? "marker_present" : "reachable",
     adapters: flags.adapters,
-    // Provider keys: report presence only, never values (public repo).
     openai: environment.OPENAI_API_KEY ? "configured" : "unset",
-    codexUpstream: "via-foundry",
+    database: environment.DATABASE_URL ? "configured" : "unset",
   };
 }
 
 function startHealthServer(): Server {
   const server = createServer((request, response) => {
     void (async () => {
-      if (request.url === "/health/live") {
+      const url = request.url ?? "";
+
+      if (request.method === "GET" && url.startsWith("/health/live")) {
         json(response, 200, { status: "live", workerId });
         return;
       }
-      if (request.url === "/health/ready") {
+      if (request.method === "GET" && url.startsWith("/health/ready")) {
         try {
           json(response, 200, await readiness());
         } catch (error) {
@@ -62,6 +64,60 @@ function startHealthServer(): Server {
         }
         return;
       }
+
+      // Runtime SSE integration — GET /runs/:runId/stream?after=
+      const streamMatch = matchRunStream(url);
+      if (request.method === "GET" && streamMatch) {
+        openSse(
+          request,
+          response,
+          environment.DATABASE_URL,
+          streamMatch.runId,
+          streamMatch.after,
+        );
+        return;
+      }
+
+      // Seeded fake golden path — POST /v1/golden-path/run
+      if (request.method === "POST" && url.startsWith("/v1/golden-path/run")) {
+        try {
+          const result = await runExecuteRun();
+          json(response, 200, {
+            ok: true,
+            ...("mode" in result
+              ? {
+                  mode: result.mode,
+                  runId: result.runId,
+                  assignmentId: result.assignmentId,
+                  eventCountInDb: result.eventCountInDb,
+                  lastSeq: result.lastSeq,
+                  eventTypes: result.eventTypes,
+                  stepStatus: result.stepStatus,
+                  artifactId: result.artifactId,
+                  artifactTitle: result.artifactTitle,
+                  distinctCount: result.distinctCount,
+                  attempt1FailureMessage: result.attempt1FailureMessage,
+                  runFinished: result.runFinished,
+                  streamPath: `/runs/${result.runId}/stream?after=0`,
+                }
+              : {
+                  mode: "memory",
+                  runId: result.runId,
+                  lastSeq: result.lastSeq,
+                  eventTypes: result.eventTypes,
+                  stepStatus: result.stepStatus,
+                  distinctCount: result.distinctCount,
+                }),
+          });
+        } catch (error) {
+          json(response, 500, {
+            ok: false,
+            error: error instanceof Error ? error.message : "golden path failed",
+          });
+        }
+        return;
+      }
+
       json(response, 404, { status: "not_found" });
     })();
   });
@@ -79,7 +135,6 @@ async function runLoop(): Promise<void> {
         continue;
       }
 
-      // Heartbeat while working so long model/foundry jobs keep the lease.
       const heartbeat = setInterval(
         () => {
           void queue.heartbeat(job.id, workerId, environment.JOB_LEASE_MS);
@@ -128,5 +183,7 @@ log("info", "Worker started.", {
   workerId,
   queue: "default",
   healthPort: environment.WORKER_HEALTH_PORT,
+  sse: "/runs/:runId/stream",
+  goldenPath: "POST /v1/golden-path/run",
 });
 await runLoop();

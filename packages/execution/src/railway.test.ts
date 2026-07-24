@@ -61,8 +61,8 @@ describe("RailwaySandboxBackend stub", () => {
       RAILWAY_API_TOKEN: "tok",
       RAILWAY_ENVIRONMENT_ID: "env-1",
     });
-    await expect(
-      backend.run({ ...sampleSpec, env: { OPENAI_API_KEY: "x" } }),
-    ).rejects.toThrow(/forbidden keys/i);
+    await expect(backend.run({ ...sampleSpec, env: { OPENAI_API_KEY: "x" } })).rejects.toThrow(
+      /forbidden keys/i,
+    );
   });
 });

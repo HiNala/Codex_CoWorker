@@ -31,9 +31,7 @@ export class RailwaySandboxBackend implements ExecutionBackend {
 
   /** Both Railway credentials present and non-empty. */
   isConfigured(): boolean {
-    return Boolean(
-      this.env.RAILWAY_API_TOKEN?.trim() && this.env.RAILWAY_ENVIRONMENT_ID?.trim(),
-    );
+    return Boolean(this.env.RAILWAY_API_TOKEN?.trim() && this.env.RAILWAY_ENVIRONMENT_ID?.trim());
   }
 
   async healthy(): Promise<boolean> {
