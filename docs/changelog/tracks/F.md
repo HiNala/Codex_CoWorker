@@ -279,3 +279,31 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - Smoke command (prod rehearsal): `pnpm --filter @forge/integrations run smoke:golden`
 - CUT #4 still binding (one executable capability only).
 
+
+### [2026-07-23] Demo correctness — repoint fixtures to Broken Checkout (not API rename)
+
+Production UI was showing wrong live scenario (Webhook field rename / api-change-impact-analyzer).
+Tide audited exclusive scope and **repointed / locked** demo-facing copy to Broken Checkout.
+
+#### Fixtures audited / changed
+
+| Path | Action |
+| --- | --- |
+| `packages/integrations/src/demo/broken-checkout-scenario.ts` | **NEW** canonical assignment title, ZD-4471 Priya ticket, PR title/diagnosis/changes, email body; `FORBIDDEN_LIVE_SCENARIO_MARKERS` + `assertBrokenCheckoutCopy` |
+| `packages/integrations/src/golden-path.smoke.test.ts` | **Repointed** PR/email/ticket assertions to canonical scenario; rejects API-rename markers; e2e host PR + approval email use checkout copy |
+| `packages/research/src/fakes/fake-research.ts` | **Repointed** evidence excerpts to yearly vs annual PRICE_IDS / PlanToggle (was ambiguous cadence wording) |
+| `demo/acme-store/README.md` | **Annotated** live scenario = Broken Checkout; not webhook field-rename |
+| `demo/BROKEN-CHECKOUT-REHEARSAL.md` | **Canonical assignment title** called out; points at scenario module |
+| `packages/integrations/src/cael-contract.md` | **Hand Cael** live vs inventory table |
+| `demo/acme-store` sources + patch fixture | **Already correct** (yearly/annual bug) — no code change |
+| `packages/demo-data` tickets (out of exclusive write) | **Already Priya/Broken Checkout** — ImportTicketGateway uses them; Cael must seed assignment title to match |
+
+#### Not in Tide scope (Cael/Aria must align seed/UI)
+
+- Assignment title `Webhook field rename incident` in seeded run / Mission Control NOW step
+- Capability install card `api-change-impact-analyzer` as live build (inventory only)
+
+#### Rehearsal
+
+- `pnpm --filter @forge/integrations run smoke:golden` → **8 files / 74 tests PASS** (PR + email e2e on checkout story)
+

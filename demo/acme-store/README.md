@@ -2,6 +2,8 @@
 
 Customer-facing storefront for **Acme Payments**. Hosts the public pricing page and creates Stripe Checkout sessions for plan upgrades.
 
+> **Demo scenario (live golden path):** Broken Checkout — monthly Stripe checkout works; annual/yearly fails because `PlanToggle` emits `interval: "yearly"` while `PRICE_IDS` is keyed on `annual`. This is **not** the webhook field-rename / API-change incident (inventory only).
+
 ## Stack
 
 - Next.js (App Router)

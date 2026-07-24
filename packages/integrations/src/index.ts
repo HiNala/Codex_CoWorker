@@ -6,3 +6,4 @@ export * from "./github/pr-pipeline";
 export * from "./email/notifier";
 export * from "./composio";
 export * from "./status";
+export * from "./demo/broken-checkout-scenario";

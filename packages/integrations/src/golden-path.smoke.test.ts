@@ -29,6 +29,16 @@ import {
 import { createNotifier, FakeNotifier } from "./email/notifier";
 import { createTicketGateway, ImportTicketGateway } from "./zendesk/ticket-gateway";
 import { integrationStatus } from "./status";
+import {
+  assertBrokenCheckoutCopy,
+  BROKEN_CHECKOUT_ASSIGNMENT_TITLE,
+  BROKEN_CHECKOUT_DIAGNOSIS,
+  BROKEN_CHECKOUT_EMAIL,
+  BROKEN_CHECKOUT_PR_CHANGES,
+  BROKEN_CHECKOUT_PR_TITLE,
+  BROKEN_CHECKOUT_TICKET,
+  FORBIDDEN_LIVE_SCENARIO_MARKERS,
+} from "./demo/broken-checkout-scenario";
 
 const execFileAsync = promisify(execFile);
 
@@ -83,26 +93,40 @@ describe("F/L golden path rehearsal (fakes + host patch, no live credentials)", 
     }
   });
 
-  it("gates external email on exact approved payload (no re-plan)", async () => {
+  it("uses Broken Checkout ticket/assignment copy — never API-rename inventory story", async () => {
+    expect(BROKEN_CHECKOUT_ASSIGNMENT_TITLE).toMatch(/checkout/i);
+    expect(BROKEN_CHECKOUT_TICKET.subject).toMatch(/annual|Team/i);
+    assertBrokenCheckoutCopy(BROKEN_CHECKOUT_ASSIGNMENT_TITLE);
+    assertBrokenCheckoutCopy(BROKEN_CHECKOUT_TICKET.body);
+    assertBrokenCheckoutCopy(BROKEN_CHECKOUT_DIAGNOSIS);
+    assertBrokenCheckoutCopy(BROKEN_CHECKOUT_EMAIL.body);
+    for (const marker of FORBIDDEN_LIVE_SCENARIO_MARKERS) {
+      expect(BROKEN_CHECKOUT_ASSIGNMENT_TITLE.toLowerCase()).not.toContain(marker.toLowerCase());
+    }
+    const tickets = createTicketGateway({});
+    const list = await tickets.gateway.listRecent({ limit: 5 });
+    expect(list[0]?.id).toBe(BROKEN_CHECKOUT_TICKET.id);
+    expect(list[0]?.subject).toMatch(/annual|checkout|Team/i);
+    for (const t of list) {
+      assertBrokenCheckoutCopy(`${t.subject}\n${t.body}`);
+    }
+  });
+
+  it("gates external email on exact approved Broken Checkout payload (no re-plan)", async () => {
     const proposal: ExternalActionProposal = {
       provider: "email",
       action: "send",
       accountRef: "acct_fake_gmail",
       arguments: {
-        to: "owner@acme.test",
-        subject: "Annual checkout was broken — fix is up for review",
-        body: [
-          "Annual plan checkout has been failing because the billing interval does not match the price lookup.",
-          "I opened a PR that fixes the mismatch and returns a specific 400 instead of a silent 500.",
-          "Nine customers hit this in the last week, including Priya who filed ticket #4471.",
-          "",
-          "PR: https://github.com/acme-payments/acme-store/pull/17",
-        ].join("\n"),
+        to: BROKEN_CHECKOUT_EMAIL.to,
+        subject: BROKEN_CHECKOUT_EMAIL.subject,
+        body: BROKEN_CHECKOUT_EMAIL.body,
       },
-      reason: "Notify owner after PR open",
+      reason: "Notify owner after annual-checkout PR open",
       risk: "customer_facing",
       idempotencyKey: `${ASSIGNMENT}:email:owner`,
     };
+    assertBrokenCheckoutCopy(JSON.stringify(proposal.arguments));
 
     let executedBody: string | undefined;
     const executor = new ExternalActionExecutor({
@@ -130,6 +154,9 @@ describe("F/L golden path rehearsal (fakes + host patch, no live credentials)", 
     const ok = await executor.execute(proposal, APPROVAL_ID);
     expect(ok.externalId).toBe("fake-msg-1");
     expect(executedBody).toContain("Nine customers");
+    expect(executedBody).toContain("4471");
+    expect(executedBody).toMatch(/checkout|billing interval|Stripe/i);
+    assertBrokenCheckoutCopy(executedBody ?? "");
 
     // Mutated body after approval → refuse (backend never re-plans).
     const mutated: ExternalActionProposal = {
@@ -184,26 +211,22 @@ describe("F/L golden path rehearsal (fakes + host patch, no live credentials)", 
 
       const headBranch = `forge/fix-annual-checkout-interval-golden`;
       const body = assemblePrBody({
-        diagnosis:
-          "PlanToggle emits interval yearly while PRICE_IDS was keyed on annual, so resolvePriceId returned undefined.",
+        diagnosis: BROKEN_CHECKOUT_DIAGNOSIS,
         impactCustomers: 9,
         impactWindow: "Jul 16 and Jul 23",
         impactAttempts: 40,
-        changes: [
-          "Shared BillingInterval type",
-          "PRICE_IDS keyed on yearly",
-          "resolvePrice typed failure path",
-        ],
+        changes: [...BROKEN_CHECKOUT_PR_CHANGES],
         testsPassing: "yearly resolution + typed failure",
         ticketId: "4471",
         assignmentId: ASSIGNMENT,
       });
+      assertBrokenCheckoutCopy(body);
 
       const result = await port.openPullRequest({
         repo: "acme-payments/acme-store",
         baseBranch: "main",
         headBranch,
-        title: "Fix annual checkout returning a generic 500",
+        title: BROKEN_CHECKOUT_PR_TITLE,
         body,
         patch,
         assignmentId: ASSIGNMENT,
@@ -215,8 +238,12 @@ describe("F/L golden path rehearsal (fakes + host patch, no live credentials)", 
       expect(result.sha).toMatch(/^[0-9a-f]{40}$/);
       expect(createBody.head).toBe(headBranch);
       expect(createBody.base).toBe("main");
+      expect(createBody.title).toBe(BROKEN_CHECKOUT_PR_TITLE);
       expect(createBody.body).toContain("9 distinct customers");
+      expect(createBody.body).toMatch(/yearly|annual|PRICE_IDS|PlanToggle/i);
+      expect(createBody.body).not.toMatch(/Webhook field rename|api-change-impact/i);
       expect(createBody.body).not.toMatch(/x-access-token:|ghp_|Bearer\s+[A-Za-z0-9]/);
+      assertBrokenCheckoutCopy(createBody.body ?? "");
 
       // Prove applied tree: clone bare@head and assert yearly keys + resolvePrice.
       const verifyDir = join(workRoot, "verify-head");

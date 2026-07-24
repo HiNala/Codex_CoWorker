@@ -3,6 +3,20 @@
 Frozen interfaces live in `@forge/contracts`. Tide adapters produce **data**;
 Cael owns run-loop emit, SSE, and never imports vendor SDKs.
 
+## Live scenario (CUT #4 + 23-DEMO)
+
+| Field | Live value |
+| --- | --- |
+| Assignment title | `Annual checkout failing for Team plan` |
+| Ticket | ZD-4471 Priya — annual Team checkout |
+| Executable capability | **only** `checkout-error-log-analyzer` |
+| Repo | `demo/acme-store` yearly vs annual enum drift |
+| PR / email copy | `packages/integrations/src/demo/broken-checkout-scenario.ts` |
+
+**Not live (inventory only):** `Webhook field rename incident`, `api-change-impact-analyzer`,
+`Analyse API change against consumer code`. Seeded runs must not use those as the
+active assignment title or NOW step.
+
 ## External writes (mandatory path)
 
 1. Agent **proposes** only → emit `action.proposed` with `ExternalActionProposal`

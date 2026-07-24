@@ -1,6 +1,10 @@
 # Broken Checkout — rehearsal steps (demo + F/L)
 
+**Live assignment title (canonical):** `Annual checkout failing for Team plan`  
+**Not live:** `Webhook field rename incident` / `api-change-impact-analyzer` (prebuilt inventory only — CUT #4).
+
 Demo storefront: `demo/acme-store`.  
+Canonical copy: `packages/integrations/src/demo/broken-checkout-scenario.ts`.  
 Integrations smoke + contract: `packages/integrations/GOLDEN-PATH.md` and `packages/integrations/src/cael-contract.md`.
 
 ## One smoke command (monorepo root)
