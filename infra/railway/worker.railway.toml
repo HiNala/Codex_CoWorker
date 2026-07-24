@@ -1,0 +1,13 @@
+# Railway config for service: worker
+# Link: railway link -p d43bf9da-63b9-4887-b363-76bd02669240 -e production -s worker
+# Deploy: railway up --service worker --detach
+# Do NOT assign a public domain to worker.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "infra/docker/worker.Dockerfile"
+
+[deploy]
+# Worker is not HTTP-public; rely on process restart policy + logs.
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5

@@ -1,0 +1,16 @@
+# Default Railway config when the linked service is `web`.
+# Per-service copies live under infra/railway/*.railway.toml
+#
+# CRITICAL: railway up does NOT assign a public domain.
+# After the first successful web deploy:
+#   railway domain --service web --port 3000
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "infra/docker/web.Dockerfile"
+
+[deploy]
+healthcheckPath = "/api/health/live"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

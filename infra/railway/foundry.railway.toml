@@ -1,0 +1,13 @@
+# Railway config for service: foundry
+# Link: railway link -p d43bf9da-63b9-4887-b363-76bd02669240 -e production -s foundry
+# Deploy: railway up --service foundry --detach
+# Secrets: CODEX_API_KEY on this service only. Never on web.
+# Do NOT assign a public domain to foundry.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "infra/docker/foundry.Dockerfile"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

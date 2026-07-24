@@ -1,0 +1,13 @@
+# Railway config for service: minio (Path A object storage)
+# Prefer private networking only — do NOT railway domain the console.
+# Volume: railway volume add --service minio --mount-path /data
+# Path B fallback: railway bucket create forge-artifacts (no minio service).
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "infra/docker/minio.Dockerfile"
+
+[deploy]
+# MinIO S3 API; console must stay non-public.
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

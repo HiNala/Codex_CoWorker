@@ -1,0 +1,93 @@
+# Full Railway deploy — optional, secret-gated.
+# Does nothing unless repository secret RAILWAY_TOKEN is set AND the
+# workflow is triggered on main (or manually with confirm=deploy).
+#
+# Secrets (Settings → Secrets and variables → Actions) — names only:
+#   RAILWAY_TOKEN          project/account token for non-interactive CLI
+# Optional variables:
+#   RAILWAY_PROJECT_ID     default d43bf9da-63b9-4887-b363-76bd02669240
+#   RAILWAY_ENVIRONMENT    default production
+#   SMOKE_BASE_URL         override public URL for smoke
+#
+# NEVER put RAILWAY_API_TOKEN, CODEX_API_KEY, OPENAI_API_KEY, or other
+# runtime app secrets into this workflow. Those belong on Railway services
+# (see infra/railway/service-matrix.md). Web must never receive
+# RAILWAY_API_TOKEN or CODEX_API_KEY.
+
+name: Deploy Railway
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "deploy" to run a real deploy'
+        required: true
+        default: ""
+      skip_verify:
+        description: "Skip pnpm verify (true/false)"
+        required: false
+        default: "false"
+  push:
+    branches: [main, master]
+
+jobs:
+  deploy:
+    name: railway up + smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Secret-gated: skip entirely when token absent (public repo safe default).
+    if: >
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.confirm == 'deploy')
+      || (github.event_name == 'push' && secrets.RAILWAY_TOKEN != '')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require RAILWAY_TOKEN
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          if [ -z "${RAILWAY_TOKEN}" ]; then
+            echo "RAILWAY_TOKEN secret is not set — refusing deploy."
+            exit 1
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          # Defaults live in scripts/deploy.sh when vars are empty.
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT: ${{ vars.RAILWAY_ENVIRONMENT }}
+          SMOKE_BASE_URL: ${{ vars.SMOKE_BASE_URL }}
+          SKIP_VERIFY_INPUT: ${{ github.event.inputs.skip_verify }}
+        run: |
+          set -euo pipefail
+          PROJECT_ID="${RAILWAY_PROJECT_ID:-d43bf9da-63b9-4887-b363-76bd02669240}"
+          ENVIRONMENT="${RAILWAY_ENVIRONMENT:-production}"
+          ARGS=(--project "$PROJECT_ID" --environment "$ENVIRONMENT" --skip-build)
+          if [ "${SKIP_VERIFY_INPUT:-false}" = "true" ]; then
+            ARGS+=(--skip-verify)
+          fi
+          # Local pnpm build is expensive in CI; Railway builds from Dockerfile.
+          if [ -n "${SMOKE_BASE_URL:-}" ]; then
+            ARGS+=(--base-url "$SMOKE_BASE_URL")
+          fi
+          bash scripts/deploy.sh "${ARGS[@]}"
