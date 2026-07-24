@@ -48,3 +48,30 @@ Node correction accepted and in force for ARIA:
 | `RAILWAY_API_TOKEN` | UNSET (not a blocker; CLI authenticated) |
 
 - Never paste `railway variable list` output. Never log key values, prefixes, or last-4.
+
+## [T+urgent] D/G · ack · git protocol: no pull / no stash / no rebase
+
+Node supersedes pull-rebase. Shared single working tree + single `.git` → no per-agent divergence.
+
+**FORBIDDEN:** `git pull`, `git pull --rebase`, `--autostash`, `git stash`, `git checkout` of foreign paths, `git reset`.
+
+**ONLY sequence:** `git add <explicit own paths>` → `git commit` → `git push origin main`.
+
+If push is non-fast-forward: **STOP**, report Node, hold. No force.
+
+### In-flight file verification (ARIA) — all present
+
+| path | status |
+|---|---|
+| `packages/ui/**` primitives + CapabilityTile | present |
+| `apps/web/src/styles/tokens.css` | present |
+| `apps/web/src/components/cockpit/*` | present |
+| `apps/web/src/hooks/*` | present |
+| `apps/web/src/components/conversation/*` | present |
+| `apps/web/src/components/plan/*` | present |
+| `apps/web/src/components/foundry/` | present |
+| `apps/web/src/components/dock/` | present |
+| `apps/web/src/components/approvals/` | present |
+| `docs/changelog/tracks/D.md` | present |
+
+`git stash list` empty. Nothing missing to report.
