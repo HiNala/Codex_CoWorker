@@ -22,7 +22,7 @@ export function TimelineRow({
   switch (item.kind) {
     case "user_message":
       return (
-        <article className="ml-auto max-w-[min(62ch,100%)] min-w-0 rounded-xl bg-primary/15 px-4 py-3 text-foreground">
+        <article className="ml-auto max-w-[min(62ch,100%)] min-w-0 rounded-xl bg-secondary px-4 py-3 text-foreground">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             You
           </p>

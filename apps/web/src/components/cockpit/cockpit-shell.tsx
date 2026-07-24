@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { LiveRegion } from "@forge/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConversationPanel } from "@/components/conversation/conversation-panel";
@@ -31,8 +31,8 @@ function resolveSlot(
 }
 
 /**
- * Cockpit workspace only (chat + tasks/capabilities rail).
- * Universal Dextwork icon rail lives in (app)/layout — not here.
+ * Cockpit = chat + 35vw rail only.
+ * Universal 76px DextworkSidebar is owned by (app)/layout — never here.
  */
 export function CockpitShell({
   assignmentId,
@@ -50,6 +50,8 @@ export function CockpitShell({
   });
 
   const [mobileTab, setMobileTab] = useState<"chat" | "plan" | "foundry">("chat");
+  const [startPending, setStartPending] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
 
   const onApprove = controls.approve;
   const onDeny = controls.deny;
@@ -59,6 +61,47 @@ export function CockpitShell({
     onPauseProp?.();
   };
 
+  const onStart = useCallback(async () => {
+    setStartPending(true);
+    setStartError(null);
+    try {
+      const res = await fetch("/api/demo/start", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ assignmentId }),
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        message?: string;
+        detail?: string;
+        code?: string;
+        reason?: string;
+        runId?: string;
+      };
+      if (!res.ok || json.ok === false) {
+        const msg =
+          json.message ||
+          json.detail ||
+          json.reason ||
+          (res.status === 503
+            ? "Worker not available (not_configured). Start the worker or try again."
+            : `Start failed (HTTP ${res.status})`);
+        setStartError(msg);
+        return;
+      }
+      // Reload stream from beginning so SSE paints the new run events
+      window.location.reload();
+    } catch (e) {
+      setStartError(
+        e instanceof Error
+          ? e.message
+          : "Could not reach start endpoint — worker may be offline.",
+      );
+    } finally {
+      setStartPending(false);
+    }
+  }, [assignmentId]);
+
   const defaultConversation = (
     <ConversationPanel
       state={state}
@@ -66,13 +109,14 @@ export function CockpitShell({
       onDeny={onDeny}
       onSend={onSend}
       onPause={onPause}
+      onStart={onStart}
+      startPending={startPending}
+      startError={startError}
       assignmentId={assignmentId}
     />
   );
   const defaultMission = <MissionControl state={state} />;
-  const defaultFoundry = (
-    <FoundryPanel state={state} onApprove={onApprove} onDeny={onDeny} />
-  );
+  const defaultFoundry = <FoundryPanel state={state} />;
 
   const conversationNode = resolveSlot(conversation, state, defaultConversation);
   const missionNode = resolveSlot(missionControl, state, defaultMission);

@@ -11,6 +11,7 @@ export const runtime = "nodejs";
 
 function workerBase(): string {
   return (
+    process.env.WORKER_INTERNAL_URL?.replace(/\/$/, "") ||
     process.env.WORKER_PUBLIC_URL?.replace(/\/$/, "") ||
     process.env.WORKER_URL?.replace(/\/$/, "") ||
     "http://127.0.0.1:3001"

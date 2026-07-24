@@ -49,47 +49,49 @@
 }
 
 /* Light retained for toggle completeness; ops console ships dark. */
+/* Neutrals are true greys (no blue component). Blue only on --primary. */
 :root {
-  --background: #f3f6fa;
-  --foreground: #090c11;
+  --background: #f5f5f5;
+  --foreground: #0a0a0a;
   --card: #ffffff;
-  --card-foreground: #090c11;
+  --card-foreground: #0a0a0a;
   --popover: #ffffff;
-  --popover-foreground: #090c11;
+  --popover-foreground: #0a0a0a;
   --primary: #2563eb;
-  --primary-foreground: #f3f6fa;
-  --secondary: #e8edf4;
-  --secondary-foreground: #090c11;
-  --muted: #e8edf4;
-  --muted-foreground: #5a6573;
-  --accent: #dbeafe;
-  --accent-foreground: #0c1a2e;
+  --primary-foreground: #fafafa;
+  --secondary: #e5e5e5;
+  --secondary-foreground: #0a0a0a;
+  --muted: #e5e5e5;
+  --muted-foreground: #737373;
+  --accent: #e5e5e5;
+  --accent-foreground: #0a0a0a;
   --destructive: #dc2626;
-  --border: #d0d7e2;
-  --input: #d0d7e2;
-  --ring: #64a8ff;
+  --border: #d4d4d4;
+  --input: #d4d4d4;
+  --ring: #a3a3a3;
 
-  --status-idle: #5a6573;
-  --status-active: #2563eb;
-  --status-building: #6366f1;
-  --status-testing: #0891b2;
+  --status-idle: #737373;
+  --status-active: #0a0a0a;
+  --status-building: #737373;
+  --status-testing: #737373;
   --status-repairing: #d97706;
   --status-success: #16a34a;
   --status-warning: #d97706;
   --status-danger: #dc2626;
 
-  --capability-connection: #0284c7;
-  --capability-skill: #6366f1;
-  --capability-workflow: #059669;
+  --capability-connection: #737373;
+  --capability-skill: #737373;
+  --capability-workflow: #737373;
 
   --evidence-official: #16a34a;
-  --evidence-secondary: #64748b;
+  --evidence-secondary: #737373;
   --evidence-untrusted: #ca8a04;
 
-  --ops-ink: #090c11;
+  --ops-ink: #0a0a0a;
   --ops-panel: #ffffff;
-  --ops-raised: #e8edf4;
-  --ops-signal: #2563eb;
+  --ops-raised: #e5e5e5;
+  /* ops-signal is neutral chrome — primary blue is only --primary */
+  --ops-signal: #0a0a0a;
   --ops-amber: #d97706;
   --ops-success: #16a34a;
 
@@ -111,50 +113,54 @@
   --phase-h: 40px;
 }
 
-/* Precision operations console — deep ink default */
+/* Public product theme: black/white precision UI (no navy wash) */
 .dark {
-  --background: #090c11;
-  --foreground: #f3f6fa;
-  --card: #111722;
-  --card-foreground: #f3f6fa;
-  --popover: #182131;
-  --popover-foreground: #f3f6fa;
-  --primary: #64a8ff;
-  --primary-foreground: #090c11;
-  --secondary: #182131;
-  --secondary-foreground: #f3f6fa;
-  --muted: #182131;
-  --muted-foreground: #9aa7b8;
-  --accent: #1a2740;
-  --accent-foreground: #f3f6fa;
-  --destructive: #f87171;
-  --border: #243044;
-  --input: #243044;
-  --ring: #64a8ff;
+  --background: #050505;
+  --foreground: #f7f7f5;
+  --card: #0a0a0a;
+  --card-foreground: #f7f7f5;
+  --popover: #111111;
+  --popover-foreground: #f7f7f5;
+  /* Blue reserved for primary Start/Send/active nav only */
+  --primary: #3b82f6;
+  --primary-foreground: #f7f7f5;
+  --secondary: #111111;
+  --secondary-foreground: #f7f7f5;
+  --muted: #111111;
+  --muted-foreground: #a3a3a3;
+  --accent: #111111;
+  --accent-foreground: #f7f7f5;
+  --destructive: #ef4444;
+  --border: #262626;
+  --input: #262626;
+  /* Focus ring neutral — blue only on primary buttons */
+  --ring: #525252;
 
-  --status-idle: #9aa7b8;
-  --status-active: #64a8ff;
-  --status-building: #8b9cff;
-  --status-testing: #5ec8e0;
-  --status-repairing: #f4b740;
-  --status-success: #52d38b;
-  --status-warning: #f4b740;
-  --status-danger: #f87171;
+  --status-idle: #a3a3a3;
+  /* Running/active status is neutral white, not blue */
+  --status-active: #f7f7f5;
+  --status-building: #a3a3a3;
+  --status-testing: #a3a3a3;
+  --status-repairing: #f59e0b;
+  --status-success: #22c55e;
+  --status-warning: #f59e0b;
+  --status-danger: #ef4444;
 
-  --capability-connection: #64a8ff;
-  --capability-skill: #8b9cff;
-  --capability-workflow: #52d38b;
+  --capability-connection: #a3a3a3;
+  --capability-skill: #a3a3a3;
+  --capability-workflow: #a3a3a3;
 
-  --evidence-official: #52d38b;
-  --evidence-secondary: #9aa7b8;
-  --evidence-untrusted: #f4b740;
+  --evidence-official: #22c55e;
+  --evidence-secondary: #a3a3a3;
+  --evidence-untrusted: #f59e0b;
 
-  --ops-ink: #090c11;
-  --ops-panel: #111722;
-  --ops-raised: #182131;
-  --ops-signal: #64a8ff;
-  --ops-amber: #f4b740;
-  --ops-success: #52d38b;
+  --ops-ink: #050505;
+  --ops-panel: #0a0a0a;
+  --ops-raised: #111111;
+  /* ops-signal is neutral chrome — blue only via --primary on Start / Hold-to-approve */
+  --ops-signal: #f7f7f5;
+  --ops-amber: #f59e0b;
+  --ops-success: #22c55e;
 }
 
 @media (prefers-reduced-motion: reduce) {

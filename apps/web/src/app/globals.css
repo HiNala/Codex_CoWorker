@@ -19,6 +19,7 @@
     min-width: 320px;
     min-height: 100dvh;
     overflow-x: hidden;
+    background-image: none;
   }
 
   /* Product shell owns scroll on desktop; marketing/mobile may page-scroll. */

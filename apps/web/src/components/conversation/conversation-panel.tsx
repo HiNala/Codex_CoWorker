@@ -21,6 +21,10 @@ export interface ConversationPanelProps {
   onDeny?: (approvalId: string) => void;
   onEvidenceOpen?: (id: string) => void;
   onPause?: () => void;
+  /** ONE primary action: start Broken Checkout golden path */
+  onStart?: () => void | Promise<void>;
+  startError?: string | null;
+  startPending?: boolean;
   densityOverride?: TraceDensity;
   className?: string;
 }
@@ -52,6 +56,9 @@ export function ConversationPanel({
   onDeny,
   onEvidenceOpen,
   onPause,
+  onStart,
+  startError = null,
+  startPending = false,
   densityOverride,
   className,
 }: ConversationPanelProps) {
@@ -190,7 +197,11 @@ export function ConversationPanel({
         aria-label="Conversation timeline"
       >
         {items.length === 0 ? (
-          <EmptyTimeline />
+          <EmptyTimeline
+            {...(onStart ? { onStart } : {})}
+            {...(startError != null ? { startError } : {})}
+            startPending={startPending}
+          />
         ) : (
           items.map((item) => {
             const rowProps: ComponentProps<typeof TimelineRow> = {
@@ -264,13 +275,48 @@ export function ConversationPanel({
   );
 }
 
-function EmptyTimeline() {
+function EmptyTimeline({
+  onStart,
+  startError,
+  startPending,
+}: {
+  onStart?: () => void | Promise<void>;
+  startError?: string | null;
+  startPending?: boolean;
+}) {
   return (
-    <div className="flex min-h-[12rem] flex-col items-center justify-center px-4 text-center">
-      <p className="text-sm font-medium text-foreground">Start the assignment</p>
-      <p className="mt-1 max-w-[36ch] text-sm text-muted-foreground">
-        Messages, evidence, and approvals appear here in order.
-      </p>
+    <div className="flex min-h-[14rem] flex-col items-center justify-center px-4 py-8">
+      <div className="w-full max-w-md rounded-xl border border-border bg-card px-5 py-6 text-left shadow-sm">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          Broken Checkout
+        </p>
+        <h2 className="mt-2 text-lg font-semibold tracking-tight text-foreground">
+          Start the assignment
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          Customers cannot complete annual plan checkout. Start the run to cluster tickets, measure
+          impact, build the checkout log analyzer if needed, and deliver a verified fix.
+        </p>
+        <Button
+          type="button"
+          size="lg"
+          className="mt-5 min-h-11 w-full bg-primary text-primary-foreground"
+          disabled={startPending || !onStart}
+          onClick={() => void onStart?.()}
+          data-start-assignment
+        >
+          {startPending ? "Starting…" : "Start assignment"}
+        </Button>
+        {startError ? (
+          <p
+            role="alert"
+            className="mt-3 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-[13px] text-destructive"
+            data-start-error
+          >
+            {startError}
+          </p>
+        ) : null}
+      </div>
     </div>
   );
 }
