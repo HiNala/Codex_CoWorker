@@ -1,0 +1,111 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "../styles/tokens.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    min-width: 320px;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    background-image:
+      linear-gradient(oklch(0.72 0.15 255 / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.72 0.15 255 / 0.035) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  ::selection {
+    background: oklch(0.68 0.19 285 / 0.4);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .panel-glass {
+    background: oklch(0.135 0.006 270 / 0.84);
+    backdrop-filter: blur(18px);
+  }
+
+  .forge-seam {
+    background:
+      radial-gradient(circle at 50% 5%, var(--status-testing) 0 1px, transparent 2px),
+      linear-gradient(
+        to bottom,
+        transparent,
+        oklch(0.72 0.15 255 / 0.7) 18%,
+        oklch(0.76 0.15 285 / 0.8) 54%,
+        oklch(0.78 0.15 75 / 0.65) 78%,
+        transparent
+      );
+    background-size:
+      100% 22px,
+      1px 100%;
+    background-position:
+      center top,
+      center;
+    background-repeat: repeat-y, no-repeat;
+  }
+
+  .cockpit-grid {
+    display: grid;
+    grid-template-columns: minmax(380px, 0.62fr) minmax(560px, 1fr);
+    grid-template-rows: 64px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "bar bar"
+      "conversation right"
+      "dock dock";
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .cockpit-bar {
+    grid-area: bar;
+  }
+
+  .cockpit-conversation {
+    grid-area: conversation;
+    min-height: 0;
+  }
+
+  .cockpit-right {
+    grid-area: right;
+    display: grid;
+    grid-template-rows: minmax(240px, 0.46fr) minmax(280px, 0.54fr);
+    min-height: 0;
+  }
+
+  .cockpit-dock {
+    grid-area: dock;
+  }
+
+  @media (max-width: 1023px) {
+    .cockpit-grid {
+      display: block;
+      min-height: 100dvh;
+      overflow: visible;
+    }
+
+    .cockpit-desktop {
+      display: none;
+    }
+  }
+}

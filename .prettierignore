@@ -1,0 +1,9 @@
+apps/web/.next/
+coverage/
+dist/
+docs/forge-mission-pack/
+node_modules/
+packages/db/drizzle/
+playwright-report/
+pnpm-lock.yaml
+test-results/
