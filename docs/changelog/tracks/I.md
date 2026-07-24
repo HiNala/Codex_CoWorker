@@ -40,6 +40,17 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23 ~18:20] CUT #4 ACK — one executable capability only
+
+- **Binding:** only `checkout-error-log-analyzer` is executable / live-built.
+- All other capability cards = **prebuilt inventory display only** — no live build,
+  no on-stage execution, no second runnable path.
+- **Wisp scope unchanged:** deploy, readiness, reset/seed/replay, domain, smoke.
+- **Wisp will not** add fixtures or demo-data for any second executable capability
+  (wildcard specs stay inventory/stub material only; golden-path transcript remains
+  Broken Checkout → checkout-error-log-analyzer).
+- Mid-work second-executable effort: **none in flight** — no divert required.
+
 ### [2026-07-23] DEXTWORK.COM — domain report for Node / Birch / operator
 
 **Priority reminder:** readiness gate first. Re-check this session:
