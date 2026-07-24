@@ -167,3 +167,25 @@ Node supersedes raw git add/commit/push.
 - Non-fast-forward push: stop, report Node, hold (commit local-safe)
 
 ARIA will not run raw `git add` / `git commit` / `git push` again.
+
+## [Gate1 freeze 17:58] D/G · checkpoint
+
+### Commit command (host-correct)
+`powershell -ExecutionPolicy Bypass -File scripts/agent-commit.ps1 -Agent Aria -Paths <comma,no,spaces> -MessageFile .git/msg-aria.txt`
+- No `pwsh` on this host (Windows PowerShell 5.1 only).
+- No raw git add/commit/push; mutex mandatory.
+
+### Track evidence
+- `pnpm exec vitest run packages/ui/src apps/web/src/hooks` → **21 passed**
+- ARIA path typecheck filter: clean
+- Five exclusive surfaces complete; `CockpitShell` wires Conversation / MissionControl / Foundry / ArtifactDock
+- Hydration: `useRunStream` default **demo fixture** (fakes) projects RunEvent log → timeline, steps, capabilities, gates, artifacts, approvals
+- Live SSE path present (`EventSource /api/runs/:id/stream`) but golden-path demo path is fixture-first until Cael stream is live
+- Capability tiles: icon + label every state; motion event-driven; no timer-owned status
+- Artifact dock renders fixture-declared/drafting cards (artifact *production* is Track E/A)
+
+### Gate call
+**TRACK D GREEN** · **TRACK G GREEN**
+Most residual seam (not D-owned): live SSE + seed when `useDemoFixture=false` depends on Cael runtime; cockpit already renders persisted-shape events from fakes.
+
+Mutex: released after this commit (script finally). No new feature work after freeze.
