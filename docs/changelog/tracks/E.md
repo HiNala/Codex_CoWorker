@@ -184,3 +184,27 @@
 **Artifact punchline (Rigel package, not live dock):** GOLDEN + Cael table body **byte-equal**, `distinctCount=9`, rows=9, no cus_ZZ9. Tests 28 PASS. **Punchline GREEN in package contract.** Live Outputs card 9 not observable until run produces artifact.
 
 **Not a Cael stale-slug escalation:** page is idle/unconnected, not showing wrong capability name.
+
+### [2026-07-23T18:50Z] E · FINAL HANDOFF EVIDENCE STANDARD — LOADED PAGE (Playwright)
+
+**Method:** Playwright cold open (not HTML-only).  
+**Screenshot:** `docs/qa-evidence/dextwork-cold-cockpit.png`  
+**URL:** `https://dextwork.com/a/0198206f-5f53-7000-8000-000000000005`
+
+**Reset+seed:** **FAILED.** Prod `POST /api/demo/reset` and `/api/demo/seed` → **401 invalid_access_code**. Local DEMO_ACCESS_CODE is CONFIGURED but does not match production. **No successful final reset+seed under my control.**
+
+**Hydrated page measurements (wait ~4s after load; `data-connected=true`, `data-last-seq=0`, `data-use-demo-fixture=false`, `data-timeline-count=0`):**
+
+| Required | Must | Observed | Result |
+| --- | --- | --- | --- |
+| Hold-to-approve controls | exactly **1** | **0** | **FAIL** |
+| Composer typing while approval pending | YES | Composer **accepts typing** (`disabled=false`, probe fill ok) but **no pending approval** | **NOT PROVEN** |
+| Capability = checkout-error-log-analyzer | YES | **Not on screen**; api-change also absent | **FAIL** (missing, not wrong name) |
+| Approval PENDING un-actioned | YES | **No approval UI** | **FAIL** |
+| Replay unconsumed | YES | empty timeline / seq 0 | **PARTIAL** (empty shell, not a mid-run) |
+| Artifact distinctCount | **9** | **Not on screen** | **FAIL** live |
+| Package punchline | 9 | GOLDEN≡Cael, rows=9, tests PASS | **PASS** package only |
+
+**Scenario framing on cold page:** **Broken Checkout · Nala** present. No api-change / Webhook rename.
+
+**OVERALL: NOT DONE.** Health 200 + package green are insufficient. Hydrated demo beat (1 hold, pending approval, checkout analyzer name, artifact 9) is **absent** on cold open.
