@@ -1,0 +1,559 @@
+{
+  "schemaVersion": 1,
+  "name": "golden-artifact-broken-checkout",
+  "role": "prebuilt",
+  "note": "War room cut: fifth capability is PREBUILT (not live-built on stage). Single canonical fixture for Cael + Aria.",
+  "authority": [
+    "docs/forge-mission-pack/23-DEMO-SCENARIO-the-broken-checkout.md",
+    "docs/agent-briefs/RIGEL-fixture-correction.md"
+  ],
+  "capability": {
+    "slug": "checkout-error-log-analyzer",
+    "version": "1.0.0",
+    "status": "prebuilt_installed",
+    "logSource": "demo/acme-store/logs/checkout-errors.ndjson",
+    "window": {
+      "from": "2026-07-16T00:00:00Z",
+      "to": "2026-07-23T23:59:59Z"
+    },
+    "rules": {
+      "filter": "level === 'error' && event === 'checkout_failed'",
+      "fieldShapes": [
+        "customer_id",
+        "context.customer.id"
+      ],
+      "distractor": {
+        "line": 22,
+        "level": "warn",
+        "event": "card_declined",
+        "customer_id": "cus_ZZ9",
+        "note": "load-bearing — do not delete; miss filter → 5/10 not 4/9"
+      }
+    },
+    "attempt1_naive": {
+      "distinctCount": 4,
+      "affectedCustomers": [
+        "cus_AC2",
+        "cus_BR3",
+        "cus_KT4",
+        "cus_NW1"
+      ],
+      "failureMessage": "expected 9, received 4",
+      "implementation": "Rule1 filter applied; Rule2 top-level customer_id only"
+    },
+    "attempt2_repaired": {
+      "distinctCount": 9,
+      "output": {
+        "affectedCustomers": [
+          "cus_AC2",
+          "cus_BR3",
+          "cus_KT4",
+          "cus_LM5",
+          "cus_NW1",
+          "cus_OP6",
+          "cus_QR7",
+          "cus_ST8",
+          "cus_UV9"
+        ],
+        "distinctCount": 9,
+        "taxonomy": {
+          "card_declined": 1,
+          "checkout_failed": 40,
+          "rate_limit": 2,
+          "timeout": 1
+        },
+        "firstSeen": "2026-07-16T09:14:02Z",
+        "lastSeen": "2026-07-23T15:59:41Z"
+      },
+      "implementation": "Rule1 filter + Rule2 both field shapes"
+    },
+    "neverInAffectedCustomers": [
+      "cus_ZZ9"
+    ]
+  },
+  "artifact": {
+    "id": "0198206f-5f53-7000-8000-000000000101",
+    "orgId": "0198206f-5f53-7000-8000-0000000000a1",
+    "assignmentId": "0198206f-5f53-7000-8000-0000000000c1",
+    "runId": "0198206f-5f53-7000-8000-0000000000d1",
+    "coworkerId": "0198206f-5f53-7000-8000-0000000000e1",
+    "type": "table.typed",
+    "title": "Affected customers — annual checkout",
+    "slug": "affected-customers-annual-checkout",
+    "status": "ready_for_review",
+    "visibility": "org",
+    "currentVersionId": "0198206f-5f53-7000-8000-000000000102",
+    "version": {
+      "id": "0198206f-5f53-7000-8000-000000000102",
+      "ordinal": 1,
+      "parentVersionId": null,
+      "authorType": "capability",
+      "authorRef": "checkout-error-log-analyzer@1.0.0",
+      "contentFormat": "json",
+      "changeSummary": "checkout-error-log-analyzer v1.0.0 → 9 distinct customers",
+      "sourceEventRange": {
+        "from": 0,
+        "to": 40
+      },
+      "contentSha256": "d79def11170608e25cb0754522ffc51a50eccfe1abf0e545232c51cbe5f1af0d",
+      "contentInline": "{\"columns\":[{\"id\":\"customerId\",\"name\":\"Customer\",\"type\":\"string\"},{\"id\":\"impact\",\"name\":\"Impact\",\"type\":\"string\"}],\"rows\":[{\"rowId\":\"cus_AC2\",\"cells\":{\"customerId\":\"cus_AC2\",\"impact\":\"annual_checkout_failed\"},\"evidenceRefs\":[\"c1a3539e-6dad-4e74-adff-d6c8bacb9b94\"]},{\"rowId\":\"cus_BR3\",\"cells\":{\"customerId\":\"cus_BR3\",\"impact\":\"annual_checkout_failed\"},\"evidenceRefs\":[\"5fe779e6-3e9d-492e-a735-9876daef1de1\"]},{\"rowId\":\"cus_KT4\",\"cells\":{\"customerId\":\"cus_KT4\",\"impact\":\"annual_checkout_failed\"},\"evidenceRefs\":[\"a3f21e45-2a0a-42b4-aafc-3687b5aada1d\"]},{\"rowId\":\"cus_LM5\",\"cells\":{\"customerId\":\"cus_LM5\",\"impact\":\"annual_checkout_failed\"},\"evidenceRefs\":[\"08c29624-a300-4dca-a1cf-478f243e656c\"]},{\"rowId\":\"cus_NW1\",\"cells\":{\"customerId\":\"cus_NW1\",\"impact\":\"annual_checkout_failed\"},\"evidenceRefs\":[\"93480525-bada-44a9-a5d8-0e135e938413\"]},{\"rowId\":\"cus_OP6\",\"cells\":{\"customerId\":\"cus_OP6\",\"impact\":\"annual_checkout_failed\"},\"evidenceRefs\":[\"81977e94-2c08-4310-ac60-c0ce109eb9d5\"]},{\"rowId\":\"cus_QR7\",\"cells\":{\"customerId\":\"cus_QR7\",\"impact\":\"annual_checkout_failed\"},\"evidenceRefs\":[\"b4105073-0f27-42c8-a275-9b6d14d68609\"]},{\"rowId\":\"cus_ST8\",\"cells\":{\"customerId\":\"cus_ST8\",\"impact\":\"annual_checkout_failed\"},\"evidenceRefs\":[\"754395f7-cf2b-4686-a78f-278d7bb525f1\"]},{\"rowId\":\"cus_UV9\",\"cells\":{\"customerId\":\"cus_UV9\",\"impact\":\"annual_checkout_failed\"},\"evidenceRefs\":[\"ef41bfeb-696f-4a5d-a8f6-04cba7bdeadb\"]}],\"warnings\":[]}"
+    },
+    "typedTable": {
+      "columns": [
+        {
+          "id": "customerId",
+          "name": "Customer",
+          "type": "string"
+        },
+        {
+          "id": "impact",
+          "name": "Impact",
+          "type": "string"
+        }
+      ],
+      "rows": [
+        {
+          "rowId": "cus_AC2",
+          "cells": {
+            "customerId": "cus_AC2",
+            "impact": "annual_checkout_failed"
+          },
+          "evidenceRefs": [
+            "c1a3539e-6dad-4e74-adff-d6c8bacb9b94"
+          ]
+        },
+        {
+          "rowId": "cus_BR3",
+          "cells": {
+            "customerId": "cus_BR3",
+            "impact": "annual_checkout_failed"
+          },
+          "evidenceRefs": [
+            "5fe779e6-3e9d-492e-a735-9876daef1de1"
+          ]
+        },
+        {
+          "rowId": "cus_KT4",
+          "cells": {
+            "customerId": "cus_KT4",
+            "impact": "annual_checkout_failed"
+          },
+          "evidenceRefs": [
+            "a3f21e45-2a0a-42b4-aafc-3687b5aada1d"
+          ]
+        },
+        {
+          "rowId": "cus_LM5",
+          "cells": {
+            "customerId": "cus_LM5",
+            "impact": "annual_checkout_failed"
+          },
+          "evidenceRefs": [
+            "08c29624-a300-4dca-a1cf-478f243e656c"
+          ]
+        },
+        {
+          "rowId": "cus_NW1",
+          "cells": {
+            "customerId": "cus_NW1",
+            "impact": "annual_checkout_failed"
+          },
+          "evidenceRefs": [
+            "93480525-bada-44a9-a5d8-0e135e938413"
+          ]
+        },
+        {
+          "rowId": "cus_OP6",
+          "cells": {
+            "customerId": "cus_OP6",
+            "impact": "annual_checkout_failed"
+          },
+          "evidenceRefs": [
+            "81977e94-2c08-4310-ac60-c0ce109eb9d5"
+          ]
+        },
+        {
+          "rowId": "cus_QR7",
+          "cells": {
+            "customerId": "cus_QR7",
+            "impact": "annual_checkout_failed"
+          },
+          "evidenceRefs": [
+            "b4105073-0f27-42c8-a275-9b6d14d68609"
+          ]
+        },
+        {
+          "rowId": "cus_ST8",
+          "cells": {
+            "customerId": "cus_ST8",
+            "impact": "annual_checkout_failed"
+          },
+          "evidenceRefs": [
+            "754395f7-cf2b-4686-a78f-278d7bb525f1"
+          ]
+        },
+        {
+          "rowId": "cus_UV9",
+          "cells": {
+            "customerId": "cus_UV9",
+            "impact": "annual_checkout_failed"
+          },
+          "evidenceRefs": [
+            "ef41bfeb-696f-4a5d-a8f6-04cba7bdeadb"
+          ]
+        }
+      ],
+      "warnings": []
+    },
+    "dockMetrics": {
+      "rows": 9,
+      "warnings": 0,
+      "versionLabel": "v1"
+    },
+    "evidenceByAnchor": {
+      "customer:cus_AC2": [
+        "c1a3539e-6dad-4e74-adff-d6c8bacb9b94"
+      ],
+      "customer:cus_BR3": [
+        "5fe779e6-3e9d-492e-a735-9876daef1de1"
+      ],
+      "customer:cus_KT4": [
+        "a3f21e45-2a0a-42b4-aafc-3687b5aada1d"
+      ],
+      "customer:cus_LM5": [
+        "08c29624-a300-4dca-a1cf-478f243e656c"
+      ],
+      "customer:cus_NW1": [
+        "93480525-bada-44a9-a5d8-0e135e938413"
+      ],
+      "customer:cus_OP6": [
+        "81977e94-2c08-4310-ac60-c0ce109eb9d5"
+      ],
+      "customer:cus_QR7": [
+        "b4105073-0f27-42c8-a275-9b6d14d68609"
+      ],
+      "customer:cus_ST8": [
+        "754395f7-cf2b-4686-a78f-278d7bb525f1"
+      ],
+      "customer:cus_UV9": [
+        "ef41bfeb-696f-4a5d-a8f6-04cba7bdeadb"
+      ]
+    },
+    "evidenceRecords": [
+      {
+        "id": "c1a3539e-6dad-4e74-adff-d6c8bacb9b94",
+        "orgId": "0198206f-5f53-7000-8000-0000000000a1",
+        "kind": "ticket",
+        "sourceUrl": null,
+        "title": "Log cluster cus_AC2",
+        "excerpt": "checkout_failed for cus_AC2 within demo window",
+        "contentSha256": "46551a8f3844fe369a62bb4d6ceadcf2f4a4ec00096ed93b748f117dbc2c1fd5",
+        "retrievedAt": "2026-07-16T09:14:02Z",
+        "trust": "secondary",
+        "injectionSuspected": false
+      },
+      {
+        "id": "5fe779e6-3e9d-492e-a735-9876daef1de1",
+        "orgId": "0198206f-5f53-7000-8000-0000000000a1",
+        "kind": "ticket",
+        "sourceUrl": null,
+        "title": "Log cluster cus_BR3",
+        "excerpt": "checkout_failed for cus_BR3 within demo window",
+        "contentSha256": "081454aa4dab5a1420443c986f595794b9087f8c85cf4c0c07c2628a0d060c79",
+        "retrievedAt": "2026-07-16T09:14:02Z",
+        "trust": "secondary",
+        "injectionSuspected": false
+      },
+      {
+        "id": "a3f21e45-2a0a-42b4-aafc-3687b5aada1d",
+        "orgId": "0198206f-5f53-7000-8000-0000000000a1",
+        "kind": "ticket",
+        "sourceUrl": null,
+        "title": "Log cluster cus_KT4",
+        "excerpt": "checkout_failed for cus_KT4 within demo window",
+        "contentSha256": "06bc854cf8cdc103b9d26d2a95a6f31235e6f5c47e5818a30a9b3bbc3db3ff53",
+        "retrievedAt": "2026-07-16T09:14:02Z",
+        "trust": "secondary",
+        "injectionSuspected": false
+      },
+      {
+        "id": "08c29624-a300-4dca-a1cf-478f243e656c",
+        "orgId": "0198206f-5f53-7000-8000-0000000000a1",
+        "kind": "ticket",
+        "sourceUrl": null,
+        "title": "Log cluster cus_LM5",
+        "excerpt": "checkout_failed for cus_LM5 within demo window",
+        "contentSha256": "842896f8bd35e1d0e9e9670b277b7b5a4b131c31773c25ca2571381517308ee4",
+        "retrievedAt": "2026-07-16T09:14:02Z",
+        "trust": "secondary",
+        "injectionSuspected": false
+      },
+      {
+        "id": "93480525-bada-44a9-a5d8-0e135e938413",
+        "orgId": "0198206f-5f53-7000-8000-0000000000a1",
+        "kind": "ticket",
+        "sourceUrl": null,
+        "title": "Log cluster cus_NW1",
+        "excerpt": "checkout_failed for cus_NW1 within demo window",
+        "contentSha256": "d330ebd302b08271db52140a6e25e0275738167097fa4a9f460a45093c8b50ba",
+        "retrievedAt": "2026-07-16T09:14:02Z",
+        "trust": "secondary",
+        "injectionSuspected": false
+      },
+      {
+        "id": "81977e94-2c08-4310-ac60-c0ce109eb9d5",
+        "orgId": "0198206f-5f53-7000-8000-0000000000a1",
+        "kind": "ticket",
+        "sourceUrl": null,
+        "title": "Log cluster cus_OP6",
+        "excerpt": "checkout_failed for cus_OP6 within demo window",
+        "contentSha256": "9f7ca6c8057c43ee6aea5c6283f164902e4a85915423d6f3dec7c79d76f05ccf",
+        "retrievedAt": "2026-07-16T09:14:02Z",
+        "trust": "secondary",
+        "injectionSuspected": false
+      },
+      {
+        "id": "b4105073-0f27-42c8-a275-9b6d14d68609",
+        "orgId": "0198206f-5f53-7000-8000-0000000000a1",
+        "kind": "ticket",
+        "sourceUrl": null,
+        "title": "Log cluster cus_QR7",
+        "excerpt": "checkout_failed for cus_QR7 within demo window",
+        "contentSha256": "9df9e64eeda736c30f63123dd78bb6ef46b9cbef7702325948eb8d4a36b14067",
+        "retrievedAt": "2026-07-16T09:14:02Z",
+        "trust": "secondary",
+        "injectionSuspected": false
+      },
+      {
+        "id": "754395f7-cf2b-4686-a78f-278d7bb525f1",
+        "orgId": "0198206f-5f53-7000-8000-0000000000a1",
+        "kind": "ticket",
+        "sourceUrl": null,
+        "title": "Log cluster cus_ST8",
+        "excerpt": "checkout_failed for cus_ST8 within demo window",
+        "contentSha256": "9da8252db9b301741295882832c0b9fccaec2cf87339322af62b096f0291fdf6",
+        "retrievedAt": "2026-07-16T09:14:02Z",
+        "trust": "secondary",
+        "injectionSuspected": false
+      },
+      {
+        "id": "ef41bfeb-696f-4a5d-a8f6-04cba7bdeadb",
+        "orgId": "0198206f-5f53-7000-8000-0000000000a1",
+        "kind": "ticket",
+        "sourceUrl": null,
+        "title": "Log cluster cus_UV9",
+        "excerpt": "checkout_failed for cus_UV9 within demo window",
+        "contentSha256": "874f592b9704eae77653ee3b548ac8a9947a1f0ca977b040166f70d28118f53b",
+        "retrievedAt": "2026-07-16T09:14:02Z",
+        "trust": "secondary",
+        "injectionSuspected": false
+      }
+    ]
+  },
+  "provenance": {
+    "rootId": "0198206f-5f53-7000-8000-000000000101",
+    "nodes": [
+      {
+        "id": "0198206f-5f53-7000-8000-000000000101",
+        "kind": "artifact",
+        "label": "Affected customers — annual checkout"
+      },
+      {
+        "id": "0198206f-5f53-7000-8000-0000000000d1",
+        "kind": "run",
+        "label": "assignment run"
+      },
+      {
+        "id": "cap-checkout-error-log-analyzer-v1.0.0",
+        "kind": "capability_version",
+        "label": "checkout-error-log-analyzer@1.0.0"
+      },
+      {
+        "id": "0198206f-5f53-7000-8000-000000000102",
+        "kind": "artifact_version",
+        "label": "v1",
+        "meta": {
+          "ordinal": 1,
+          "sha256": "d79def11170608e25cb0754522ffc51a50eccfe1abf0e545232c51cbe5f1af0d"
+        }
+      },
+      {
+        "id": "c1a3539e-6dad-4e74-adff-d6c8bacb9b94",
+        "kind": "evidence",
+        "label": "Log cluster cus_AC2",
+        "meta": {
+          "trust": "secondary"
+        }
+      },
+      {
+        "id": "5fe779e6-3e9d-492e-a735-9876daef1de1",
+        "kind": "evidence",
+        "label": "Log cluster cus_BR3",
+        "meta": {
+          "trust": "secondary"
+        }
+      },
+      {
+        "id": "a3f21e45-2a0a-42b4-aafc-3687b5aada1d",
+        "kind": "evidence",
+        "label": "Log cluster cus_KT4",
+        "meta": {
+          "trust": "secondary"
+        }
+      },
+      {
+        "id": "08c29624-a300-4dca-a1cf-478f243e656c",
+        "kind": "evidence",
+        "label": "Log cluster cus_LM5",
+        "meta": {
+          "trust": "secondary"
+        }
+      },
+      {
+        "id": "93480525-bada-44a9-a5d8-0e135e938413",
+        "kind": "evidence",
+        "label": "Log cluster cus_NW1",
+        "meta": {
+          "trust": "secondary"
+        }
+      },
+      {
+        "id": "81977e94-2c08-4310-ac60-c0ce109eb9d5",
+        "kind": "evidence",
+        "label": "Log cluster cus_OP6",
+        "meta": {
+          "trust": "secondary"
+        }
+      },
+      {
+        "id": "b4105073-0f27-42c8-a275-9b6d14d68609",
+        "kind": "evidence",
+        "label": "Log cluster cus_QR7",
+        "meta": {
+          "trust": "secondary"
+        }
+      },
+      {
+        "id": "754395f7-cf2b-4686-a78f-278d7bb525f1",
+        "kind": "evidence",
+        "label": "Log cluster cus_ST8",
+        "meta": {
+          "trust": "secondary"
+        }
+      },
+      {
+        "id": "ef41bfeb-696f-4a5d-a8f6-04cba7bdeadb",
+        "kind": "evidence",
+        "label": "Log cluster cus_UV9",
+        "meta": {
+          "trust": "secondary"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "0198206f-5f53-7000-8000-0000000000d1",
+        "relation": "source_run"
+      },
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "cap-checkout-error-log-analyzer-v1.0.0",
+        "relation": "capability_version"
+      },
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "0198206f-5f53-7000-8000-000000000102",
+        "relation": "input_artifact"
+      },
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "c1a3539e-6dad-4e74-adff-d6c8bacb9b94",
+        "relation": "evidence"
+      },
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "5fe779e6-3e9d-492e-a735-9876daef1de1",
+        "relation": "evidence"
+      },
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "a3f21e45-2a0a-42b4-aafc-3687b5aada1d",
+        "relation": "evidence"
+      },
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "08c29624-a300-4dca-a1cf-478f243e656c",
+        "relation": "evidence"
+      },
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "93480525-bada-44a9-a5d8-0e135e938413",
+        "relation": "evidence"
+      },
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "81977e94-2c08-4310-ac60-c0ce109eb9d5",
+        "relation": "evidence"
+      },
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "b4105073-0f27-42c8-a275-9b6d14d68609",
+        "relation": "evidence"
+      },
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "754395f7-cf2b-4686-a78f-278d7bb525f1",
+        "relation": "evidence"
+      },
+      {
+        "fromId": "0198206f-5f53-7000-8000-000000000101",
+        "toId": "ef41bfeb-696f-4a5d-a8f6-04cba7bdeadb",
+        "relation": "evidence"
+      }
+    ]
+  },
+  "renderer": {
+    "type": "table.typed",
+    "registryKey": "typed-table",
+    "csvHeader": "Customer,Impact",
+    "csv": "Customer,Impact\ncus_AC2,annual_checkout_failed\ncus_BR3,annual_checkout_failed\ncus_KT4,annual_checkout_failed\ncus_LM5,annual_checkout_failed\ncus_NW1,annual_checkout_failed\ncus_OP6,annual_checkout_failed\ncus_QR7,annual_checkout_failed\ncus_ST8,annual_checkout_failed\ncus_UV9,annual_checkout_failed",
+    "expectsNineDataRows": true
+  },
+  "consumption": {
+    "cael": {
+      "file": "packages/capability-fixtures/checkout-error-log-analyzer/GOLDEN-ARTIFACT.json",
+      "trustedCompare": "Deep-equal capability.execute result to capability.attempt2_repaired.output",
+      "attempt1Message": "expected 9, received 4",
+      "prebuilt": true,
+      "imports": {
+        "naive": "naiveAnalyzeCheckoutErrors from @forge/capability-fixtures",
+        "repaired": "referenceAnalyzeCheckoutErrors from @forge/capability-fixtures",
+        "lines": "loadCheckoutErrorNdjsonLines() or demo/acme-store/logs/checkout-errors.ndjson"
+      },
+      "seedHint": "May seed verifier from this file without re-running the analyzer if needed for parachute"
+    },
+    "aria": {
+      "dockCard": {
+        "type": "table.typed",
+        "title": "Affected customers — annual checkout",
+        "status": "ready_for_review",
+        "metrics": "9 rows · 0 warnings · v1"
+      },
+      "canvas": {
+        "parse": "JSON.parse(artifact.version.contentInline) as TypedTableContent",
+        "renderer": "resolveRenderer('table.typed') === 'typed-table'",
+        "rowClick": "evidenceByAnchor['customer:' + row.rowId] → look up evidenceRecords by id"
+      },
+      "evidencePanel": [
+        "title",
+        "trust",
+        "contentSha256",
+        "excerpt",
+        "retrievedAt"
+      ],
+      "provenance": "Render provenance.nodes + provenance.edges; rootId = artifact.id",
+      "doNotHardcode": "Never hardcode the number 9 in UI copy — use distinctCount / dockMetrics.rows"
+    }
+  }
+}

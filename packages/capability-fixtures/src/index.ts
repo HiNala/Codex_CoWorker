@@ -31,7 +31,7 @@ export {
   loadCheckoutErrorLogCases,
 } from "./load-cases";
 
-// Live-build beat (23-DEMO-SCENARIO / Birch override) — primary
+// Prebuilt fifth capability (war-room cut: not live-built on stage)
 export type {
   CheckoutErrorLogInput,
   CheckoutErrorLogOutput,

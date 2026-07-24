@@ -1,6 +1,7 @@
 {
   "slug": "checkout-error-log-analyzer",
-  "role": "on_stage_live_build",
+  "role": "prebuilt",
+  "note": "War room: fifth capability cut to prebuilt. Prefer GOLDEN-ARTIFACT.json as the single canonical handoff.",
   "authority": [
     "docs/forge-mission-pack/23-DEMO-SCENARIO-the-broken-checkout.md#6",
     "docs/agent-briefs/RIGEL-fixture-correction.md"

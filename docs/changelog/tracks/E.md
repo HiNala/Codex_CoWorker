@@ -106,3 +106,14 @@
   - vitest artifacts + capability-fixtures + capability-sdk + capabilities → **24 files / 300 tests PASS**
 - Barrel restored: `@forge/artifacts` re-exports service/renderers/evidence/provenance
 - Residual red (not Rigel unit): Cael must load `cael-contract.json` into foundry trusted gate before T+70
+
+### [2026-07-23T18:15Z] E · WAR ROOM · canonical GOLDEN-ARTIFACT handoff (prebuilt cut)
+
+- **Fifth capability CUT TO PREBUILT** — not live-built on stage.
+- **ONE canonical JSON for Cael + Aria:**
+  - `packages/capability-fixtures/checkout-error-log-analyzer/GOLDEN-ARTIFACT.json`
+  - Consumption notes: `GOLDEN-ARTIFACT.consumption.md`
+- Pins: naive **4** · repaired **9** · message `expected 9, received 4` · `table.typed` artifact v1 with SHA-256 · 9 evidence anchors · provenance (run+capability+9 evidence) · CSV 9 data rows
+- Generator: `generate-golden.mjs` (reproducible SHA)
+- Test: `golden-artifact.test.ts` proves file matches live naive/reference + lineage
+- Standing by to review Cael/Aria integration payloads immediately after they land
