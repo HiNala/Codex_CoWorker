@@ -11,7 +11,12 @@
   --success: #3dd68c;
   --danger: #ff6b7a;
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-  font-family: "Segoe UI", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-family:
+    "Segoe UI",
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 * {
@@ -24,8 +29,7 @@ body {
   min-height: 100%;
   background:
     radial-gradient(1200px 600px at 10% -10%, rgba(91, 140, 255, 0.22), transparent 60%),
-    radial-gradient(900px 500px at 90% 0%, rgba(124, 92, 255, 0.18), transparent 55%),
-    var(--bg);
+    radial-gradient(900px 500px at 90% 0%, rgba(124, 92, 255, 0.18), transparent 55%), var(--bg);
   color: var(--text);
 }
 
@@ -107,9 +111,7 @@ button {
 
 .plan-card.featured {
   border-color: rgba(91, 140, 255, 0.45);
-  background:
-    linear-gradient(180deg, rgba(91, 140, 255, 0.12), transparent 45%),
-    var(--surface);
+  background: linear-gradient(180deg, rgba(91, 140, 255, 0.12), transparent 45%), var(--surface);
 }
 
 .plan-card h2 {
@@ -153,7 +155,9 @@ button {
   color: white;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.12s ease, opacity 0.12s ease;
+  transition:
+    transform 0.12s ease,
+    opacity 0.12s ease;
 }
 
 .cta:hover:not(:disabled) {

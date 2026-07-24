@@ -187,3 +187,36 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - Gate 1 stays on deterministic FakeNotifier; live Composio remains optional after Node upgrade + `COMPOSIO_GMAIL_ACCOUNT_ID` link().
 - `COMPOSIO_API_KEY`: CONFIGURED (value never logged).
 
+
+### [2026-07-23] F/L golden-path rehearsal (offline / fakes)
+
+**Scope:** host PR pipeline on hand-written Broken Checkout patch; approval-gated email; honest degrade. No live PR/email/Zendesk/Octen writes.
+
+#### Evidence (exact)
+
+| Check | Result |
+| --- | --- |
+| `pnpm exec vitest run packages/integrations/src/golden-path.smoke.test.ts packages/research/src/golden-path.smoke.test.ts packages/integrations/src/approval` | **3 files / 10 tests PASS** |
+| Hand-written patch `annual-checkout-fix.patch` apply `--3way` on clean demo checkout clone | **PASS** (prices.ts + prices.test.ts clean) |
+| Post-apply: `resolvePriceId('team','yearly')` defined; `annual` undefined; monthly still works | **PASS** |
+| Host `GitHubPullRequestAdapter` local bare remote: apply + commit trailers + mock `pulls.create` payload | **PASS** (branch/PR body prepared; no network to api.github.com) |
+| Sandbox credential-free: event/payload JSON has no token material | **PASS** |
+| Zendesk / GitHub / email / composio / octen status with empty env | **not_configured** (or degraded) — Fake/Import paths |
+| `ExternalActionExecutor`: exact approved email executes once; mutated body refused | **PASS** |
+| Bug fixed in executor: hash gate **before** idempotency cache (mutated args same key no longer short-circuits) | **PASS** |
+
+#### Live-auth blockers (names only — not Gate blockers for fake path)
+
+| Key | Status | Effect |
+| --- | --- | --- |
+| `ZENDESK_*` (4) | UNSET | ImportTicketGateway + local HMAC fixture |
+| `GITHUB_TOKEN` / `GITHUB_PAT` | ABSENT | FakeGitHubPullRequestAdapter (no real PR) |
+| `COMPOSIO_GMAIL_ACCOUNT_ID` + Node floor policy | not live | FakeNotifier |
+| `OCTEN_API_KEY` (when empty env in smoke) | treated unset in smoke | FakeResearchGateway |
+| `RESEND_API_KEY` | ABSENT | no Resend fallback in smoke |
+
+#### Cael contract
+
+- See `packages/integrations/src/cael-contract.md` — `action.proposed` → approval (`payloadSha256`) → `execute` exact args → `action.executed` / `action.failed`.
+- Never re-plan approved args; never put PAT/API keys in events; sandbox emits **patch only**.
+

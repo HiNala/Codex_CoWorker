@@ -48,9 +48,6 @@ export async function POST(req: NextRequest) {
     return Response.json({ url: session.url });
   } catch (err) {
     logger.error({ err: String(err), plan, interval }, "checkout_failed");
-    return Response.json(
-      { error: "Something went wrong. Please try again." },
-      { status: 500 },
-    );
+    return Response.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

@@ -20,11 +20,11 @@ Open [http://localhost:3210/pricing](http://localhost:3210/pricing).
 
 ## Environment
 
-| Variable | Purpose |
-| --- | --- |
-| `STRIPE_SECRET_KEY` | Server-side Stripe secret (test mode) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Client publishable key |
-| `NEXT_PUBLIC_APP_URL` | Origin used for success/cancel URLs |
+| Variable                             | Purpose                               |
+| ------------------------------------ | ------------------------------------- |
+| `STRIPE_SECRET_KEY`                  | Server-side Stripe secret (test mode) |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Client publishable key                |
+| `NEXT_PUBLIC_APP_URL`                | Origin used for success/cancel URLs   |
 
 ## Scripts
 

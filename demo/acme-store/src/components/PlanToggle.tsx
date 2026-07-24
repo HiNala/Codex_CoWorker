@@ -18,11 +18,7 @@ export function PlanToggle({ value, onChange }: PlanToggleProps) {
         >
           Monthly
         </button>
-        <button
-          type="button"
-          aria-pressed={value === "yearly"}
-          onClick={() => onChange("yearly")}
-        >
+        <button type="button" aria-pressed={value === "yearly"} onClick={() => onChange("yearly")}>
           Annual
         </button>
       </div>

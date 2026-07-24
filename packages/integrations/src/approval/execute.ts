@@ -82,9 +82,9 @@ export class ExternalActionExecutor implements ActionGateway {
   }
 
   async execute(proposal: ExternalActionProposal, approvalId: string): Promise<ActionResult> {
-    const cached = this.#results.get(proposal.idempotencyKey);
-    if (cached) return cached;
-
+    // Always verify approval + payload hash BEFORE idempotency short-circuit.
+    // Otherwise a mutated proposal reusing the same idempotencyKey would skip
+    // the hash gate and return a prior result (re-plan by smuggling).
     const approval = this.#approvals.get(approvalId);
     if (!approval) {
       throw new ExternalActionError("approval.not_found", `No approval ${approvalId}`);
@@ -124,6 +124,9 @@ export class ExternalActionExecutor implements ActionGateway {
         "Proposal identity fields do not match approved record",
       );
     }
+
+    const cached = this.#results.get(proposal.idempotencyKey);
+    if (cached) return cached;
 
     const executor = this.#executors[proposal.provider];
     if (!executor) {

@@ -12,9 +12,7 @@ import {
 const ORG = "0198206f-5f53-7000-8000-000000000001";
 
 function mockFetch(payload: unknown, status = 200) {
-  return vi.fn(async () =>
-    Response.json(payload, { status }),
-  ) as unknown as typeof fetch;
+  return vi.fn(async () => Response.json(payload, { status })) as unknown as typeof fetch;
 }
 
 describe("detectInjection", () => {
@@ -88,10 +86,7 @@ describe("OctenResearchGateway", () => {
       query: string;
     };
     expect(body.query).toBe("stripe checkout session price");
-    expect(body.include_domains).toEqual([
-      "developer.zendesk.com",
-      "docs.stripe.com",
-    ]);
+    expect(body.include_domains).toEqual(["developer.zendesk.com", "docs.stripe.com"]);
   });
 
   it("uses extract with query for intent-focused highlights", async () => {

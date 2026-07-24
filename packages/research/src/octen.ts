@@ -124,10 +124,7 @@ export class OctenResearchGateway implements ResearchGateway {
       throw new OctenError("octen.rate_limited", "Octen rate limit; caller should back off");
     }
     if (res.status >= 500) {
-      throw new OctenError(
-        "octen.server_error",
-        `Octen ${path} server error: ${res.status}`,
-      );
+      throw new OctenError("octen.server_error", `Octen ${path} server error: ${res.status}`);
     }
     if (!res.ok) {
       throw new OctenError("octen.failed", `Octen ${path} failed: ${res.status}`);
@@ -253,9 +250,7 @@ function extractItems(data: unknown): Array<{
     url: item.url,
     title: item.title,
     text:
-      (item.highlights && item.highlights.length > 0
-        ? item.highlights.join("\n")
-        : undefined) ??
+      (item.highlights && item.highlights.length > 0 ? item.highlights.join("\n") : undefined) ??
       item.markdown ??
       item.content ??
       "",

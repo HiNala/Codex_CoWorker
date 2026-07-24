@@ -40,12 +40,7 @@ export function PlanCard({ plan, interval, busy, onCheckout }: PlanCardProps) {
           <li key={feature}>{feature}</li>
         ))}
       </ul>
-      <button
-        type="button"
-        className="cta"
-        disabled={busy}
-        onClick={() => onCheckout(plan.id)}
-      >
+      <button type="button" className="cta" disabled={busy} onClick={() => onCheckout(plan.id)}>
         {busy ? "Redirecting…" : `Choose ${plan.name}`}
       </button>
     </article>
