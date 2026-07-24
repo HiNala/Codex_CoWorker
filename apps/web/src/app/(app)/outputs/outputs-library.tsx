@@ -145,11 +145,13 @@ export function OutputsLibrary({ items }: { items: ArtifactListItem[] }) {
                 href={`/outputs/${item.id}`}
                 className="block h-full focus-visible:outline-none"
               >
-                <Card className="h-full transition-colors hover:bg-muted/25 focus-within:ring-2 focus-within:ring-ring/40">
+                <Card className="h-full border-border/80 bg-card shadow-sm transition-colors hover:bg-muted/20 focus-within:ring-2 focus-within:ring-ring/40">
                   <CardHeader className="border-b border-border/60">
                     <div className="flex items-start justify-between gap-3">
-                      <CardTitle className="text-base">{item.title}</CardTitle>
-                      <Badge variant="outline">{typeLabel(item.type)}</Badge>
+                      <CardTitle className="text-base leading-snug">{item.title}</CardTitle>
+                      <Badge variant="outline" className="shrink-0">
+                        {typeLabel(item.type)}
+                      </Badge>
                     </div>
                     <CardDescription className="line-clamp-2">{item.summary}</CardDescription>
                   </CardHeader>

@@ -41,8 +41,17 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
   const { artifact, versions, evidence, provenance, summary } = detail;
 
   return (
-    <main id="main" className="mx-auto min-h-dvh max-w-[1400px] px-5 py-6 sm:px-8 lg:px-12">
-      <nav className="mb-6 text-sm text-muted-foreground">
+    <div className="mx-auto w-full max-w-6xl">
+      <nav className="mb-5 text-sm text-muted-foreground">
+        <Link
+          href="/dashboard"
+          className="underline-offset-4 hover:text-foreground hover:underline"
+        >
+          Dashboard
+        </Link>
+        <span className="mx-2" aria-hidden>
+          /
+        </span>
         <Link href="/outputs" className="underline-offset-4 hover:text-foreground hover:underline">
           Outputs
         </Link>
@@ -52,7 +61,7 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
         <span className="text-foreground">{artifact.title}</span>
       </nav>
 
-      <header className="mb-8 border-b border-border/80 pb-6">
+      <header className="mb-6 border-b border-border/80 pb-5">
         <div className="flex flex-wrap items-start gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">{artifact.title}</h1>
           <Badge variant="outline">{artifact.type}</Badge>
@@ -85,13 +94,12 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
             Version history
           </h2>
           <p className="text-xs text-muted-foreground">
-            Immutable versions (placeholder list from seed). Side-by-side compare lands with the
-            Canvas.
+            Immutable versions (seed). Side-by-side compare lands with the Canvas.
           </p>
           <ol className="space-y-3">
             {versions.map((v) => (
               <li key={v.id}>
-                <Card size="sm">
+                <Card size="sm" className="border-border/80 bg-card">
                   <CardHeader className="border-b border-border/50">
                     <div className="flex items-center justify-between gap-3">
                       <CardTitle>
@@ -106,7 +114,8 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-md bg-muted/40 p-3 font-mono text-[11px] leading-5 text-muted-foreground">
+                    {/* No nested scroll — outer panel-body owns scrolling */}
+                    <pre className="whitespace-pre-wrap rounded-md bg-muted/40 p-3 font-mono text-[11px] leading-5 text-muted-foreground">
                       {v.contentInline ?? "(content in object store)"}
                     </pre>
                   </CardContent>
@@ -122,8 +131,7 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
               Evidence
             </h2>
             <p className="text-xs text-muted-foreground">
-              Sources linked to this artifact. Missing refs must render as unsupported — never
-              fabricated.
+              Sources linked to this artifact. Missing refs render as unsupported — never fabricated.
             </p>
             {evidence.length === 0 ? (
               <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
@@ -133,7 +141,7 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
               <ul className="space-y-3">
                 {evidence.map((ev) => (
                   <li key={ev.id}>
-                    <Card size="sm">
+                    <Card size="sm" className="border-border/80 bg-card">
                       <CardHeader>
                         <div className="flex items-start justify-between gap-2">
                           <CardTitle className="text-sm">{ev.title}</CardTitle>
@@ -177,21 +185,20 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
               Provenance
             </h2>
             <p className="text-xs text-muted-foreground">
-              Upstream links: input artifacts, evidence, capability versions, tool invocations,
-              human edits, approvals, source run.
+              Upstream links: inputs, evidence, capability versions, tools, edits, approvals, run.
             </p>
             {provenance.length === 0 ? (
               <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
                 No provenance relations recorded.
               </div>
             ) : (
-              <ul className="divide-y divide-border/70 rounded-lg border border-border">
+              <ul className="divide-y divide-border/70 rounded-lg border border-border bg-card">
                 {provenance.map((rel) => (
                   <li
                     key={`${rel.relation}:${rel.toId}`}
                     className="flex items-start justify-between gap-3 px-4 py-3 text-sm"
                   >
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-medium">{rel.label}</p>
                       <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
                         {rel.toId.slice(0, 13)}…
@@ -207,6 +214,6 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
           </section>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -208,3 +208,10 @@
 **Scenario framing on cold page:** **Broken Checkout · Nala** present. No api-change / Webhook rename.
 
 **OVERALL: NOT DONE.** Health 200 + package green are insufficient. Hydrated demo beat (1 hold, pending approval, checkout analyzer name, artifact 9) is **absent** on cold open.
+
+### [2026-07-23T19:00Z] E · Outputs layout: Dextwork rail, /dashboard back, no nested scroll
+
+- `outputs/layout.tsx`: 76px `DextworkSidebar` + single `panel-body` (no second chrome)
+- `/outputs` and `/outputs/[id]`: back/home → **`/dashboard`**; removed `min-h-dvh` self-shell; version pre no longer `overflow-auto`
+- Cards: solid `bg-card` surface; library grid clean
+- `tsc -p apps/web` PASS
