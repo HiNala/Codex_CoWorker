@@ -166,3 +166,21 @@
 - **DEFECT 3:** dock `artifact-card.tsx` uses `??` fallback; demo emits `code.diff` not `code.change`. Fix: map alias + never `??` (use `OT`).
 - Pure helper in Rigel scope: `packages/artifacts/src/renderers/dock-type.ts` (`dockTypeIcon` never `??`)
 - Full patch brief: `packages/artifacts/ARIA-UI-FIX-ROUTE.md` — Node please route to Aria
+
+### [2026-07-23T18:40Z] E · LIVE QA dextwork.com + artifact punchline verify
+
+**Deploy shell:** `https://dextwork.com/a/0198206f-5f53-7000-8000-000000000005` HTTP 200 · `data-dextwork-shell=true` · CSS grid rail **76px** confirmed in shipped CSS.
+
+| # | Check | Finding |
+| --- | --- | --- |
+| 1 | Capability = checkout-error-log-analyzer not api-change | **INCONCLUSIVE / IDLE** — Caps empty ("No capabilities yet"). No install card. `data-use-demo-fixture=false` `data-last-seq=0` `data-connected=false`. Neither slug visible. **Not** observing api-change-impact text. Run not streaming — escalate Cael/Wisp if demo should auto-seed on load. |
+| 2 | Assignment = Broken Checkout not Webhook rename | **PARTIAL PASS** — subtitle **"Broken Checkout · Nala"**; h1 still generic **"Assignment"**. Marketing home: "Fix annual checkout · Zendesk #4821". No "Webhook field rename" on cockpit HTML. |
+| 3 | ≤1 scrollbar per panel | **STRUCTURAL OK (idle)** — 4× `.panel-body` (one per column region). SSR: 0× `overflow-auto`. Live multi-scroll only verifiable mid-run. |
+| 4 | Install card over tile | **N/A idle** — install UI not mounted. Codebase risk remains if Aria did not ship exclusive-mode fix. |
+| 5 | Mid-sentence clip | **None observed** in idle empty states. |
+| 6 | Outputs never `??` | **N/A idle** — no artifact cards in DOM. Pure helper `dockTypeIcon` ready; dock still Aria-owned. |
+| 7 | 76px icon rail | **PASS** — `.cockpit-sidebar` + CSS `grid-template-columns: 76px …` on live CSS chunk. |
+
+**Artifact punchline (Rigel package, not live dock):** GOLDEN + Cael table body **byte-equal**, `distinctCount=9`, rows=9, no cus_ZZ9. Tests 28 PASS. **Punchline GREEN in package contract.** Live Outputs card 9 not observable until run produces artifact.
+
+**Not a Cael stale-slug escalation:** page is idle/unconnected, not showing wrong capability name.
