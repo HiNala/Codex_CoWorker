@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEMO_ASSIGNMENT_HREF } from "./constants";
-import {
-  formatUsd,
-  pricesAreProvisional,
-  pricingFaq,
-  pricingPlans,
-} from "./pricing-plans";
+import { formatUsd, pricesAreProvisional, pricingFaq, pricingPlans } from "./pricing-plans";
 
 describe("marketing pricing catalogue", () => {
   it("ships three provisional plans with integer credit pools", () => {
@@ -30,7 +25,10 @@ describe("marketing pricing catalogue", () => {
   });
 
   it("exposes FAQ covering cost, credits, approvals, data, and cancel", () => {
-    const blob = pricingFaq.map((f) => `${f.question} ${f.answer}`).join(" ").toLowerCase();
+    const blob = pricingFaq
+      .map((f) => `${f.question} ${f.answer}`)
+      .join(" ")
+      .toLowerCase();
     expect(blob).toContain("work credit");
     expect(blob).toContain("approv");
     expect(blob).toContain("data");

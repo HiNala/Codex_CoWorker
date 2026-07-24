@@ -4,13 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   clearDemoAccessCode,
@@ -239,7 +233,10 @@ export function DemoControlPanel() {
 
   if (!code || !status) {
     return (
-      <main id="main" className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center px-5 py-16">
+      <main
+        id="main"
+        className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center px-5 py-16"
+      >
         <Card>
           <CardHeader>
             <CardTitle className="text-base tracking-[0.14em]">DEMO CONTROL</CardTitle>
@@ -504,15 +501,7 @@ export function DemoControlPanel() {
   );
 }
 
-function HealthChip({
-  label,
-  ok,
-  unknown,
-}: {
-  label: string;
-  ok: boolean;
-  unknown?: boolean;
-}) {
+function HealthChip({ label, ok, unknown }: { label: string; ok: boolean; unknown?: boolean }) {
   return (
     <span className="inline-flex items-center gap-1.5">
       <span

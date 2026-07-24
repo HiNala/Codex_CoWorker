@@ -1,7 +1,4 @@
-import {
-  startReplayFromTranscript,
-  updateReplayState,
-} from "@forge/demo";
+import { startReplayFromTranscript, updateReplayState } from "@forge/demo";
 import { authorizeDemoRequest, deny, jsonError, jsonOk } from "../_shared";
 
 export const dynamic = "force-dynamic";

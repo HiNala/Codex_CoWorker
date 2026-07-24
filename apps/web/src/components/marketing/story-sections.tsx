@@ -107,21 +107,10 @@ export function StorySections() {
 }
 
 export function TrustedSystems() {
-  const marks = [
-    "OpenAI",
-    "Codex",
-    "Composio",
-    "Octen",
-    "Zendesk",
-    "GitHub",
-    "Slack",
-  ] as const;
+  const marks = ["OpenAI", "Codex", "Composio", "Octen", "Zendesk", "GitHub", "Slack"] as const;
 
   return (
-    <section
-      aria-labelledby="trusted-heading"
-      className="border-t border-white/10 bg-black/25"
-    >
+    <section aria-labelledby="trusted-heading" className="border-t border-white/10 bg-black/25">
       <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 lg:px-12">
         <p
           id="trusted-heading"
@@ -149,11 +138,7 @@ export function TrustedSystems() {
 
 export function FinalCta({ demoHref }: { demoHref: string }) {
   return (
-    <section
-      aria-labelledby="final-cta-heading"
-      className="border-t border-white/10"
-      id="docs"
-    >
+    <section aria-labelledby="final-cta-heading" className="border-t border-white/10" id="docs">
       <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8 lg:px-12">
         <div className="rounded-2xl border border-white/12 bg-gradient-to-br from-white/[0.06] to-transparent px-6 py-12 text-center sm:px-12">
           <h2

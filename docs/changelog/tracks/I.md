@@ -40,6 +40,42 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23 ~18:02] GATE 1 FREEZE checkpoint
+
+- **Commit command:** Windows PowerShell 5.1 only —
+  `powershell -ExecutionPolicy Bypass -File scripts/agent-commit.ps1 -Agent Wisp -Paths <csv> -MessageFile .git/msg-wisp.txt`
+  (`pwsh` not installed; mutex mandatory; no raw add/commit/push).
+- **Stop NEW feature work** at freeze. In-flight committed via mutex only.
+- Track tests:
+  - `@forge/demo` → **21/21 pass**
+  - `@forge/demo-data` → **2/2 pass**
+- Deploy evidence (Track I):
+  - Project `forge-codex` linked; services `hello` + `Postgres` + `web` + bucket `forge-artifacts`
+  - Domain: `https://web-production-7d71d.up.railway.app`
+  - `GET /api/health/live` → **200**
+  - `GET /api/health/ready` → **200** (db/schema/storage/queue up after migrate+seed)
+- Demo director (Track J): reset/seed/replay/panic APIs + `/demo` panel + golden-path e2e skeleton (soft-stages until cockpit testids complete).
+- Marketing (Track H): homepage + pricing + hero preview shipped; cut-first if RED swarm needed.
+- **Collective golden-path seam risk:** e2e full path still soft-stages when contract/approve/`data-testid` UI incomplete — swarm target if RED at IT RUNS.
+- Pane line: see freeze reply.
+
+### [2026-07-23] GIT PROTOCOL ACK — no pull / rebase / stash (Node urgent)
+
+- Read authoritative `docs/agent-briefs/_GIT-PROTOCOL.md`. Supersedes brief
+  pull-rebase line (Node error; not agent error).
+- **Forbidden:** `git pull`, `git pull --rebase`, `--autostash`, `git stash`,
+  `git reset`, `git checkout` of paths outside Wisp scope.
+- **Only sequence:** scoped add (via `scripts/agent-commit.ps1` mutex) → commit
+  → `git push origin main`. Non-fast-forward push → **STOP**, report Node, hold.
+- Shared tree verification (Wisp exclusive inventory):
+  - `HEAD=4bd1932` on `main`, tracking `origin/main`
+  - stash list **empty**; no `rebase-merge` / `rebase-apply`
+  - **54/54** critical Wisp paths present on disk
+  - Key deliverables **ON_HEAD**: `I.md`, `infra/docker/web.Dockerfile`,
+    `packages/demo/src/panic.ts`, `e2e/golden-path/full-run.spec.ts`,
+    marketing home
+  - **Nothing missing** to report to Node.
+
 ### [2026-07-23] credential load-path ACK (Node → all agents)
 
 - **Authoritative env file is `.env.local`**, not `.env`. All 9 root scripts use

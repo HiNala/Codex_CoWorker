@@ -91,7 +91,12 @@ try {
     record("GET /pricing", false, `${response.status} ${response.statusText}`);
   }
 } catch (error) {
-  record("GET /pricing", true, `skipped: ${error instanceof Error ? error.message : error}`, "warn");
+  record(
+    "GET /pricing",
+    true,
+    `skipped: ${error instanceof Error ? error.message : error}`,
+    "warn",
+  );
 }
 
 // 3) GET /api/health/live — required
@@ -124,7 +129,12 @@ try {
     record("GET /api/health/ready", false, `${response.status} ${text.slice(0, 200)}`);
   }
 } catch (error) {
-  record("GET /api/health/ready", true, `skipped: ${error instanceof Error ? error.message : error}`, "warn");
+  record(
+    "GET /api/health/ready",
+    true,
+    `skipped: ${error instanceof Error ? error.message : error}`,
+    "warn",
+  );
 }
 
 // 5) Security headers (sample from live or /)
@@ -151,7 +161,12 @@ try {
     );
   }
 } catch (error) {
-  record("security headers", true, `skipped: ${error instanceof Error ? error.message : error}`, "warn");
+  record(
+    "security headers",
+    true,
+    `skipped: ${error instanceof Error ? error.message : error}`,
+    "warn",
+  );
 }
 
 // 6) Optional status + secret leak guard
@@ -161,7 +176,11 @@ try {
     record("GET /api/health/status", true, `${response.status} (optional/auth)`, "warn");
   } else if (response.ok) {
     if (looksSecretBearing(text)) {
-      record("GET /api/health/status", false, "response body appears to contain secret-shaped values");
+      record(
+        "GET /api/health/status",
+        false,
+        "response body appears to contain secret-shaped values",
+      );
     } else {
       record("GET /api/health/status", true, `${response.status} no secret-shaped strings`);
     }
@@ -169,7 +188,12 @@ try {
     record("GET /api/health/status", true, `${response.status} optional`, "warn");
   }
 } catch (error) {
-  record("GET /api/health/status", true, `skipped: ${error instanceof Error ? error.message : error}`, "warn");
+  record(
+    "GET /api/health/status",
+    true,
+    `skipped: ${error instanceof Error ? error.message : error}`,
+    "warn",
+  );
 }
 
 console.log("---");

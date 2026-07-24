@@ -1,10 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import {
-  allFakeAdapters,
-  applyPanicAdapters,
-  isAllFake,
-  adaptersFromEnv,
-} from "./panic";
+import { allFakeAdapters, applyPanicAdapters, isAllFake, adaptersFromEnv } from "./panic";
 import { getDemoRuntime, resetDemoRuntimeForTests } from "./runtime";
 
 afterEach(() => {

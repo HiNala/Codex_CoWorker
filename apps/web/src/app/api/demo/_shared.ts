@@ -1,8 +1,4 @@
-import {
-  extractDemoAccessCode,
-  gateDemoMutation,
-  type DemoAccessDenial,
-} from "@forge/demo";
+import { extractDemoAccessCode, gateDemoMutation, type DemoAccessDenial } from "@forge/demo";
 
 export function demoEnv() {
   return {

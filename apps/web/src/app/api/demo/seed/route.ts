@@ -1,8 +1,4 @@
-import {
-  DEMO_SEED_IDS,
-  buildSeedResponse,
-  updateSeedState,
-} from "@forge/demo";
+import { DEMO_SEED_IDS, buildSeedResponse, updateSeedState } from "@forge/demo";
 import { authorizeDemoRequest, deny, jsonError, jsonOk } from "../_shared";
 
 export const dynamic = "force-dynamic";

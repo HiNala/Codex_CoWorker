@@ -18,9 +18,10 @@ export type TimingBeat = keyof typeof TIMING_BUDGETS_MS;
 
 export const TIMING_BEATS = Object.keys(TIMING_BUDGETS_MS) as TimingBeat[];
 
-export const TIMING_TOTAL_BUDGET_MS = (
-  Object.values(TIMING_BUDGETS_MS) as number[]
-).reduce((sum, value) => sum + value, 0);
+export const TIMING_TOTAL_BUDGET_MS = (Object.values(TIMING_BUDGETS_MS) as number[]).reduce(
+  (sum, value) => sum + value,
+  0,
+);
 
 /** ~2m15s machine time leaves ~90s for narration and approvals in a 4-minute slot. */
 export const DEMO_NARRATION_RESERVE_MS = 90_000;

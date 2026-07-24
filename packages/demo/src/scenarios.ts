@@ -1,11 +1,7 @@
 import { formatEstimate, SCENARIO_ESTIMATES_MS } from "./timing";
 import { GOLDEN_PATH_CAPABILITY_GAP, GOLDEN_PATH_REQUEST } from "./seed";
 
-export type ScenarioId =
-  | "full_golden_path"
-  | "from_capability_gap"
-  | "from_approval"
-  | "replay";
+export type ScenarioId = "full_golden_path" | "from_capability_gap" | "from_approval" | "replay";
 
 export type DemoScenario = {
   id: ScenarioId;

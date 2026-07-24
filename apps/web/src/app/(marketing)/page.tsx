@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { HeroPreview } from "@/components/marketing/hero-preview";
-import {
-  FinalCta,
-  StorySections,
-  TrustedSystems,
-} from "@/components/marketing/story-sections";
+import { FinalCta, StorySections, TrustedSystems } from "@/components/marketing/story-sections";
 import { DEMO_ASSIGNMENT_HREF } from "@/components/marketing/constants";
 
 export default function MarketingHomePage() {

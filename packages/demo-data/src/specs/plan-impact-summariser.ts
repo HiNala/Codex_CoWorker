@@ -5,8 +5,7 @@
 export const planImpactSummariserSpec = {
   slug: "plan-impact-summariser",
   name: "Plan impact summariser",
-  purpose:
-    "Group support tickets by customer plan and report which plan is hurting most.",
+  purpose: "Group support tickets by customer plan and report which plan is hurting most.",
   inputSchema: {
     type: "object",
     required: ["tickets"],

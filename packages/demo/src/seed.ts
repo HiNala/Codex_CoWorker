@@ -29,8 +29,7 @@ export const GOLDEN_PATH_REQUEST =
   "Assess impact from checkout error logs, build any missing capability needed, open a PR, " +
   "and draft a short owner email.";
 
-export const GOLDEN_PATH_TICKET_SUBJECT =
-  "Can't upgrade to Team — annual billing errors out";
+export const GOLDEN_PATH_TICKET_SUBJECT = "Can't upgrade to Team — annual billing errors out";
 
 export const GOLDEN_PATH_CAPABILITY_GAP = "checkout-error-log-analyzer";
 

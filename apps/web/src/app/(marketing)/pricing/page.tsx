@@ -56,10 +56,7 @@ export default function PricingPage() {
           ) : null}
         </header>
 
-        <section
-          aria-labelledby="plans-heading"
-          className="mt-12 grid gap-4 lg:grid-cols-3"
-        >
+        <section aria-labelledby="plans-heading" className="mt-12 grid gap-4 lg:grid-cols-3">
           <h2 id="plans-heading" className="sr-only">
             Plans
           </h2>
@@ -79,7 +76,9 @@ export default function PricingPage() {
             Work Credits, explained
           </h2>
           <div className="mt-4 grid gap-6 md:grid-cols-2">
-            <p className="text-sm leading-7 text-muted-foreground sm:text-base">{WORK_CREDITS_BLURB}</p>
+            <p className="text-sm leading-7 text-muted-foreground sm:text-base">
+              {WORK_CREDITS_BLURB}
+            </p>
             <div className="space-y-3 text-sm leading-7 text-muted-foreground sm:text-base">
               <p>{EXAMPLE_ASSIGNMENT_COST}</p>
               <p>{OVERAGE_POLICY}</p>
@@ -100,7 +99,10 @@ export default function PricingPage() {
           </h2>
           <dl className="mt-8 divide-y divide-white/10 border-y border-white/10">
             {pricingFaq.map((item) => (
-              <div key={item.question} className="grid gap-2 py-5 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)] sm:gap-8">
+              <div
+                key={item.question}
+                className="grid gap-2 py-5 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.2fr)] sm:gap-8"
+              >
                 <dt className="text-sm font-medium text-white">{item.question}</dt>
                 <dd className="text-sm leading-7 text-muted-foreground">{item.answer}</dd>
               </div>
@@ -125,13 +127,7 @@ export default function PricingPage() {
   );
 }
 
-function PlanCard({
-  plan,
-  provisional,
-}: {
-  plan: PricingPlanView;
-  provisional: boolean;
-}) {
+function PlanCard({ plan, provisional }: { plan: PricingPlanView; provisional: boolean }) {
   return (
     <Card
       className={cn(
@@ -189,9 +185,7 @@ function PlanCard({
           )}
         >
           <Link
-            href={
-              plan.cta === "contact_sales" ? "mailto:hello@forge.local" : DEMO_ASSIGNMENT_HREF
-            }
+            href={plan.cta === "contact_sales" ? "mailto:hello@forge.local" : DEMO_ASSIGNMENT_HREF}
           >
             {plan.ctaLabel}
           </Link>

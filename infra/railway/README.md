@@ -6,14 +6,14 @@
 
 ## Services
 
-| Service    | Role                                      | Dockerfile / image                         | Public?              | Health check              |
-| ---------- | ----------------------------------------- | ------------------------------------------ | -------------------- | ------------------------- |
-| `web`      | Next.js standalone, API, SSE, marketing   | `infra/docker/web.Dockerfile`              | **Yes** (domain)     | `GET /api/health/live`    |
-| `worker`   | Orchestrator, jobs, integrations          | `infra/docker/worker.Dockerfile`           | No (private)         | process health / logs     |
-| `foundry`  | Codex capability builds                   | `infra/docker/foundry.Dockerfile`          | No (private)         | process health / logs     |
-| `postgres` | Railway Postgres plugin                   | managed (`railway add -d postgres`)        | No                   | managed                   |
-| `minio`    | Path A object storage (volume at `/data`) | `infra/docker/minio.Dockerfile`            | **No console public**| MinIO live probe          |
-| `hello`    | T+10 path-prover (disposable)             | `infra/hello/Dockerfile`                   | optional             | `GET /api/health/live`    |
+| Service    | Role                                      | Dockerfile / image                  | Public?               | Health check           |
+| ---------- | ----------------------------------------- | ----------------------------------- | --------------------- | ---------------------- |
+| `web`      | Next.js standalone, API, SSE, marketing   | `infra/docker/web.Dockerfile`       | **Yes** (domain)      | `GET /api/health/live` |
+| `worker`   | Orchestrator, jobs, integrations          | `infra/docker/worker.Dockerfile`    | No (private)          | process health / logs  |
+| `foundry`  | Codex capability builds                   | `infra/docker/foundry.Dockerfile`   | No (private)          | process health / logs  |
+| `postgres` | Railway Postgres plugin                   | managed (`railway add -d postgres`) | No                    | managed                |
+| `minio`    | Path A object storage (volume at `/data`) | `infra/docker/minio.Dockerfile`     | **No console public** | MinIO live probe       |
+| `hello`    | T+10 path-prover (disposable)             | `infra/hello/Dockerfile`            | optional              | `GET /api/health/live` |
 
 **Path B (fallback):** skip `minio` and use `railway bucket create forge-artifacts` + `railway bucket credentials`. Same `S3_*` env shape via `ObjectStore`. Prefer Path B if MinIO is not healthy by T+50.
 
@@ -62,15 +62,15 @@ railway up --service minio --detach
 
 ## Config files in this directory
 
-| File                    | Purpose                                      |
-| ----------------------- | -------------------------------------------- |
-| `service-matrix.md`     | Per-service env vars + forbidden secrets     |
-| `web.railway.toml`      | Build/deploy for `web`                       |
-| `worker.railway.toml`   | Build/deploy for `worker`                    |
-| `foundry.railway.toml`  | Build/deploy for `foundry`                   |
-| `minio.railway.toml`    | Build/deploy for Path A MinIO                |
-| `hello.railway.toml`    | Hello-world path prover                      |
-| `PARENT-SCRIPTS.md`     | Exact root `package.json` script names       |
+| File                   | Purpose                                  |
+| ---------------------- | ---------------------------------------- |
+| `service-matrix.md`    | Per-service env vars + forbidden secrets |
+| `web.railway.toml`     | Build/deploy for `web`                   |
+| `worker.railway.toml`  | Build/deploy for `worker`                |
+| `foundry.railway.toml` | Build/deploy for `foundry`               |
+| `minio.railway.toml`   | Build/deploy for Path A MinIO            |
+| `hello.railway.toml`   | Hello-world path prover                  |
+| `PARENT-SCRIPTS.md`    | Exact root `package.json` script names   |
 
 Root `railway.toml` defaults to the **web** service config for convenience when the linked service is `web`.
 

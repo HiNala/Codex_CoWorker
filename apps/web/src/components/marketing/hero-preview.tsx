@@ -68,9 +68,7 @@ function withCap(id: CapId, patch: Partial<CapFrame>, caps = BASE_CAPS): CapFram
 }
 
 function activateExisting(caps: CapFrame[]): CapFrame[] {
-  return caps.map((c) =>
-    c.id === "log-analysis" ? c : { ...c, state: "active" as const },
-  );
+  return caps.map((c) => (c.id === "log-analysis" ? c : { ...c, state: "active" as const }));
 }
 
 /** Keyframes across 0–8000ms. Final hold 8000–10000. */
@@ -109,11 +107,7 @@ const FRAMES: PreviewFrame[] = [
     phase: "Missing capability specified",
     contractVisible: true,
     contractTitle: "Fix annual checkout · Zendesk #4821",
-    capabilities: withCap(
-      "log-analysis",
-      { state: "specifying" },
-      activateExisting(BASE_CAPS),
-    ),
+    capabilities: withCap("log-analysis", { state: "specifying" }, activateExisting(BASE_CAPS)),
     artifact: {
       visible: true,
       ready: false,
@@ -239,10 +233,9 @@ export function HeroPreview({ className }: { className?: string }) {
   React.useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => setVisible(entry?.isIntersecting ?? false),
-      { threshold: 0.12 },
-    );
+    const io = new IntersectionObserver(([entry]) => setVisible(entry?.isIntersecting ?? false), {
+      threshold: 0.12,
+    });
     io.observe(el);
     return () => io.disconnect();
   }, []);
@@ -393,9 +386,7 @@ function ArtifactPreview({
         <span
           className={cn(
             "rounded-full px-2 py-0.5 text-[10px] font-medium",
-            ready
-              ? "bg-status-success/20 text-status-success"
-              : "bg-white/5 text-white/55",
+            ready ? "bg-status-success/20 text-status-success" : "bg-white/5 text-white/55",
           )}
         >
           {ready ? "Ready" : "Declared"}

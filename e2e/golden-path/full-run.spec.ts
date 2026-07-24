@@ -8,20 +8,9 @@
  */
 
 import { expect, test, type Page } from "@playwright/test";
-import {
-  GOLDEN_PROMPT,
-  SEEDED_ASSIGNMENT_ID,
-  panicAdapters,
-  resetDemo,
-  seedDemo,
-} from "./helpers";
+import { GOLDEN_PROMPT, SEEDED_ASSIGNMENT_ID, panicAdapters, resetDemo, seedDemo } from "./helpers";
 
-const COCKPIT_PANELS = [
-  "Conversation",
-  "Mission control",
-  "The foundry",
-  "Artifact dock",
-] as const;
+const COCKPIT_PANELS = ["Conversation", "Mission control", "The foundry", "Artifact dock"] as const;
 
 async function openSeededCockpit(page: Page, assignmentId = SEEDED_ASSIGNMENT_ID) {
   await page.goto(`/a/${assignmentId}`);
@@ -156,16 +145,12 @@ test.describe("Golden path — full run against fakes", () => {
     });
 
     // Trusted gate fails, then repairs (fake Codex attempt 1 → 2).
-    await expect(page.getByTestId("gate-trusted_tests")).toHaveAttribute(
-      "data-status",
-      "failed",
-      { timeout: 90_000 },
-    );
-    await expect(page.getByTestId("gate-trusted_tests")).toHaveAttribute(
-      "data-status",
-      "passed",
-      { timeout: 90_000 },
-    );
+    await expect(page.getByTestId("gate-trusted_tests")).toHaveAttribute("data-status", "failed", {
+      timeout: 90_000,
+    });
+    await expect(page.getByTestId("gate-trusted_tests")).toHaveAttribute("data-status", "passed", {
+      timeout: 90_000,
+    });
 
     // Refresh MID-RUN and lose nothing.
     await page.reload();

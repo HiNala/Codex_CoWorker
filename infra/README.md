@@ -11,12 +11,12 @@ pnpm dev:infra
 # same as: docker compose up -d postgres minio createbucket
 ```
 
-| Service        | Address                    | Notes                          |
-| -------------- | -------------------------- | ------------------------------ |
-| Postgres       | `127.0.0.1:5432`           | db/user/pass: `forge` / `postgres` / `forge` |
-| MinIO S3 API   | `http://127.0.0.1:9000`    | keys: `forge` / `forge-dev-secret` |
-| MinIO console  | `http://127.0.0.1:9001`    | localhost only                 |
-| Bucket         | `forge`                    | created by `createbucket`      |
+| Service       | Address                 | Notes                                        |
+| ------------- | ----------------------- | -------------------------------------------- |
+| Postgres      | `127.0.0.1:5432`        | db/user/pass: `forge` / `postgres` / `forge` |
+| MinIO S3 API  | `http://127.0.0.1:9000` | keys: `forge` / `forge-dev-secret`           |
+| MinIO console | `http://127.0.0.1:9001` | localhost only                               |
+| Bucket        | `forge`                 | created by `createbucket`                    |
 
 Helpers: `pnpm infra:status`, `pnpm infra:logs`, `pnpm infra:down`.
 
@@ -42,13 +42,13 @@ docker compose --profile dev up -d mailpit
 
 ### Images
 
-| Image                  | Dockerfile                         | Health probe                          |
-| ---------------------- | ---------------------------------- | ------------------------------------- |
-| `forge/web`            | `infra/docker/web.Dockerfile`      | `GET /api/health/live`                |
-| `forge/worker`         | `infra/docker/worker.Dockerfile`   | `GET /health/live` on `:3001`         |
-| `forge/foundry`        | `infra/docker/foundry.Dockerfile`  | `GET /health/live` on `:3002`         |
-| `forge/sandbox-runner` | `infra/docker/sandbox.Dockerfile`  | batch entrypoint — no HTTP            |
-| `forge/minio`          | `infra/docker/minio.Dockerfile`    | `GET /minio/health/live`              |
+| Image                  | Dockerfile                        | Health probe                  |
+| ---------------------- | --------------------------------- | ----------------------------- |
+| `forge/web`            | `infra/docker/web.Dockerfile`     | `GET /api/health/live`        |
+| `forge/worker`         | `infra/docker/worker.Dockerfile`  | `GET /health/live` on `:3001` |
+| `forge/foundry`        | `infra/docker/foundry.Dockerfile` | `GET /health/live` on `:3002` |
+| `forge/sandbox-runner` | `infra/docker/sandbox.Dockerfile` | batch entrypoint — no HTTP    |
+| `forge/minio`          | `infra/docker/minio.Dockerfile`   | `GET /minio/health/live`      |
 
 Web uses Next.js `output: "standalone"`. Worker/foundry health is liveness-only in `HEALTHCHECK` and compose — never probe `/ready` for restarts.
 

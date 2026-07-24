@@ -14,12 +14,8 @@ describe("isDemoMutationAllowed", () => {
 
   it("blocks production unless DEMO_MODE=1", () => {
     expect(isDemoMutationAllowed({ NODE_ENV: "production" })).toBe(false);
-    expect(isDemoMutationAllowed({ NODE_ENV: "production", DEMO_MODE: "0" })).toBe(
-      false,
-    );
-    expect(isDemoMutationAllowed({ NODE_ENV: "production", DEMO_MODE: "1" })).toBe(
-      true,
-    );
+    expect(isDemoMutationAllowed({ NODE_ENV: "production", DEMO_MODE: "0" })).toBe(false);
+    expect(isDemoMutationAllowed({ NODE_ENV: "production", DEMO_MODE: "1" })).toBe(true);
   });
 });
 
@@ -46,9 +42,7 @@ describe("extractDemoAccessCode", () => {
 
   it("falls back to query params", () => {
     const headers = new Headers();
-    expect(extractDemoAccessCode(headers, new URLSearchParams("accessCode=q1"))).toBe(
-      "q1",
-    );
+    expect(extractDemoAccessCode(headers, new URLSearchParams("accessCode=q1"))).toBe("q1");
   });
 });
 

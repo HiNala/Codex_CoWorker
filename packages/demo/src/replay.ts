@@ -110,9 +110,7 @@ export function parseTranscriptJsonl(content: string): TranscriptEvent[] {
   return events;
 }
 
-export function loadGoldenPathTranscript(
-  path: string = defaultTranscriptPath(),
-): LoadedTranscript {
+export function loadGoldenPathTranscript(path: string = defaultTranscriptPath()): LoadedTranscript {
   const content = readFileSync(path, "utf8");
   const events = parseTranscriptJsonl(content);
   return {

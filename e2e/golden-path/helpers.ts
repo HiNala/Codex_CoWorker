@@ -3,9 +3,10 @@
  * Against fakes is the default path; endpoints are gated by DEMO_ACCESS_CODE.
  */
 
-export const DEMO_BASE_URL = (
-  process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100"
-).replace(/\/$/, "");
+export const DEMO_BASE_URL = (process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100").replace(
+  /\/$/,
+  "",
+);
 
 export const DEMO_ACCESS_CODE = process.env.DEMO_ACCESS_CODE ?? "forge-local";
 
@@ -81,9 +82,7 @@ export async function resetDemo(): Promise<DemoRequestResult> {
 export async function seedDemo(): Promise<SeedDemoResult> {
   const result = await demoPost("/api/demo/seed");
   const body =
-    result.body && typeof result.body === "object"
-      ? (result.body as Record<string, unknown>)
-      : {};
+    result.body && typeof result.body === "object" ? (result.body as Record<string, unknown>) : {};
 
   return {
     ...result,
