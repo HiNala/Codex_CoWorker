@@ -103,3 +103,13 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - Shared tree = shared HEAD; no per-agent divergence to reconcile.
 - **In-flight file verify (TIDE exclusive scope):** all core paths present — integrations (zendesk/email/github/approval/status/composio), research (octen + fakes), demo/acme-store (checkout + app + components + logs), F.md. **Nothing missing.**
 - `git stash list`: empty.
+
+### [2026-07-23] Birch TEMPORARY GIT HOLD (Node notified)
+
+- **No git write ops** until Node broadcasts single-writer commit mutex: no add/commit/push/pull/rebase/stash/reset/checkout.
+- Coding + testing continue in exclusive paths. Sub-agents Zendesk / Octen / Composio Gmail reported done; PR + acme-store still finishing under hold.
+- Sub-agent results (tests only, no new git from parent during hold):
+  - Zendesk: 21 tests pass (local HMAC fixture)
+  - Octen: 9 tests pass
+  - Composio Gmail: 28 tests pass (link() not initiate; host Node 22.12.0 &lt; 22.22.3 → live Gmail not_configured)
+

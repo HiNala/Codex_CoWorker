@@ -38,7 +38,6 @@ export async function POST(req: NextRequest) {
 
     const stripe = new Stripe(secret);
     const params = buildCheckoutSessionParams({
-      // priceId may be undefined when the client interval does not match PRICE_IDS keys
       priceId: priceId as string,
       successUrl: `${origin}/welcome`,
       cancelUrl: `${origin}/pricing`,
