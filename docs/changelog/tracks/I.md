@@ -68,11 +68,14 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 Also live: service domain `https://web-production-7d71d.up.railway.app` still ACTIVE.
 
 **Post-register checks:**  
-- `GET https://web-production-7d71d.up.railway.app/api/health/ready` → still **200**  
-- `POST` reset/seed/replay on that host → **200**  
-- `https://dextwork.com` HTTPS probe → **not resolving yet** (expected until DNS)
+- `GET https://web-production-7d71d.up.railway.app/api/health/ready` → **200**  
+- `POST` reset/seed/replay on Railway app domain → **200**  
+- `GET https://dextwork.com/api/health/ready` → **200** `status=ready` (Server: railway-hikari)  
+- `GET https://dextwork.com/api/health/live` → **200**  
+- `GET https://dextwork.com/` → **200** FORGE HTML  
+- Railway domain status: **verified=true**, DNS **PROPAGATED**, cert **VALID** (RSA-2048, expires 2026-10-22)
 
-**Next:** when DNS resolves, verify `https://dextwork.com/api/health/ready` **200** + cert active. Deploy Aria Dextwork shell when she signals green.
+**Next:** deploy Aria Dextwork shell when she signals green; re-probe HTTPS on `dextwork.com`.
 
 ### [2026-07-23] 30-MIN WAR ROOM — FREEZE
 
