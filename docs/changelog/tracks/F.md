@@ -316,3 +316,65 @@ Tide audited exclusive scope and **repointed / locked** demo-facing copy to Brok
 - Runbook: approval boundary checklist in `demo/BROKEN-CHECKOUT-REHEARSAL.md`.
 - **Smoke:** `pnpm --filter @forge/integrations run smoke:golden` → **8 files / 74 tests PASS** (approval mutate refuse + PR/email e2e).
 
+
+### [2026-07-23] Pre-freeze — honest status + T+20 rehearsal checklist
+
+#### (1) Integration status honesty (live deploy / worker)
+
+- `integrationStatus` now matches factory readiness (no green-lie):
+  - Composio/email: only `connected` when `composioLiveReady` (key + userId + Gmail account + Node ≥ 22.22.3) OR full Resend pair
+  - Partial Composio (key, no OAuth) → `degraded` / email `not_configured` + FakeNotifier
+  - Node 22.12.0 → Composio/email never claim connected
+  - Optional `workerReachable: false` → `degraded` with "worker unreachable" detail (never hang, never silent success)
+- Tests: `packages/integrations/src/status.test.ts` (5 cases) PASS
+
+#### (2) LIVE vs FAKE — right now (names only, 2026-07-23)
+
+| Provider | Env (name only) | Runtime path NOW | On stage badge should read |
+| --- | --- | --- | --- |
+| Zendesk | all `ZENDESK_*` **UNSET** | **FAKE** ImportTicketGateway / local HMAC fixture | `not_configured` · imported demo tickets |
+| Octen | `OCTEN_API_KEY` **CONFIGURED** | **LIVE credentials present** if worker can call; else degraded when worker down | `connected` only if worker up |
+| Composio | `COMPOSIO_API_KEY` **CONFIGURED**; `COMPOSIO_USER_ID` / `COMPOSIO_GMAIL_ACCOUNT_ID` **ABSENT** | **FAKE** FakeNotifier (OAuth not linked; Node 22.12 also below floor) | `degraded` / email `not_configured` |
+| GitHub PR | `GITHUB_TOKEN`/`PAT` **ABSENT** | **FAKE** FakeGitHubPullRequestAdapter | `not_configured` · Fake PR |
+| Email | no Resend; Composio not fully ready | **FAKE** FakeNotifier | `not_configured` |
+| Worker | Railway worker being created by Wisp | If worker missing → start assignment may fail at web proxy — UI must not show green provider badges as live | probe `workerReachable` when known |
+
+**Presenter truth:** PR open and owner email are **deterministic fakes** tonight unless operator adds PAT + completes Gmail `link()` + Resend. Ticket path is **demo import**. Checkout bug/fix patch apply in smoke is **real logic** on local clone, not a live GitHub push.
+
+#### (3) T+20 REHEARSAL CHECKLIST — PR + email (copy-paste; non-Tide can run)
+
+**Pre-flight (T+18, once)**
+
+1. Open prod URL (Railway web).  
+2. Confirm empty chat shows **Start assignment** (not a pre-seeded run title "Webhook field rename").  
+3. Optional: open settings/integrations if present — expect GitHub/email/Zendesk **not_configured** or Composio **degraded**, not green-connected lies.  
+4. **IF** worker health is down: do **not** start assignment; call Wisp; use PANIC/replay if configured by Track J.
+
+**Main path (T+20, under clock)**
+
+| # | Click / action | Expect to see | LIVE/FAKE now | If fail |
+| --- | --- | --- | --- | --- |
+| 1 | Click **Start assignment** | Run starts; Mission Control title about **annual checkout / Team plan**, NOT webhook rename | Worker **must be LIVE** (Wisp) | Reload once; if still dead → Track J panic/replay; announce "replaying recorded run" |
+| 2 | Watch plan steps | Ticket triage (Priya / annual billing); diagnosis yearly vs annual | Ticket data **FAKE import** | Continue if UI shows demo ticket text; if API-rename title → Cael seed bug, stop narrative |
+| 3 | Capability beat | **Only** `checkout-error-log-analyzer` builds; attempt1 fail expected 9 got 4; repair; pass | Foundry **LIVE** if worker+foundry up | If wrong capability (api-change) → CUT#4 violation, abort to panic |
+| 4 | PR step appears | Approval or auto host path; PR card with title **Fix annual checkout returning a generic 500**, body mentions 9 customers / #4471 | **FAKE** PR URL (Fake adapter) | Confirm badge not claiming real GitHub; if hang → fail step, do not wait; continue to email |
+| 5 | Open PR link if shown | Fake/rehearsal URL may 404 — **OK** if pre-briefed | **FAKE** | Do not debug GitHub on stage; say "fixture PR for tonight" |
+| 6 | Email approval card | Full body visible, no truncate; subject **Annual checkout was broken — fix is up for review**; 3 sentences + PR link + Nala | **FAKE** send (FakeNotifier) | If card missing → Cael/D approval UI; if body is API-rename → stop, use panic |
+| 7 | Click **Approve** on email | `action.executed` / toast success; **exact** body was frozen (no re-plan) | Execute path **LIVE code**, transport **FAKE** | If error payload_mismatch → do not re-approve mutated text; re-propose; if hang >5s → panic |
+| 8 | Receipt | Mentions 9 customers, ticket, PR, no secrets | Depends on Track E | Skip deep dive if late |
+
+**Approval boundary (must remain true even on fakes)**
+
+1. Proposal frozen with `payloadSha256`.  
+2. Approve.  
+3. Backend executes **exact** args.  
+4. Mutating body after approve → refuse (`approval.payload_mismatch`).  
+5. Verify offline anytime: `pnpm --filter @forge/integrations run smoke:golden`
+
+**Abort ladder**
+
+1. Worker down → Wisp / health.  
+2. Wrong scenario title → panic replay (Track J).  
+3. Hang on external write → fail step, narrate honest not_configured.  
+4. Never invent a live PR/email success if status was not_configured.
+
