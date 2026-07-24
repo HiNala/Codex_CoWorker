@@ -14,7 +14,8 @@ const DARK_PAIRS: Array<[string, string, string]> = [
 const LIGHT_PAIRS: Array<[string, string, string]> = [
   ["foreground/background", "oklch(0.14 0.006 270)", "oklch(0.985 0.004 100)"],
   ["foreground/card", "oklch(0.14 0.006 270)", "oklch(1 0 0)"],
-  ["muted-foreground/background", "oklch(0.45 0.01 270)", "oklch(0.985 0.004 100)"],
+  /* Matches tokens.css light --muted-foreground */
+  ["muted-foreground/background", "oklch(0.42 0.01 270)", "oklch(0.985 0.004 100)"],
 ];
 
 describe("token contrast AA", () => {

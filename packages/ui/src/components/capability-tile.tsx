@@ -11,11 +11,11 @@ export interface CapabilityTileProps {
   name: string;
   kind: "connection" | "skill" | "workflow";
   state: CapabilityState;
-  progress?: { passed: number; total: number };
-  version?: string;
-  failingGate?: string;
-  onOpen?: () => void;
-  className?: string;
+  progress?: { passed: number; total: number } | undefined;
+  version?: string | undefined;
+  failingGate?: string | undefined;
+  onOpen?: (() => void) | undefined;
+  className?: string | undefined;
 }
 
 const KIND_LABEL: Record<CapabilityTileProps["kind"], string> = {
@@ -79,7 +79,7 @@ export function CapabilityTile({
           filled={filled}
           desaturated={desaturated}
           assemble={state === "building" || state === "testing" || state === "repairing"}
-          progress={progress}
+          {...(progress ? { progress } : {})}
         />
         <StatusGlyph name={meta.icon} className="size-4 opacity-80" />
       </div>

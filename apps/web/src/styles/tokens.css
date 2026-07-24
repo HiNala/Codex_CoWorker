@@ -60,7 +60,8 @@
   --secondary: oklch(0.95 0.006 270);
   --secondary-foreground: var(--foreground);
   --muted: oklch(0.95 0.006 270);
-  --muted-foreground: oklch(0.45 0.01 270);
+  /* 0.42 meets WCAG AA on --background (verified by packages/ui contrast tests) */
+  --muted-foreground: oklch(0.42 0.01 270);
   --accent: oklch(0.93 0.03 285);
   --accent-foreground: oklch(0.28 0.12 285);
   --destructive: oklch(0.58 0.2 25);
@@ -141,5 +142,61 @@
     --dur-base: 0ms;
     --dur-slow: 0ms;
     --dur-story: 0ms;
+  }
+}
+
+/* Cockpit grid — Track D foundation. min-height:0 on every scroll child. */
+.cockpit,
+.cockpit-grid {
+  display: grid;
+  grid-template-columns: minmax(380px, 0.62fr) minmax(560px, 1fr);
+  grid-template-rows: 64px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "bar bar"
+    "conversation right"
+    "dock dock";
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.cockpit-bar {
+  grid-area: bar;
+  min-height: 0;
+}
+
+.cockpit-conversation {
+  grid-area: conversation;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cockpit-right {
+  grid-area: right;
+  display: grid;
+  grid-template-rows: minmax(240px, 0.46fr) minmax(280px, 0.54fr);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cockpit-dock {
+  grid-area: dock;
+  min-height: 0;
+}
+
+@media (max-width: 1023px) {
+  .cockpit,
+  .cockpit-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "bar"
+      "panel";
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .cockpit-desktop {
+    display: none;
   }
 }

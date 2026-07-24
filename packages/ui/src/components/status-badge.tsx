@@ -9,9 +9,9 @@ import {
 
 export interface StatusBadgeProps {
   label: string;
-  icon?: ReactNode;
-  token?: string;
-  className?: string;
+  icon?: ReactNode | undefined;
+  token?: string | undefined;
+  className?: string | undefined;
 }
 
 /** Icon + text label. Never colour alone. */
@@ -47,7 +47,7 @@ export function CapabilityStateBadge({
     <StatusBadge
       label={meta.label}
       token={meta.token}
-      className={className}
+      {...(className ? { className } : {})}
       icon={<StatusGlyph name={meta.icon} />}
     />
   );
@@ -65,7 +65,7 @@ export function PlanStepStatusBadge({
     <StatusBadge
       label={meta.label}
       token={meta.token}
-      className={className}
+      {...(className ? { className } : {})}
       icon={<StatusGlyph name={meta.icon} />}
     />
   );

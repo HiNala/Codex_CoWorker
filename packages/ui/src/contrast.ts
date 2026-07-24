@@ -17,9 +17,9 @@ export function parseOklch(input: string): { l: number; c: number; h: number; a:
 
 /** Approximate sRGB relative luminance from OKLCH L (good enough for AA checks). */
 export function approxRelativeLuminance(oklchL: number): number {
-  // OKLCH L is roughly perceptual; map to WCAG-ish Y for contrast ratios.
+  // OKLab L is roughly √Y for neutral tones; square to recover linear Y.
   const l = Math.min(1, Math.max(0, oklchL));
-  return l <= 0.5 ? 2 * l * l : 1 - 2 * (1 - l) * (1 - l);
+  return l * l;
 }
 
 export function contrastRatio(l1: number, l2: number): number {

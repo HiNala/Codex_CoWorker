@@ -1,188 +1,159 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { useCallback, useState, type ReactNode } from "react";
+import { LiveRegion } from "@forge/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WorkspacePanel } from "./workspace-panel";
+import { ConversationPanel } from "@/components/conversation/conversation-panel";
+import { MissionControl } from "@/components/plan/mission-control";
+import { FoundryPanel } from "@/components/foundry/foundry-panel";
+import { ArtifactDock } from "@/components/dock/artifact-dock";
+import { useRunStream } from "@/hooks/use-run-stream";
+import type { RunState } from "@/hooks/run-state";
+import { AssignmentBar } from "./assignment-bar";
 
-const events = [
-  ["You", "Find out why customers cannot buy the annual plan and prepare a verified fix."],
-  ["Nala", "I drafted a bounded contract and reserved the approved work ceiling."],
-  ["Trace", "Observed twelve support tickets with the same checkout failure signature."],
-] as const;
-
-const steps = [
-  ["completed", "Collect support evidence"],
-  ["running", "Reproduce annual checkout failure"],
-  ["pending", "Measure affected customers"],
-  ["pending", "Prepare and verify the fix"],
-] as const;
-
-const capabilities = [
-  ["installed", "Ticket clusterer"],
-  ["active", "Customer impact mapper"],
-  ["missing", "Checkout error log analyzer"],
-  ["installed", "Repository change proposer"],
-] as const;
-
-const artifacts = [
-  "Incident report",
-  "Affected customers",
-  "Code change",
-  "Capability",
-  "Receipt",
-] as const;
-
-function Conversation() {
-  return (
-    <WorkspacePanel
-      title="Conversation"
-      description="Narrative, evidence, decisions, and approvals"
-      className="h-full"
-    >
-      <div className="space-y-5 p-5">
-        {events.map(([author, body]) => (
-          <article key={body} className="max-w-[62ch]">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              {author}
-            </p>
-            <p className="mt-2 text-sm leading-6">{body}</p>
-          </article>
-        ))}
-        <div className="rounded-lg border border-dashed border-border bg-muted/35 p-4">
-          <p className="text-sm font-medium">The stream rail is ready.</p>
-          <p className="mt-1 text-sm leading-5 text-muted-foreground">
-            Track A will attach persisted SSE events here; no timer is driving this shell.
-          </p>
-        </div>
-      </div>
-    </WorkspacePanel>
-  );
+export interface CockpitShellProps {
+  assignmentId: string;
+  /** When true (default), hydrate from demo fixture — no live SSE required. */
+  useDemoFixture?: boolean;
+  /** Override panels if a track needs a custom slot. */
+  conversation?: ReactNode | ((state: RunState) => ReactNode);
+  missionControl?: ReactNode | ((state: RunState) => ReactNode);
+  foundry?: ReactNode | ((state: RunState) => ReactNode);
+  dock?: ReactNode | ((state: RunState) => ReactNode);
+  onPause?: () => void;
 }
 
-function MissionControl() {
-  return (
-    <WorkspacePanel
-      title="Mission control"
-      description="Approved milestones and legal step transitions"
-      badge={<Badge variant="outline">1 active</Badge>}
-      className="h-full"
-    >
-      <ol className="divide-y divide-border/70">
-        {steps.map(([status, title], index) => (
-          <li key={title} className="grid grid-cols-[28px_1fr_auto] items-center gap-3 px-5 py-3.5">
-            <span className="font-mono text-xs tabular text-muted-foreground">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <span className="text-sm font-medium">{title}</span>
-            <span className="text-xs text-muted-foreground">{status}</span>
-          </li>
-        ))}
-      </ol>
-    </WorkspacePanel>
-  );
+function resolveSlot(
+  slot: ReactNode | ((state: RunState) => ReactNode) | undefined,
+  state: RunState,
+  fallback: ReactNode,
+): ReactNode {
+  if (slot == null) return fallback;
+  return typeof slot === "function" ? slot(state) : slot;
 }
 
-function Foundry() {
-  return (
-    <WorkspacePanel title="The foundry" description="Capability gap, build, verify, approve">
-      <div className="grid gap-3 p-5 sm:grid-cols-2">
-        {capabilities.map(([status, name]) => (
-          <article key={name} className="rounded-lg border border-border bg-card p-4">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="text-sm font-medium">{name}</h3>
-              <span className="text-xs text-muted-foreground">{status}</span>
-            </div>
-            <Progress
-              value={status === "installed" ? 100 : status === "active" ? 68 : 0}
-              className="mt-5 h-1.5"
-            />
-          </article>
-        ))}
-      </div>
-    </WorkspacePanel>
-  );
-}
+/**
+ * Cockpit layout shell. Owns the grid, assignment bar, run-stream hydrate,
+ * and wires Track D panel surfaces (conversation, plan, foundry, dock).
+ */
+export function CockpitShell({
+  assignmentId,
+  useDemoFixture = true,
+  conversation,
+  missionControl,
+  foundry,
+  dock,
+  onPause,
+}: CockpitShellProps) {
+  const state = useRunStream(assignmentId, { useDemoFixture });
+  const [dockCollapsed, setDockCollapsed] = useState(false);
+  const [hoveredStepId, setHoveredStepId] = useState<string | null>(null);
 
-function Outputs() {
-  return (
-    <section
-      aria-label="Artifact dock"
-      className="panel-glass border-t border-border px-4 py-3 sm:px-5"
-    >
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {artifacts.map((artifact) => (
-          <button
-            key={artifact}
-            type="button"
-            className="min-h-11 shrink-0 rounded-md border border-dashed border-border px-4 text-sm text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground"
-          >
-            {artifact}
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
+  const onApprove = useCallback((_approvalId: string) => {
+    // Live path: POST approval via Track A. Demo fixture is static.
+  }, []);
+  const onDeny = useCallback((_approvalId: string) => {
+    // Live path: POST denial via Track A.
+  }, []);
 
-export function CockpitShell({ assignmentId }: { assignmentId: string }) {
+  const defaultConversation = (
+    <ConversationPanel state={state} onApprove={onApprove} onDeny={onDeny} />
+  );
+  const defaultMission = (
+    <MissionControl state={state} onStepHover={setHoveredStepId} />
+  );
+  const defaultFoundry = (
+    <FoundryPanel state={state} onApprove={onApprove} onDeny={onDeny} />
+  );
+  const artifacts = Object.values(state.artifacts);
+  const dockHighlightClass = hoveredStepId
+    ? "[&_[data-artifact-card]]:opacity-50 data-[related=true]:opacity-100"
+    : undefined;
+  const defaultDock = (
+    <ArtifactDock
+      artifacts={artifacts}
+      collapsed={dockCollapsed}
+      onCollapsedChange={setDockCollapsed}
+      onOpenArtifact={() => {
+        /* Track E canvas owns open */
+      }}
+      {...(dockHighlightClass ? { className: dockHighlightClass } : {})}
+    />
+  );
+
+  const conversationNode = resolveSlot(conversation, state, defaultConversation);
+  const missionNode = resolveSlot(missionControl, state, defaultMission);
+  const foundryNode = resolveSlot(foundry, state, defaultFoundry);
+  const dockNode = resolveSlot(dock, state, defaultDock);
+
+  const tabBadge = (count: number) =>
+    count > 0 ? (
+      <span className="ms-1 inline-flex min-w-4 justify-center rounded-full bg-muted px-1 text-[10px] tabular-nums">
+        {count}
+      </span>
+    ) : null;
+
+  const pendingApprovals = state.approvals.filter((a) => a.status === "pending").length;
+  const readyArtifacts = artifacts.filter(
+    (a) => a.status === "ready" || a.status === "published",
+  ).length;
+
   return (
-    <main id="main" className="min-h-dvh">
+    <>
+      <LiveRegion message={state.announcement} />
       <div className="cockpit-grid cockpit-desktop">
-        <header className="cockpit-bar panel-glass flex items-center justify-between border-b border-border px-5">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">Annual checkout recovery</p>
-            <p className="truncate font-mono text-[11px] text-muted-foreground">{assignmentId}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden text-end sm:block">
-              <p className="font-mono text-xs tabular">0.00 / 5.00 credits</p>
-              <p className="text-[11px] text-muted-foreground">Reserved ceiling</p>
-            </div>
-            <Button variant="outline" size="sm" disabled title="Run controls attach in Track A">
-              Pause
-            </Button>
-          </div>
-        </header>
-        <div className="cockpit-conversation border-r border-border">
-          <Conversation />
+        <AssignmentBar
+          assignmentId={assignmentId}
+          state={state}
+          {...(onPause ? { onPause } : {})}
+        />
+        <div className="cockpit-conversation min-h-0 border-e border-border">
+          {conversationNode}
         </div>
-        <div className="cockpit-right">
-          <MissionControl />
-          <Foundry />
+        <div className="cockpit-right min-h-0">
+          {missionNode}
+          {foundryNode}
         </div>
-        <div className="cockpit-dock">
-          <Outputs />
-        </div>
+        <div className="cockpit-dock">{dockNode}</div>
       </div>
 
       <div className="lg:hidden">
-        <header className="panel-glass sticky top-0 z-10 border-b border-border px-4 py-3">
-          <p className="text-sm font-semibold">Annual checkout recovery</p>
-          <p className="truncate font-mono text-[11px] text-muted-foreground">{assignmentId}</p>
-        </header>
+        <AssignmentBar
+          assignmentId={assignmentId}
+          state={state}
+          {...(onPause ? { onPause } : {})}
+        />
         <Tabs defaultValue="conversation" className="p-3">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="conversation">Chat</TabsTrigger>
-            <TabsTrigger value="plan">Plan</TabsTrigger>
-            <TabsTrigger value="foundry">Foundry</TabsTrigger>
-            <TabsTrigger value="outputs">Outputs</TabsTrigger>
+            <TabsTrigger value="conversation" className="min-h-11">
+              Chat
+              {tabBadge(pendingApprovals)}
+            </TabsTrigger>
+            <TabsTrigger value="plan" className="min-h-11">
+              Plan
+            </TabsTrigger>
+            <TabsTrigger value="foundry" className="min-h-11">
+              Foundry
+            </TabsTrigger>
+            <TabsTrigger value="outputs" className="min-h-11">
+              Outputs
+              {tabBadge(readyArtifacts)}
+            </TabsTrigger>
           </TabsList>
-          <TabsContent value="conversation">
-            <Conversation />
+          <TabsContent value="conversation" className="min-h-0">
+            {conversationNode}
           </TabsContent>
-          <TabsContent value="plan">
-            <MissionControl />
+          <TabsContent value="plan" className="min-h-0">
+            {missionNode}
           </TabsContent>
-          <TabsContent value="foundry">
-            <Foundry />
+          <TabsContent value="foundry" className="min-h-0">
+            {foundryNode}
           </TabsContent>
-          <TabsContent value="outputs">
-            <Outputs />
+          <TabsContent value="outputs" className="min-h-0">
+            {dockNode}
           </TabsContent>
         </Tabs>
       </div>
-    </main>
+    </>
   );
 }

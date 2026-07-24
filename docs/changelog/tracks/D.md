@@ -98,6 +98,24 @@ If push is non-fast-forward: **STOP**, report Node, hold. No force.
 
 `git stash list` empty. Nothing missing to report.
 
+## [T+foundation] D/G · foundation · shipped for panel agents
+
+Sub-agent 1 (exclusive: `packages/ui`, `styles`, `cockpit`, `hooks`, ui primitives).
+
+**@forge/ui exports:** `motion`, `motionCssVars`, `tileIdentity`/`glyphCells`/`fnv1a`, `CAPABILITY_STATE_META`/`PLAN_STEP_STATUS_META`, `CapabilityTile`, `StatusBadge`/`StatusDot`/`StatusGlyph`, `Ring`, `Metric`, `Odometer`, `PressAndHold`, `EmptyState`, `LiveRegion`, `EvidenceChip`, `useReducedMotion`, contrast helpers.
+
+**tokens.css:** status/capability/evidence colours (light+dark), motion CSS vars + reduced-motion zeroing, cockpit grid with `min-height:0` on scroll children, `height:100dvh`.
+
+**cockpit:** `AppShell` (skip link + 272px sidebar from nav registry), `AssignmentBar` (budget `Ring` + `Odometer` + status badge, event-driven only), `WorkspacePanel`, `CockpitShell` slots + demo hydrate via `useRunStream`.
+
+**hooks:** `runReducer` idempotent by `seq`, `buildDemoRunState`/`buildDemoEvents` fixture projects full `RunState` (timeline, milestones, steps, capabilities, build gates, artifacts, pending approval, budget).
+
+**tests (21 pass):** tileIdentity stability/distribution, status meta icon+label for all 11 tile states, contrast AA pairs, reducer duplicate/out-of-order/demo idempotency.
+
+**verify:** `pnpm exec vitest run packages/ui apps/web/src/hooks/run-reducer.test.ts` · `pnpm --filter @forge/ui typecheck`
+
+Panel agents (2–5) may import primitives + consume `RunState` from `useRunStream` without waiting on SSE.
+
 ## [T+wire] D · shipped · cockpit shell wires real panels
 
 - Sub-agent 5 (dock + approvals) complete and pushed.
@@ -117,3 +135,11 @@ If push is non-fast-forward: **STOP**, report Node, hold. No force.
 | 1 | Foundation polish | in flight (core already on main as `2160e5e`) |
 
 Cockpit shell integration: `b4a1eb9`.
+
+## [T+hold] D/G · ack · Birch temporary git hold
+
+- **No git ops** until Node single-writer commit mutex.
+- Keep coding/testing exclusive paths only.
+- Unit tests (ui + hooks): **21 passed**.
+- Mission Control sub-agent reported complete (`1c0fe06`).
+- Pending uncommitted polish (CapabilityTile optional props for exactOptionalPropertyTypes) waits for mutex.

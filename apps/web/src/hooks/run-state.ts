@@ -63,16 +63,16 @@ export interface PlanStepVM {
   id: string;
   milestoneId: string;
   title: string;
-  description?: string;
+  description?: string | undefined;
   status: PlanStepStatus;
   dependsOn: string[];
   capabilityRefs: string[];
   artifactIds: string[];
-  blockedReason?: string | null;
-  durationMs?: number;
-  costMicrocredits?: number;
-  changedAfterApproval?: boolean;
-  startedAt?: string | null;
+  blockedReason?: string | null | undefined;
+  durationMs?: number | undefined;
+  costMicrocredits?: number | undefined;
+  changedAfterApproval?: boolean | undefined;
+  startedAt?: string | null | undefined;
 }
 
 export interface CapabilityTileVM {
@@ -80,20 +80,20 @@ export interface CapabilityTileVM {
   name: string;
   kind: "connection" | "skill" | "workflow";
   state: CapabilityState;
-  progress?: { passed: number; total: number };
-  version?: string;
-  failingGate?: string;
-  slug?: string;
+  progress?: { passed: number; total: number } | undefined;
+  version?: string | undefined;
+  failingGate?: string | undefined;
+  slug?: string | undefined;
 }
 
 export interface GateRowVM {
   id: string;
   name: string;
   status: "pending" | "running" | "passed" | "failed" | "skipped";
-  durationMs?: number;
-  message?: string;
-  passed?: number;
-  total?: number;
+  durationMs?: number | undefined;
+  message?: string | undefined;
+  passed?: number | undefined;
+  total?: number | undefined;
 }
 
 export interface BuildConsoleVM {
@@ -111,7 +111,7 @@ export interface ArtifactCardVM {
   title: string;
   type: string;
   status: "declared" | "drafting" | "ready" | "published" | "failed";
-  metrics?: string;
+  metrics?: string | undefined;
 }
 
 export interface ApprovalVM {

@@ -2,6 +2,7 @@ import type { RunEvent } from "@forge/contracts";
 import type {
   BuildConsoleVM,
   CapabilityTileVM,
+  GateRowVM,
   RunState,
   TimelineItem,
   TraceLine,
@@ -45,7 +46,7 @@ function upsertTrace(
     ];
   }
   const group = timeline[idx];
-  if (group.kind !== "trace_group") return timeline;
+  if (!group || group.kind !== "trace_group") return timeline;
   const next = [...timeline];
   next[idx] = { ...group, traces: [...group.traces, line], seq };
   return next;
@@ -387,31 +388,38 @@ function applyEvent(state: RunState, event: RunEvent): RunState {
         if (idx === -1) {
           gates.push({ id: gateId, name, status: "running" });
         } else {
-          gates[idx] = { ...gates[idx], status: "running" };
+          const existing = gates[idx];
+          if (existing) gates[idx] = { ...existing, status: "running" };
         }
       } else if (event.type === "capability.gate_passed") {
-        const row = {
+        const row: GateRowVM = {
           id: gateId,
           name,
-          status: "passed" as const,
+          status: "passed",
           durationMs: detail.durationMs as number | undefined,
           passed: detail.passed as number | undefined,
           total: detail.total as number | undefined,
         };
         if (idx === -1) gates.push(row);
-        else gates[idx] = { ...gates[idx], ...row };
+        else {
+          const existing = gates[idx];
+          if (existing) gates[idx] = { ...existing, ...row };
+        }
       } else {
-        const row = {
+        const row: GateRowVM = {
           id: gateId,
           name,
-          status: "failed" as const,
+          status: "failed",
           durationMs: detail.durationMs as number | undefined,
           message: String(detail.message ?? event.summary),
           passed: detail.passed as number | undefined,
           total: detail.total as number | undefined,
         };
         if (idx === -1) gates.push(row);
-        else gates[idx] = { ...gates[idx], ...row };
+        else {
+          const existing = gates[idx];
+          if (existing) gates[idx] = { ...existing, ...row };
+        }
       }
 
       const passed = gates.filter((g) => g.status === "passed").length;
