@@ -40,6 +40,40 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] DOMAIN OVERRIDE — dextwork.com registered on Railway web
+
+**User-authorized custom domain:** `dextwork.com` (apex) on project `forge-codex`, service **web**, port **3000**.
+
+**CLI:** `railway domain dextwork.com --service web --port 3000 --json`
+
+| Field | Value (public DNS only — not a secret) |
+|-------|----------------------------------------|
+| Domain id | `9baf1803-e622-40ca-b412-674534497bf7` |
+| Railway syncStatus | ACTIVE (service-side registration) |
+| Traffic route record type | **CNAME** (`DNS_RECORD_TYPE_CNAME`) |
+| Host / name | `@` (apex `dextwork.com`) |
+| FQDN | `dextwork.com` |
+| **Required target** | **`tdr3gof8.up.railway.app`** |
+| Record purpose | `DNS_RECORD_PURPOSE_TRAFFIC_ROUTE` |
+| DNS status (Railway) | `DNS_RECORD_STATUS_REQUIRES_UPDATE` (currentValue empty) |
+| Ownership verify host | `_railway-verify` (FQDN `_railway-verify.dextwork.com`) |
+| Ownership verify value | `railway-verify=65fa9e36bdba366f059900a287a686dbd9e62d23c35f1da0a1e99c0c71cac52e` (TXT) |
+| Certificate | `CERTIFICATE_STATUS_TYPE_VALIDATING_OWNERSHIP` |
+| Verified | **false** until registrar DNS updated |
+
+**Operator action (registrar — Wisp has no access, do not guess):**  
+1. Apex traffic: CNAME (or registrar ALIAS/ANAME if apex CNAME unsupported) → `tdr3gof8.up.railway.app`  
+2. TXT at `_railway-verify.dextwork.com` → value above  
+
+Also live: service domain `https://web-production-7d71d.up.railway.app` still ACTIVE.
+
+**Post-register checks:**  
+- `GET https://web-production-7d71d.up.railway.app/api/health/ready` → still **200**  
+- `POST` reset/seed/replay on that host → **200**  
+- `https://dextwork.com` HTTPS probe → **not resolving yet** (expected until DNS)
+
+**Next:** when DNS resolves, verify `https://dextwork.com/api/health/ready` **200** + cert active. Deploy Aria Dextwork shell when she signals green.
+
 ### [2026-07-23] 30-MIN WAR ROOM — FREEZE
 
 Marketing/motion **CUT**. Deployment only.
