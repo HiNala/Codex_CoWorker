@@ -41,7 +41,7 @@ export default async function OutputDetailPage({ params }: { params: Promise<{ i
   const { artifact, versions, evidence, provenance, summary } = detail;
 
   return (
-    <div className="h-full overflow-y-auto px-6 py-8">
+    <div className="px-6 py-8">
       <div className="mx-auto max-w-6xl">
       <nav className="mb-5 text-sm text-muted-foreground">
         <Link
