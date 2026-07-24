@@ -40,6 +40,39 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] STAND BY TO DEPLOY — LKG + staged GO (do not ship Aria yet)
+
+**Status:** **STANDING BY.** No GO deploy of uncommitted Aria redesign until Node says GO.  
+Operator confirmed dextwork.com still serves **stale** UI; Aria typecheck fixes in flight.
+
+| Item | Value |
+|------|--------|
+| **LKG rollback deployment id** | **`e0b15478-9b06-461b-b88b-455ce01e6cd1`** |
+| LKG created | 2026-07-24T01:14:44Z · status **SUCCESS** |
+| LKG image digest | `sha256:12b0fb2d1903ed94e4881ef75e4d2b3a99ba7cd86b3fa46698e99cc07019835a` |
+| LKG message | war-room: deploy current green golden path + demo director |
+| Dockerfile | **`infra/docker/web.Dockerfile`** · env `RAILWAY_DOCKERFILE_PATH` **matches** |
+| Fallback domain | **`web-production-7d71d.up.railway.app` ACTIVE** (kept) |
+| Custom domains | `dextwork.com` + `www.dextwork.com` ACTIVE |
+| Live probe (now) | live **200** · ready **200** (stale build still healthy) |
+
+**Staged GO command (seconds once typecheck green):**
+```text
+railway up --service web --detach -m "GO: Aria Dextwork shell post-typecheck freeze"
+```
+Then poll `railway deployment list --service web --json` → **SUCCESS**, then:
+```text
+node scripts/smoke.mjs https://dextwork.com
+node scripts/smoke.mjs https://web-production-7d71d.up.railway.app
+```
+
+**Rollback path (before ship):** CLI `railway redeploy` only targets *latest* (often a FAILED attempt) — **not** safe for LKG.  
+LKG-specific rollback: Railway dashboard → forge-codex → web → Deployments → **`e0b15478-9b06-461b-b88b-455ce01e6cd1`** → **Redeploy** (or GraphQL `deploymentRedeploy` with that id).  
+Do **not** `railway down`. Do **not** remove the `web-production-…` domain.  
+Broken-but-different UI at demo time is worse than stale — if GO smoke regresses, **instant Redeploy LKG**.
+
+Staged notes file: `infra/qa/GO-DEPLOY-STAGED.txt`.
+
 ### [2026-07-23] Demo auth on production — presenter parachute briefing
 
 **Context:** `GET https://www.dextwork.com/api/demo/status` → **401** without credentials is

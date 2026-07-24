@@ -1,0 +1,21 @@
+﻿# STAGED — execute only on Node GO. Do not run until GO.
+# Project: forge-codex  Service: web  Env: production
+# Dockerfile: infra/docker/web.Dockerfile (RAILWAY_DOCKERFILE_PATH set)
+
+# --- GO DEPLOY ---
+railway up --service web --detach -m "GO: Aria Dextwork shell post-typecheck freeze"
+
+# --- POLL ---
+# railway deployment list --service web --json  → wait SUCCESS
+
+# --- SMOKE ---
+# node scripts/smoke.mjs https://dextwork.com
+# node scripts/smoke.mjs https://web-production-7d71d.up.railway.app
+
+# --- LKG ROLLBACK (currently serving good path) ---
+# LKG_DEPLOYMENT_ID=e0b15478-9b06-461b-b88b-455ce01e6cd1
+# LKG_IMAGE=sha256:12b0fb2d1903ed94e4881ef75e4d2b3a99ba7cd86b3fa46698e99cc07019835a
+# Railway CLI 5.27.0 redeploy has no --deployment-id; rollback path:
+#   Dashboard: Project forge-codex → web → Deployments → e0b15478… → Redeploy
+#   Or GraphQL deploymentRedeploy(id: "e0b15478-9b06-461b-b88b-455ce01e6cd1")
+# DO NOT remove web-production-7d71d.up.railway.app domain.
