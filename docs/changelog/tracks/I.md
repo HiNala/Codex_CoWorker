@@ -40,6 +40,42 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] CUT #1 ACTIVE — marketing freeze; lint + migrate + ready + demo smoke
+
+- **Marketing CUT #1:** no new marketing copy/motion/features. Only minimal lint
+  fixes on existing `demo-control-panel.tsx` + `hero-preview.tsx` (defer setState
+  via `queueMicrotask` for `react-hooks/set-state-in-effect`).
+- Commands / status (exact):
+
+```text
+# lint (must exit 0)
+pnpm exec eslint apps/web/src/app/(marketing)/demo/demo-control-panel.tsx apps/web/src/components/marketing/hero-preview.tsx
+→ eslint_exit=0
+
+# migrate (service-injected): private DATABASE_URL uses postgres.railway.internal
+# and is NOT resolvable from the host via `railway run --service web`.
+# Used Postgres service key DATABASE_PUBLIC_URL=CONFIGURED (value never printed):
+node packages/db migrate with DATABASE_URL=<DATABASE_PUBLIC_URL from Postgres service>
+→ "Database migrations are current." migrate_exit=0
+
+# ready gate
+GET https://web-production-7d71d.up.railway.app/api/health/ready
+→ 200 status=ready db/schema/storage/queue all up
+
+# demo prove (access code from web service env KEY only)
+POST /api/demo/reset  → 200 mode=database durationMs=161
+POST /api/demo/seed   → 200 source=db_package assignmentId=…0005
+POST /api/demo/replay → 200 transcriptId=golden-path eventCount=22
+GET  /api/demo/status → 200 seeded=true adapters all fake
+→ DEMO_PROVE_OK=true
+
+# prod smoke
+node scripts/smoke.mjs https://web-production-7d71d.up.railway.app
+→ pass=6 warn=0 fail=0 smoke_exit=0
+```
+
+- **CUT #1:** Track H further work stopped. Tracks I/J focus only.
+
 ### [2026-07-23] GATE 1 FINDING — `/api/health/ready` investigation (Node → Wisp)
 
 **Birch criterion:** public `GET /api/health/ready` must be **200** (not merely `/live`).

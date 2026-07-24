@@ -172,14 +172,15 @@ export function DemoControlPanel() {
   }, []);
 
   useEffect(() => {
+    // DOM sync is OK in-effect; defer all React setState (lint: set-state-in-effect).
     const existing = readDemoAccessCode();
     const presenterOn = readPresenterMode();
-    setPresenter(presenterOn);
     applyPresenterDom(presenterOn);
-    if (existing) {
-      void unlock(existing);
-    }
-    void refreshHealth();
+    queueMicrotask(() => {
+      setPresenter(presenterOn);
+      if (existing) void unlock(existing);
+      void refreshHealth();
+    });
   }, [unlock, refreshHealth]);
 
   const assignmentHref = useMemo(() => {

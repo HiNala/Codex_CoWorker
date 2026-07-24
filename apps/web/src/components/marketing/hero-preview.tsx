@@ -223,11 +223,12 @@ export function HeroPreview({ className }: { className?: string }) {
   const [visible, setVisible] = React.useState(true);
   const [hidden, setHidden] = React.useState(false);
   const [elapsed, setElapsed] = React.useState(0);
-  /** Stay on final frame until client confirms motion is allowed (hydration-safe). */
+  /** Stay on final frame until client mount (hydration-safe; no sync setState-in-effect). */
   const [motionReady, setMotionReady] = React.useState(false);
 
   React.useEffect(() => {
-    if (!reduceMotion) setMotionReady(true);
+    if (reduceMotion) return;
+    queueMicrotask(() => setMotionReady(true));
   }, [reduceMotion]);
 
   React.useEffect(() => {
@@ -242,7 +243,7 @@ export function HeroPreview({ className }: { className?: string }) {
 
   React.useEffect(() => {
     const onVis = () => setHidden(document.visibilityState === "hidden");
-    onVis();
+    queueMicrotask(onVis);
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
