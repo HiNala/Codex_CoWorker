@@ -28,8 +28,22 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Five sub-agents in flight: Dockerfiles, Railway scripts/CI, demo director, golden-path e2e, marketing.
 - Git: commits `8170b2e`, `0d18afc` pushed to `origin/main` (scoped paths only).
 
+### [2026-07-23 ~T+20] Gate 1 bulk landed
+
+- Five sub-agents complete: Docker/compose, Railway scripts/CI, demo director, golden-path e2e, marketing.
+- Live smoke evidence (hello):
+  - `GET https://hello-production-cd1d.up.railway.app/api/health/live` → **200** `{"status":"live","service":"hello",...}`
+  - `GET https://hello-production-cd1d.up.railway.app/` → **200** HTML
+- Demo: `/api/demo/{reset,seed,replay,panic,status}`, `/demo` control panel, panic + transcript fixture, presenter helpers.
+- Marketing: Track H headline, pill nav, hero preview, `/pricing` provisional plans.
+- E2E: `e2e/golden-path/*`, demo-panel spec, Playwright baseURL **3100**.
+- Scripts: `pnpm deploy` / `smoke` / `wait:healthy` wired in root package.json.
+- Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
+- Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
+
 ### Escalations
 
 | Time | To | Issue | Status |
 |------|----|-------|--------|
 | T+0 | Node | `RAILWAY_API_TOKEN` empty in `.env` | open |
+| T+20 | Node | Stale `rebase-merge`/`autostash` left in shared `.git` (cleared with `--quit` + stash drop, no pop). Confirm no agent lost work. | mitigated |
