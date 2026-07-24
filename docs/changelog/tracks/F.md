@@ -27,6 +27,16 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - PR pipeline: hand-written patch first, then Codex wiring later.
 - Spawning 5 exclusive-directory sub-agents now (Zendesk / Composio Gmail / Octen / GitHub PR / acme-store).
 
+### Composio Gmail sub-agent
+
+- **Notifier port** hardened: `FakeNotifier` · `ResendNotifier` · `ComposioGmailNotifier` behind `createNotifier`.
+- Auth: `connectedAccounts.link()` only (`initiate()` retired 2026-07-03). Helpers in `packages/integrations/src/composio/`.
+- Factory degrades to Resend/Fake when Gmail account not linked, Node below 22.22.3, or SDK missing. Host currently 22.12.0 → honest `not_configured` for live Composio until engine upgraded.
+- Body budget: max 3 sentences + PR/link + optional signature; idempotency on `idempotencyKey` for all three notifiers.
+- Gmail read/reply helpers (`gmailReadRecent`, `gmailReply`, `gmailSend`) with injectable `executeTool` — no live Gmail send in unit tests.
+- Operator OAuth: set worker `COMPOSIO_API_KEY` + immutable `COMPOSIO_USER_ID` → `createComposioConnectLink` → open `redirectUrl` → store `COMPOSIO_GMAIL_ACCOUNT_ID`. Escalate if browser OAuth still needed (does not block build).
+- Tests: `email/notifier.test.ts`, `composio/client.test.ts`.
+
 ### Demo repo sub-agent
 
 - Completed `demo/acme-store` Broken Checkout storefront (Track L demo scope only).
