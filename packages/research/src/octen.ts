@@ -123,10 +123,16 @@ export class OctenResearchGateway implements ResearchGateway {
     if (res.status === 429) {
       throw new OctenError("octen.rate_limited", "Octen rate limit; caller should back off");
     }
+    if (res.status >= 500) {
+      throw new OctenError(
+        "octen.server_error",
+        `Octen ${path} server error: ${res.status}`,
+      );
+    }
     if (!res.ok) {
       throw new OctenError("octen.failed", `Octen ${path} failed: ${res.status}`);
     }
-    return res.json();
+    return res.json() as Promise<unknown>;
   }
 
   #toEvidence(

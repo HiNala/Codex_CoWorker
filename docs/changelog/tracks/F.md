@@ -26,3 +26,14 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - Scenario frozen: **The Broken Checkout** only (API-token-deprecation CUT).
 - PR pipeline: hand-written patch first, then Codex wiring later.
 - Spawning 5 exclusive-directory sub-agents now (Zendesk / Composio Gmail / Octen / GitHub PR / acme-store).
+
+### Octen sub-agent
+
+- Hardened `@forge/research` Octen gateway against frozen `ResearchGateway`.
+- Endpoints: `POST https://api.octen.ai/v1/{search,news_search,extract}` (not `/broad-search`).
+- Every kept hit → `EvidenceRecord` with URL, title, excerpt, `contentSha256`, `retrievedAt`, trust, `injectionSuspected`.
+- Discards `page_structure.primary === 'No Main Content'`; default include domains `developer.zendesk.com`, `docs.stripe.com`.
+- `extract` forwards optional `query` for intent highlights; `detectInjection` + `wrapUntrustedBlock` exported.
+- Named degrade: `octen.unauthorized` (401), `octen.rate_limited` (429), `octen.server_error` (5xx).
+- `createResearchGateway` → `not_configured` + `FakeResearchGateway` when `OCTEN_API_KEY` missing (key name only; value never logged).
+- Verify: `pnpm exec vitest run packages/research`.
