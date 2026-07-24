@@ -13,10 +13,18 @@ export interface RunIdentity {
   orgId: string;
 }
 
+export interface StepArtifactSpec {
+  title: string;
+  content: string;
+  /** Artifact type pin — default document.markdown when omitted. */
+  type?: string;
+  description?: string;
+}
+
 export interface StepWorkResult {
   kind: "ok" | "needs_approval" | "failed" | "needs_capability";
   summary?: string;
-  artifacts?: Array<{ title: string; content: string }>;
+  artifacts?: StepArtifactSpec[];
   proposal?: unknown;
   error?: string;
   missing?: CapabilityDescriptor;

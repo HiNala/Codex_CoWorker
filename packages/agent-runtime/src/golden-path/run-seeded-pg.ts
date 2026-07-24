@@ -15,12 +15,16 @@ import type { RunContext, StepWorkResult } from "../types";
 import { repairedAnalyzeSeed } from "./checkout-analyzer-fake";
 import { FakeCheckoutFoundryPort } from "./fake-foundry-port";
 import {
+  ARTIFACT_SLUG,
+  ARTIFACT_TITLE,
+  ARTIFACT_TYPE,
   ATTEMPT_1_FAILURE_MESSAGE,
   CHECKOUT_ANALYZER_SLUG,
   GOLDEN,
   REPAIRED_DISTINCT,
 } from "./ids";
 import { MemoryArtifactPort } from "./memory-artifacts";
+import { buildRigelArtifactSpec } from "./rigel-artifact";
 
 /** Seeded demo IDs from packages/db seed (FK-safe). */
 export const PG_SEED = {
@@ -42,11 +46,16 @@ export interface PgGoldenPathResult {
   stepStatus: PlanStep["status"];
   artifactId: string;
   artifactTitle: string;
+  artifactType: string;
+  artifactContentFormat: string;
   distinctCount: number;
   attempt1FailureMessage: string;
   runFinished: string;
   /** First few summaries for IT RUNS logs (never secrets). */
   sampleSummaries: string[];
+  /** Compact ordered event transcript for Aria/Wisp. */
+  eventTranscript: string[];
+  terminalEventCounts: Record<string, number>;
 }
 
 /**
@@ -166,21 +175,18 @@ export async function runSeededGoldenPathPostgres(
             };
           }
           const output = repairedAnalyzeSeed();
-          const body = [
-            "# Checkout customer impact",
-            "",
-            `**Distinct affected customers: ${output.distinctCount}**`,
-            "",
-            ...output.affectedCustomers.map((id) => `- ${id}`),
-            "",
-            `First seen: ${output.firstSeen}`,
-            `Last seen: ${output.lastSeen}`,
-          ].join("\n");
-
+          const rigel = buildRigelArtifactSpec(output);
           return {
             kind: "ok",
             summary: `Identified ${output.distinctCount} affected customers (dual-shape ids).`,
-            artifacts: [{ title: "Checkout customer impact", content: body }],
+            artifacts: [
+              {
+                type: rigel.type,
+                title: rigel.title,
+                description: rigel.description,
+                content: rigel.content,
+              },
+            ],
           };
         },
       };
@@ -203,7 +209,7 @@ export async function runSeededGoldenPathPostgres(
 
       await executeRun(ctx);
 
-      // Persist artifact inside the same SQL transaction as the final events.
+      // Persist Rigel table.typed artifact inside the same SQL transaction.
       const art = artifacts.items[0];
       const version = art?.versions[0];
       if (art && version) {
@@ -219,9 +225,9 @@ export async function runSeededGoldenPathPostgres(
             ${PG_SEED.assignmentId}::uuid,
             ${PG_SEED.runId}::uuid,
             ${PG_SEED.coworkerId}::uuid,
-            'document.markdown'::artifact_type,
+            ${ARTIFACT_TYPE}::artifact_type,
             ${art.title},
-            'checkout-customer-impact',
+            ${ARTIFACT_SLUG},
             'ready_for_review'::artifact_status,
             'org'::artifact_visibility,
             ${version.body.slice(0, 2000)},
@@ -229,6 +235,9 @@ export async function runSeededGoldenPathPostgres(
             now()
           )
           on conflict (id) do update set
+            type = ${ARTIFACT_TYPE}::artifact_type,
+            title = excluded.title,
+            slug = excluded.slug,
             status = 'ready_for_review'::artifact_status,
             search_text = excluded.search_text,
             updated_at = now()
@@ -243,17 +252,23 @@ export async function runSeededGoldenPathPostgres(
             ${PG_SEED.orgId}::uuid,
             ${art.id}::uuid,
             1,
-            'agent'::artifact_author_type,
-            ${PG_SEED.coworkerId},
-            'markdown'::content_format,
+            'capability'::artifact_author_type,
+            ${`${CHECKOUT_ANALYZER_SLUG}@1.0.0`},
+            'json'::content_format,
             ${version.body},
             ${sha},
-            'Seeded golden-path checkout impact report',
+            ${`checkout-error-log-analyzer v1.0.0 → ${REPAIRED_DISTINCT} distinct customers`},
             1,
             ${live.at(-1)?.seq ?? 1},
             now()
           )
-          on conflict (id) do nothing
+          on conflict (id) do update set
+            content_inline = excluded.content_inline,
+            content_format = 'json'::content_format,
+            sha256 = excluded.sha256,
+            author_type = 'capability'::artifact_author_type,
+            author_ref = excluded.author_ref,
+            change_summary = excluded.change_summary
         `;
         await tx`
           update artifacts
@@ -269,6 +284,17 @@ export async function runSeededGoldenPathPostgres(
     const folded = foldEvents(fromDb, 0);
     const step = steps[0]!;
     const art = artifacts.items[0];
+    const terminalKeys = [
+      "run.completed",
+      "run.failed",
+      "artifact.ready",
+      "capability.installed",
+      "capability.gate_failed",
+    ] as const;
+    const terminalEventCounts: Record<string, number> = {};
+    for (const key of terminalKeys) {
+      terminalEventCounts[key] = folded.types.filter((t) => t === key).length;
+    }
 
     return {
       mode: "postgres",
@@ -280,11 +306,15 @@ export async function runSeededGoldenPathPostgres(
       eventTypes: folded.types,
       stepStatus: step.status,
       artifactId: art?.id ?? "",
-      artifactTitle: art?.title ?? "",
+      artifactTitle: art?.title ?? ARTIFACT_TITLE,
+      artifactType: art?.type ?? ARTIFACT_TYPE,
+      artifactContentFormat: "json",
       distinctCount: REPAIRED_DISTINCT,
       attempt1FailureMessage: ATTEMPT_1_FAILURE_MESSAGE,
       runFinished: finished,
       sampleSummaries: fromDb.slice(0, 5).map((e) => e.summary),
+      eventTranscript: folded.types.map((t, i) => `${i + 1}. ${t}`),
+      terminalEventCounts,
     };
   } finally {
     await sql.end({ timeout: 5 });

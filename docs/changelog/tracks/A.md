@@ -191,3 +191,59 @@ pnpm exec dotenv -e .env.local -- tsx packages/events/src/prove-sse.ts
 **Pushed:** `ef9b8cc` (code); this A.md note follows via mutex.
 
 **TRACK A:** package tests GREEN; criteria 1+2+4 GREEN; criterion 3 needs Aria flip.
+
+### 2026-07-23T18:23Z — CUT#4 WAR ROOM + ARIA/NODE SSE HANDOFF (no apps/web)
+
+**Cut #4:** only `checkout-error-log-analyzer` executes. No other capability paths.
+
+#### Aria / Node — worker SSE contract (Cael owns worker; Aria owns web proxy/hook)
+
+| Item | Value |
+|------|--------|
+| **Local base** | `http://127.0.0.1:3001` (WORKER_HEALTH_PORT default) |
+| **Prod base** | env `WORKER_PUBLIC_URL` (no hardcoded prod host) |
+| **SSE path** | `GET /runs/:runId/stream` |
+| **Seeded runId** | `0198206f-5f53-7000-8000-000000000006` |
+| **Full local URL** | `http://127.0.0.1:3001/runs/0198206f-5f53-7000-8000-000000000006/stream?after=0` |
+| **Query resume** | `?after=<seq>` — backfill events with `seq > after` |
+| **Header resume** | `Last-Event-ID: <seq>` — **preferred** when both present (`resumeAfter` in `@forge/events`) |
+| **Content-Type** | `text/event-stream; charset=utf-8` |
+| **Event name** | `run.event` |
+| **SSE frame** | `id: <seq>\nevent: run.event\ndata: <JSON RunEvent>\n\n` |
+| **Heartbeat** | `event: heartbeat` every 15s: `{ ts, seq }` |
+| **RunEvent envelope** | `{ id, seq, runId, assignmentId, orgId, ts, type, channel, level, visibility, summary, detail?, refs, cost? }` |
+| **Trigger run** | `POST http://127.0.0.1:3001/v1/golden-path/run` |
+| **Health** | `GET http://127.0.0.1:3001/health/ready` |
+
+**Aria action:** proxy browser `EventSource` to worker URL above, or `useRunStream(runId, { useDemoFixture: false })` once web proxy exists. **Cael does not edit apps/web.**
+
+#### Canonical 4→9 artifact (Rigel GOLDEN-ARTIFACT)
+
+| Field | Value |
+|-------|--------|
+| type | `table.typed` |
+| contentFormat | `json` |
+| title | `Affected customers — annual checkout` |
+| slug | `affected-customers-annual-checkout` |
+| id | `0198206f-5f53-7000-8000-000000000101` |
+| versionId | `0198206f-5f53-7000-8000-000000000102` |
+| authorType | `capability` |
+| authorRef | `checkout-error-log-analyzer@1.0.0` |
+| rows | **9** (no `cus_ZZ9`) |
+| attempt1 | `expected 9, received 4` |
+
+#### Proof (two rehearsals)
+
+```
+pnpm --filter @forge/agent-runtime test   # 166 pass
+pnpm exec dotenv -e .env.local -- tsx packages/agent-runtime/src/golden-path/prove-it-runs.ts  # R1 EXIT 0
+pnpm exec dotenv -e .env.local -- tsx packages/agent-runtime/src/golden-path/prove-it-runs.ts  # R2 EXIT 0
+pnpm exec dotenv -e .env.local -- tsx packages/events/src/prove-sse.ts  # EXIT 0
+```
+
+**Compact transcript (ordered types, 24 events):**  
+`plan.drafted → plan.approved → run.started → step.started → trace.observed → trace.decided → capability.gap_detected → capability.build_started → capability.build_output → capability.gate_started → capability.gate_failed → capability.repair_started → capability.build_output → capability.gate_started → capability.gate_passed → capability.repair_succeeded → capability.approval_requested → capability.installed → step.started → trace.observed → trace.decided → artifact.ready → step.completed → run.completed`
+
+Terminal counts per run: `run.completed=1`, `artifact.ready=1`, `capability.gate_failed=1`, `capability.installed=1`.
+
+**TRACK A GREEN** for Broken Checkout spine (worker/run-loop/Postgres/SSE/table.typed). Standing by for Node integration failures.

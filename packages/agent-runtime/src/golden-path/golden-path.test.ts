@@ -21,8 +21,13 @@ describe("seeded fake golden path", () => {
     expect(result.stepStatus).toBe("completed");
     expect(result.distinctCount).toBe(REPAIRED_DISTINCT);
     expect(result.artifacts).toHaveLength(1);
-    expect(result.artifacts[0]?.versions[0]?.body).toContain("cus_UV9");
-    expect(result.artifacts[0]?.versions[0]?.body).not.toContain("cus_ZZ9");
+    expect(result.artifacts[0]?.type).toBe("table.typed");
+    expect(result.artifacts[0]?.title).toBe("Affected customers — annual checkout");
+    const body = result.artifacts[0]?.versions[0]?.body ?? "";
+    const table = JSON.parse(body) as { rows: Array<{ rowId: string }> };
+    expect(table.rows).toHaveLength(9);
+    expect(table.rows.map((r) => r.rowId)).toContain("cus_UV9");
+    expect(table.rows.map((r) => r.rowId)).not.toContain("cus_ZZ9");
 
     const types = result.eventTypes;
     // Required seam sequence (subset, order-preserving)

@@ -13,6 +13,7 @@ import {
   REPAIRED_DISTINCT,
 } from "./ids";
 import { MemoryArtifactPort } from "./memory-artifacts";
+import { buildRigelArtifactSpec } from "./rigel-artifact";
 
 export interface GoldenPathResult {
   orgId: string;
@@ -129,29 +130,16 @@ export async function runSeededGoldenPath(): Promise<GoldenPathResult> {
         };
       }
 
-      const body = [
-        "# Checkout impact",
-        "",
-        `Capability: ${pin.slug}@${pin.version} (\`versionId=${pin.versionId}\`)`,
-        "",
-        `**Distinct affected customers: ${output.distinctCount}**`,
-        "",
-        output.affectedCustomers.map((id) => `- ${id}`).join("\n"),
-        "",
-        `First seen: ${output.firstSeen}`,
-        `Last seen: ${output.lastSeen}`,
-        "",
-        "Taxonomy:",
-        ...Object.entries(output.taxonomy).map(([k, v]) => `- ${k}: ${v}`),
-      ].join("\n");
-
+      const rigel = buildRigelArtifactSpec(output);
       return {
         kind: "ok",
         summary: `Identified ${output.distinctCount} affected customers in checkout_failed logs (dual-shape ids).`,
         artifacts: [
           {
-            title: "Checkout customer impact",
-            content: body,
+            type: rigel.type,
+            title: rigel.title,
+            description: rigel.description,
+            content: rigel.content,
           },
         ],
       };
@@ -172,8 +160,13 @@ export async function runSeededGoldenPath(): Promise<GoldenPathResult> {
   }
 
   const artifactBody = artifacts.items[0]?.versions[0]?.body ?? "";
-  const distinctMatch = /Distinct affected customers: (\d+)/.exec(artifactBody);
-  const distinctCount = distinctMatch ? Number(distinctMatch[1]) : 0;
+  let distinctCount = 0;
+  try {
+    const table = JSON.parse(artifactBody) as { rows?: unknown[] };
+    distinctCount = Array.isArray(table.rows) ? table.rows.length : 0;
+  } catch {
+    distinctCount = 0;
+  }
 
   return {
     orgId: GOLDEN.orgId,

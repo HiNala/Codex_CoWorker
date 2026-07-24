@@ -145,13 +145,13 @@ async function handleStepResult(
 async function writeArtifacts(
   ctx: RunContext,
   step: PlanStep,
-  artifacts: Array<{ title: string; content: string }>,
+  artifacts: Array<{ title: string; content: string; type?: string; description?: string }>,
 ): Promise<void> {
   for (const artifact of artifacts) {
     const declared = await ctx.artifacts.declare(ctx.runId, {
-      type: "document.markdown",
+      type: artifact.type ?? "document.markdown",
       title: artifact.title,
-      description: artifact.title,
+      description: artifact.description ?? artifact.title,
     });
     await ctx.artifacts.write(
       { artifactId: declared.id, stepId: step.id },
@@ -161,6 +161,7 @@ async function writeArtifacts(
       type: "artifact.ready",
       summary: `Artifact ready: ${artifact.title}`,
       refs: { stepId: step.id, artifactId: declared.id },
+      detail: { type: artifact.type ?? "document.markdown" },
     });
   }
 }

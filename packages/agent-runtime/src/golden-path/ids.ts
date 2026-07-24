@@ -7,11 +7,15 @@ export const GOLDEN = {
   stepAnalyzeId: "019f0000-0000-7000-8000-00000000a005",
   capabilityId: "019f0000-0000-7000-8000-00000000a006",
   versionId: "019f0000-0000-7000-8000-00000000a007",
-  artifactId: "019f0000-0000-7000-8000-00000000a008",
-  artifactVersionId: "019f0000-0000-7000-8000-00000000a009",
+  /** Rigel GOLDEN-ARTIFACT.json ids — Aria dock consumes these. */
+  artifactId: "0198206f-5f53-7000-8000-000000000101",
+  artifactVersionId: "0198206f-5f53-7000-8000-000000000102",
 } as const;
 
 export const CHECKOUT_ANALYZER_SLUG = "checkout-error-log-analyzer";
+export const ARTIFACT_TITLE = "Affected customers — annual checkout";
+export const ARTIFACT_SLUG = "affected-customers-annual-checkout";
+export const ARTIFACT_TYPE = "table.typed";
 
 /** Exact attempt-1 trusted-gate failure (Rigel contract / Node correction). */
 export const ATTEMPT_1_FAILURE_MESSAGE = "expected 9, received 4";
