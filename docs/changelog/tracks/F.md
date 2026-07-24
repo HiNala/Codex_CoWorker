@@ -144,3 +144,23 @@ Owner: **TIDE** · Scope: `packages/integrations`, `packages/research`, `demo/`,
 - Non-fast-forward → script exits 3, report Node, hold for central sync gate.
 - TIDE `-Paths`: `packages/integrations,packages/research,demo,docs/changelog/tracks/F.md`
 
+
+### [2026-07-23 17:58] Gate 1 FREEZE checkpoint (TIDE)
+
+- **Commit invocation (validated):** `powershell -ExecutionPolicy Bypass -File scripts/agent-commit.ps1 -Agent Tide -Paths packages/integrations,packages/research,demo,docs/changelog/tracks/F.md -MessageFile .git/msg-tide.txt` — not `pwsh` (absent on host). Comma-separated paths OK; script splits.
+- **No new feature work** after freeze. Mutex not held.
+- **Track F tests:** `pnpm exec vitest run packages/integrations packages/research` → **7 files / 78 tests pass**
+- **Track L demo tests:** `demo/acme-store` → **3 files / 13 tests pass**; log trap naive=4 / correct=9 / 40 failed attempts
+- Gate 1 MUST coverage:
+  - Zendesk webhook raw-body HMAC + invocation dedupe + local fixture secret (ZENDESK_* UNSET)
+  - TicketGateway Import path when not_configured
+  - Octen ResearchGateway + FakeResearchGateway + No Main Content discard
+  - ExternalActionExecutor payload hash bind + mutate-after-approve refuse
+  - Notifier (Fake/Resend/Composio link()) + honest `integrationStatus`
+  - PullRequestPort host apply hand-written patch + Fake when GITHUB_* absent
+  - acme-store Broken Checkout storefront
+- **Credential status (names only):** OPENAI/CODEX/OCTEN/COMPOSIO **CONFIGURED**; all ZENDESK_* **UNSET**; GITHUB_TOKEN/PAT **ABSENT**; RESEND **ABSENT**
+- **Golden-path seams (collective):** Tide supplies fakes + adapters + demo repo; seeded assignment / SSE / cockpit / artifact production owned by A/D/E — Tide does not block those packages.
+- **Verdict:** TRACK F GREEN · TRACK L GREEN
+- **Most fragile (not RED):** live external PR/email need GITHUB_TOKEN + Composio Gmail account link; until then Fake adapters keep Gate 1 honest.
+
