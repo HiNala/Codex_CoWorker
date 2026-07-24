@@ -40,6 +40,62 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] Demo auth on production — presenter parachute briefing
+
+**Context:** `GET https://www.dextwork.com/api/demo/status` → **401** without credentials is
+**correct**. `GET …/api/health/ready` → **200** (deep checks) remains the readiness gate GREEN.
+`DEMO_ACCESS_CODE` and `DEMO_MODE` keys are **CONFIGURED** on web (`DEMO_MODE=1` so production
+mutations are allowed when code is valid). Access code value is **out-of-band only** — never in
+this file, never in commit messages.
+
+#### 1) How the presenter authenticates (mechanism + steps)
+
+| Layer | Mechanism |
+|-------|-----------|
+| Gate | Server compares provided code to env `DEMO_ACCESS_CODE` (constant-time). Production also requires `DEMO_MODE=1`. |
+| Transport | **Header** `x-demo-access-code` (preferred) **or** query `?code=` / `?accessCode=` |
+| Not used | Cookies / server session for demo auth |
+| UI storage | After unlock, client stores code in **`sessionStorage`** key `forge.demoAccessCode` (this tab only) and resends it as the header on every control-panel request |
+
+**Precise presenter steps (before going on stage):**
+
+1. Open **`https://www.dextwork.com/demo`** (or `https://dextwork.com/demo`) in the **presenter browser profile** (not the audience projector tab if possible).
+2. You see the **DEMO CONTROL** unlock card: password field “Access code” + **Unlock panel**.
+3. Paste the access code from the **out-of-band channel** (Railway web service variable `DEMO_ACCESS_CODE`, or the same value already in local `.env.local` for ops — **do not paste it into docs/chat**).
+4. Click **Unlock panel** (or press Enter). Client `POST/GET`s `/api/demo/status` with header `x-demo-access-code`.
+5. On success, panel unlocks; code stays in **sessionStorage** for the tab until closed or “lock”.
+6. Then use **Reset**, **Seed**, **Replay**, **PANIC** — each call reuses that header.
+
+**API-only (ops, not stage):**  
+`curl -H "x-demo-access-code: <code>" https://www.dextwork.com/api/demo/status`  
+or `…/api/demo/status?code=<code>` — same gate; still never log the code.
+
+#### 2) PANIC + replay through that auth on production (www)
+
+Proved on **`https://www.dextwork.com`** (not local):
+
+| Call | Unauth | With `x-demo-access-code` (CONFIGURED) |
+|------|--------|----------------------------------------|
+| `GET /api/demo/status` | **401** | **200** |
+| `POST /api/demo/panic` | **401** | **200** `panicked=true` all adapters fake |
+| `POST /api/demo/replay` | — | **200** `eventCount=22` golden-path |
+| `POST /api/demo/reset` | — | **200** |
+| `POST /api/demo/seed` | — | **200** |
+
+Parachute is **tested on the public production host** with real auth. An unlocked `/demo` tab is required for the on-stage button path.
+
+#### 3) Audience surfaces — no code mid-demo
+
+| URL | Auth for view? | Status |
+|-----|----------------|--------|
+| `https://www.dextwork.com/` | **Public** | **200** HTML |
+| `https://www.dextwork.com/a/<assignmentId>` (seeded cockpit) | **Public** | **200** HTML |
+| `https://www.dextwork.com/api/health/live` | Public | **200** |
+| `https://www.dextwork.com/api/health/ready` | Public | **200** deep ready |
+| `https://www.dextwork.com/demo` | Page HTML public; **actions** need unlock | **200** HTML shell; API **401** until code |
+
+**Decision:** Audience/projector uses **`/` or `/a/…` only** — no demo code prompt. Presenter keeps a **separate unlocked `/demo` tab** for reset/seed/replay/PANIC.
+
 ### [2026-07-23] DEXTWORK live QA — smoke/replay + Aria shell deploy + screenshots
 
 **Aria D.md:** Track D/G **GREEN** (five surfaces + shell wired, demo fixture). Deployed current tree.
