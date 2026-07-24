@@ -314,3 +314,11 @@ Motion event-driven; capability tiles icon+label. No polish. Marketing not touch
 
 ### Expected rendered event count
 When DB has Cael's golden path: cockpit `data-last-seq` should reach **24** (gapless seq 1..24). Offline without DATABASE_URL: stream 503 / disconnected — fixture still available via `useDemoFixture`.
+
+## [RELEASE UNBLOCK] D · web build green
+
+- **Cut client graph:** `resolve-stream-run-id.ts` no longer imports `@forge/demo` (was dragging `replay.ts` → `node:fs` into cockpit client bundle).
+- **Deleted** orphan `cockpit-sidebar.tsx`.
+- **postgres** `3.4.9` in `apps/web/package.json` (stream route).
+- **typecheck** EXIT 0 · **build** EXIT 0 (Next 16 Turbopack compiled).
+- Hand Wisp: deploy this commit.

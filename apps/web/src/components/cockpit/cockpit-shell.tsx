@@ -69,7 +69,7 @@ export function CockpitShell({
       onApprove={onApprove}
       onDeny={onDeny}
       assignmentId={assignmentId}
-      onPause={onPause}
+      {...(onPause ? { onPause } : {})}
     />
   );
   const defaultMission = <MissionControl state={state} />;
