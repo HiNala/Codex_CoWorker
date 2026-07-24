@@ -7,14 +7,17 @@ FROM node@sha256:e58326d0d441090181ac150dc2078d3e2cf6a0d42e809aebba3ef5880935ffd
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 ENV NEXT_TELEMETRY_DISABLED=1
+# Railway's Metal builder rejects BuildKit cache mounts without a platform
+# cacheKey prefix — use plain RUN so local Docker and Railway share one file.
 RUN corepack enable && corepack prepare pnpm@10.14.0 --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-RUN --mount=type=cache,id=forge-pnpm,target=/pnpm/store pnpm fetch --frozen-lockfile
-COPY . .
+COPY packages ./packages
+COPY apps ./apps
+RUN pnpm fetch --frozen-lockfile
 # public/ may be empty in git; ensure COPY path exists for the runtime stage.
 RUN mkdir -p apps/web/public
-RUN --mount=type=cache,id=forge-pnpm,target=/pnpm/store pnpm install --offline --frozen-lockfile
+RUN pnpm install --offline --frozen-lockfile
 # apps/web/next.config.ts sets output: "standalone" + outputFileTracingRoot monorepo root.
 RUN pnpm --filter @forge/web build
 
