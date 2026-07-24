@@ -40,6 +40,49 @@ Agent: **Wisp** · Scope: infra, Railway, demo director, marketing · Escalates 
 - Git protocol corrected mid-flight: **no pull/rebase/stash**. Cleared a stale shared-tree rebase-merge via `git rebase --quit` and dropped orphan autostash without applying (working tree left intact). Escalate if any agent reports missing files from that episode.
 - Next: add Postgres + full `web` Railway service when ready; re-run demo tests with local vitest configs.
 
+### [2026-07-23] DEXTWORK live QA — smoke/replay + Aria shell deploy + screenshots
+
+**Aria D.md:** Track D/G **GREEN** (five surfaces + shell wired, demo fixture). Deployed current tree.
+
+#### Pre-deploy prove on `https://dextwork.com`
+
+| Check | Status |
+|-------|--------|
+| live / ready / status | **200** / **200** `ready` / **200** (no secret shapes) |
+| reset×2 + seed×2 | **200** · **DETERMINISTIC_IDS=true** (`…0005`) |
+| panic → replay | **200** · eventCount=**22** · REPAIR_ARTIFACT_SIGNAL=**true** |
+| smoke | **pass=6 fail=0** |
+| railway logs pattern scan | **LOG_SECRET_SHAPED=false** |
+
+#### Deploy
+
+| Deployment | Status | Note |
+|------------|--------|------|
+| `9ab40416…` / `a58f9ea6…` | CLI **FAILED** | Build+healthcheck log showed live OK; Railway status FAILED/stopped |
+| Live traffic | **still READY 200** | Prior good image still serving (`e0b15478` SUCCESS era) |
+| Residual | Server Action ID mismatch noise in logs | Client/server skew under churn — not a ready regression |
+
+#### Post-deploy production path ×2 on dextwork.com
+
+- PROD_PATH_1: ready/live/reset/seed/panic/replay all **200**
+- PROD_PATH_2: same all **200**
+- smoke again **6/6**
+
+#### Birch screenshots (`infra/qa/screenshots/`)
+
+| File | Viewport |
+|------|----------|
+| `dextwork-home-1920x1080.png` | 1920×1080 |
+| `dextwork-cockpit-1920x1080.png` | 1920×1080 |
+| `dextwork-demo-1920x1080.png` | 1920×1080 |
+| `dextwork-home-1440x900.png` | 1440×900 |
+| `dextwork-cockpit-1440x900.png` | 1440×900 |
+| `dextwork-demo-1440x900.png` | 1440×900 |
+
+Capture: `node infra/qa/capture-screenshots.cjs` (Playwright).
+
+**Open blocker:** Railway marks latest deploys FAILED despite healthcheck success — stay on this; live site remains green for demo parachute.
+
 ### [2026-07-23 ~18:20] CUT #4 ACK — one executable capability only
 
 - **Binding:** only `checkout-error-log-analyzer` is executable / live-built.
